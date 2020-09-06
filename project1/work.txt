@@ -1,1 +1,6 @@
-- I plan on doing the OLS of the Franke function.
+Sunday 6th september, 17:00
+Simon:
+- I almost finished task a). The Calculation of the Beta coefficients works as it should, so you should be able to use it.
+I have not yet implemented calculation of the MSE, if you want to, you can. I had to fix a rather stupid bug, that's why I took so much time.
+I will finish this later tonight!
+
