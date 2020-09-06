@@ -4,3 +4,8 @@ Simon:
 I have not yet implemented calculation of the MSE, if you want to, you can. I had to fix a rather stupid bug, that's why I took so much time.
 I will finish this later tonight!
 
+Sunday 6th september, 21:00
+Simon:
+- Task a) finished. I added a function to create the design matrix up to degree deg for two parameters x and y. This
+can be found in your small_function_library.py-file.
+-

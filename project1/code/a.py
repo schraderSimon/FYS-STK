@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 n=10 #Data points for x
 m=10 #Data points for y
 maxdeg=5
-print(random)
 x=np.linspace(0,1,n).reshape(-1, 1)
 y=np.linspace(0,1,m).reshape(-1, 1)
 x,y= np.meshgrid(x,y)
