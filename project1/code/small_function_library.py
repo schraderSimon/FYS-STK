@@ -1,3 +1,4 @@
+import numpy as np
 def R2(y_data,y_model):
     return 1- np.sum((y_data - y_model)**2)/np.sum((y_data-np.mean(y_data))**2)
 
@@ -36,7 +37,7 @@ def Coeff_to_Poly(x,beta):
     for i in range(len(beta)):
         poly += beta[i]*x**i
     return poly
-    
+
 #The Franke Function.
 def FrankeFunction(x,y):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
@@ -44,3 +45,36 @@ def FrankeFunction(x,y):
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
+
+#Design Matrix for a 2D-polynomial.
+
+def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
+    """
+    Input: x,y (created as meshgrids), the maximal polynomial degree, if the intercept should be included or not.
+
+    The function creates a design matrix X for a 2D-polynomial.
+
+    Returns: The design matrix X
+    """
+    adder=0 #The matrix dimension is increased by one if include_intercept is True
+    p=round((polydegree+1)*(polydegree+2)/2)-1 #The total amount of coefficients
+    if include_intercept:
+        p+=1
+        adder=1
+    n,m=np.shape(x)
+    X=np.zeros((n*m,p))
+    if include_intercept:
+        X[:,0]=1
+    X[:,0+adder]=np.ravel(x) # Adds x on the first column
+    X[:,1+adder]=np.ravel(y) # Adds y on the second column
+    """
+    Create the design matrix:
+    X[:,3] is x**2 * y**0, X[:,4] is x**1 * y **1,
+    X[:,7] is x**2 * y ** 1 and so on. Up to degree degree
+    """
+    count=2+adder
+    for i in range(2,polydegree+1):
+        for j in range(i+1):
+            X[:,count]=X[:,0+adder]**j*X[:,1+adder]**(i-j)
+            count+=1;
+    return X
