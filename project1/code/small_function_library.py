@@ -1,4 +1,35 @@
 import numpy as np
+def bootstrap_bias(test,predict,n):
+    bias=np.zeros(n)
+    for i in range(n):
+        bias[i]=np.sum((test-np.mean(predict[:,i]))**2)/len(predict[:,i])
+    return np.sum(bias)/n
+
+def bootstrap_variance(test,predict,n):
+    variance=np.zeros(n)
+    for i in range(n):
+        variance[i]=np.sum((predict[:,i]-np.mean(predict[:,i]))**2)/len(predict[:,i])
+        print(variance[i])
+    return np.sum(variance)/n
+
+def bootstrap_MSE(test,predict,n):
+    error=np.zeros(n)
+    for i in range(n):
+        error[i]=np.mean((predict[:,i]-test)**2)
+    return np.mean(error)
+
+def resample(X,y):
+    """
+    Input: Arrays X (actually a matrix), y of equal size
+    Output: A bootstrap resample of X and y
+    """
+    amount_datapoints=len(y)
+    resample=np.random.randint(amount_datapoints,size=amount_datapoints)
+    #print(resample)
+    X_resampled=X[:][resample]
+    y_resampled=y[resample]
+    return X_resampled, y_resampled
+
 def R2(y_data,y_model):
     return 1- np.sum((y_data - y_model)**2)/np.sum((y_data-np.mean(y_data))**2)
 
