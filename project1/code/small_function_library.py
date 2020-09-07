@@ -61,12 +61,12 @@ def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
     if include_intercept:
         p+=1
         adder=1
-    n,m=np.shape(x)
-    X=np.zeros((n*m,p))
+    datapoints=len(x)
+    X=np.zeros((datapoints,p))
     if include_intercept:
         X[:,0]=1
-    X[:,0+adder]=np.ravel(x) # Adds x on the first column
-    X[:,1+adder]=np.ravel(y) # Adds y on the second column
+    X[:,0+adder]=x # Adds x on the first column
+    X[:,1+adder]=y # Adds y on the second column
     """
     Create the design matrix:
     X[:,3] is x**2 * y**0, X[:,4] is x**1 * y **1,
