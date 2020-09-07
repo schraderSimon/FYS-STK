@@ -109,3 +109,80 @@ def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
             X[:,count]=X[:,0+adder]**j*X[:,1+adder]**(i-j)
             count+=1;
     return X
+
+#import numpy as np
+#import random as rn
+
+#Shuffles the rows of a matrix....
+# much more computationally intensive than shuffling its indices..
+def ShuffleRows(X_matrix):
+    length = len(X_matrix)
+    for i in range(length):
+        rand_index = rn.randint(0,length-1) 
+        current_row = X_matrix[i,:]
+        X_matrix[i,:] = X_matrix[rand_index,:]
+        X_matrix[rand_index,:] = current_row
+    return X_matrix
+#Returns a list of randomly shuffled indices for a matrix/array
+def ShuffleIndex(X_matrix):
+    length = len(X_matrix)
+    shuffled_indexs = list(range(0,length))
+    for i in range(length):
+        rand_val =rn.randint(0,length-1)
+        rand_index = shuffled_indexs[rand_val]
+        current_index = shuffled_indexs[i] 
+        shuffled_indexs[i] = rand_index
+        shuffled_indexs[rand_val] = current_index
+    return shuffled_indexs
+
+#First attempt at K fold crossvalidation... for posterity
+"""
+def KfoldCross(X_matrix,k):
+    shuffled_indexs = ShuffleIndex(X_matrix)
+    list_length = len(shuffled_indexs)
+    partition_len = list_length//k
+    remainder = list_length % k
+    partitions = []
+    print(list_length)###############delete
+    print(remainder)#################delete
+    for i in range(k):
+        partitions.append(shuffled_indexs[i*partition_len:(i+1)*partition_len])
+        if (remainder > 1):
+            partitions[i].extend(shuffled_indexs[-remainder:-remainder+1])
+            remainder -= 1
+    partitions[-1].append(shuffled_indexs[-1])
+
+    testing_indexes = np.zeros(k)
+    training_indexes = np.zeros(k)
+    for i in range(k):
+        testing_indexes[i].extend(partitions[i])
+        for j in range(k):
+            if (j != i):
+                training_indexes[i].extend(partitions[j])
+    return training_indexes, testing_indexes
+
+"""
+
+#Returns the training and testing indices for 
+#K-fold crossvalidation, given a design matrix & k-value
+def KfoldCross(X_matrix,k):
+    #Creating an array of shuffled indices
+    shuffled_indexs = ShuffleIndex(X_matrix)
+    #getting the length of the array
+    list_length = len(shuffled_indexs)
+    #getting the length of each partition up to a remainder
+    partition_len = list_length//k
+    #The number of remaining elements after the equal partitioning is noted
+    #not currently in use, but useful for evaluating our choice of k.
+    remainder = list_length % k
+    #creating empty arrays for the training and testing indices
+    training_indexes = []
+    testing_indexes = []
+    for i in range(k):
+        #Each partition of the list is appended to the training data
+        testing_indexes.append(shuffled_indexs[i*partition_len:i*partition_len+partition_len])
+        #The training indices are decided by exclusion of the partition that 
+        #was just made into testing data. The remainder after fair division is 
+        #added to the training indices.
+        training_indexes.append(shuffled_indexs[0:i*partition_len] + shuffled_indexs[i*partition_len+partition_len:])
+    return training_indexes, testing_indexes
