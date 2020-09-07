@@ -2,15 +2,15 @@ import numpy as np
 def bootstrap_bias(test,predict,n):
     bias=np.zeros(n)
     for i in range(n):
-        bias[i]=np.sum((test-np.mean(predict[:,i]))**2)/len(predict[:,i])
-    return np.sum(bias)/n
+        bias[i]=np.mean((test-np.mean(predict[:,i]))**2)
+    return np.mean(bias)
 
 def bootstrap_variance(test,predict,n):
     variance=np.zeros(n)
     for i in range(n):
-        variance[i]=np.sum((predict[:,i]-np.mean(predict[:,i]))**2)/len(predict[:,i])
+        variance[i]=np.mean((predict[:,i]-np.mean(predict[:,i]))**2)
         print(variance[i])
-    return np.sum(variance)/n
+    return np.mean(variance)
 
 def bootstrap_MSE(test,predict,n):
     error=np.zeros(n)

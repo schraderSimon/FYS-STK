@@ -11,3 +11,6 @@ can be found in your small_function_library.py-file.
 -
 Monday 7th, 13:45
 - I found a bug (the (x,y) data wasn't randomly distributed during setup) and fixed it.
+Monday 7th, 15:45
+- I "kinda" finished b), but there's a persistent bug (Variance & bias are far too high) I don't know how to fix.
+

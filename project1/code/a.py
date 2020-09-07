@@ -32,7 +32,7 @@ for deg in range(1,maxdeg+1):
     z_train_scaled_fit=X_train_scaled@beta
     MSE_train[deg-1]+=(MSE(z_train_scaled,z_train_scaled_fit))
     R2_train[deg-1]+=(R2(z_train_scaled,z_train_scaled_fit))
-    z_test_scaled_fit=np.empty((len(z_test),n_bootstraps))
+    z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
     for i in range(n_bootstraps):
         X_b, z_b=resample(X_train_scaled,z_train_scaled)
         beta, beta_variance = LinearRegression(X_b,z_b)
