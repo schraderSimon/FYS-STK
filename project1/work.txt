@@ -9,3 +9,5 @@ Simon:
 - Task a) finished. I added a function to create the design matrix up to degree deg for two parameters x and y. This
 can be found in your small_function_library.py-file.
 -
+Monday 7th, 13:45
+- I found a bug (the (x,y) data wasn't randomly distributed during setup) and fixed it.
