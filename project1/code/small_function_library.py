@@ -3,19 +3,26 @@ def bootstrap_bias(test,predict,n):
     bias=np.zeros(n)
     for i in range(n):
         bias[i]=np.mean((test-np.mean(predict[:,i]))**2)
+    bias=np.zeros(len(test))
+    for i in range(len(test)):
+        bias[i]=np.mean((np.mean(predict[i,:])-test[i])**2)
     return np.mean(bias)
 
 def bootstrap_variance(test,predict,n):
     variance=np.zeros(n)
     for i in range(n):
         variance[i]=np.mean((predict[:,i]-np.mean(predict[:,i]))**2)
-        print(variance[i])
+    variance=np.zeros(len(test))
+    for i in range(len(test)):
+        variance[i]=np.mean((predict[i,:]-np.mean(predict[i,:]))**2)
+    print("variance:", variance[i])
     return np.mean(variance)
 
 def bootstrap_MSE(test,predict,n):
     error=np.zeros(n)
     for i in range(n):
         error[i]=np.mean((predict[:,i]-test)**2)
+    print("error: ",error[i])
     return np.mean(error)
 
 def resample(X,y):
@@ -118,7 +125,7 @@ def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
 def ShuffleRows(X_matrix):
     length = len(X_matrix)
     for i in range(length):
-        rand_index = rn.randint(0,length-1) 
+        rand_index = rn.randint(0,length-1)
         current_row = X_matrix[i,:]
         X_matrix[i,:] = X_matrix[rand_index,:]
         X_matrix[rand_index,:] = current_row
@@ -130,7 +137,7 @@ def ShuffleIndex(X_matrix):
     for i in range(length):
         rand_val =rn.randint(0,length-1)
         rand_index = shuffled_indexs[rand_val]
-        current_index = shuffled_indexs[i] 
+        current_index = shuffled_indexs[i]
         shuffled_indexs[i] = rand_index
         shuffled_indexs[rand_val] = current_index
     return shuffled_indexs
@@ -163,7 +170,7 @@ def KfoldCross(X_matrix,k):
 
 """
 
-#Returns the training and testing indices for 
+#Returns the training and testing indices for
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
     #Creating an array of shuffled indices
@@ -181,8 +188,8 @@ def KfoldCross(X_matrix,k):
     for i in range(k):
         #Each partition of the list is appended to the training data
         testing_indexes.append(shuffled_indexs[i*partition_len:i*partition_len+partition_len])
-        #The training indices are decided by exclusion of the partition that 
-        #was just made into testing data. The remainder after fair division is 
+        #The training indices are decided by exclusion of the partition that
+        #was just made into testing data. The remainder after fair division is
         #added to the training indices.
         training_indexes.append(shuffled_indexs[0:i*partition_len] + shuffled_indexs[i*partition_len+partition_len:])
     return training_indexes, testing_indexes
