@@ -1,5 +1,6 @@
 import numpy as np
 import random as rn
+from sklearn.preprocessing import StandardScaler
 def bootstrap_bias(test,predict,n):
     bias=np.zeros(n)
     for i in range(n):
@@ -211,7 +212,7 @@ def KfoldCross(X_matrix,k):
         remainder -= 1
     return training_indexes, testing_indexes
 
-def KCrossValMSE(X,k,scaling = True):
+def KCrossValMSE(X,z,k,scaling = True):
     #getting indices from Kfoldcross
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
