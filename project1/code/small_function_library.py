@@ -1,4 +1,5 @@
 import numpy as np
+import random as rn
 def bootstrap_bias(test,predict,n):
     bias=np.zeros(n)
     for i in range(n):
@@ -170,7 +171,8 @@ def KfoldCross(X_matrix,k):
 
 """
 
-#Returns the training and testing indices for
+
+#Returns the training and testing indices for 
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
     #Creating an array of shuffled indices
@@ -180,16 +182,31 @@ def KfoldCross(X_matrix,k):
     #getting the length of each partition up to a remainder
     partition_len = list_length//k
     #The number of remaining elements after the equal partitioning is noted
-    #not currently in use, but useful for evaluating our choice of k.
     remainder = list_length % k
     #creating empty arrays for the training and testing indices
     training_indexes = []
     testing_indexes = []
+    #setting paramaters required for proper hanlding of remainders
+    else_offset = 1
+    current_index_end = 0
+    current_index_start = 0
     for i in range(k):
-        #Each partition of the list is appended to the training data
-        testing_indexes.append(shuffled_indexs[i*partition_len:i*partition_len+partition_len])
-        #The training indices are decided by exclusion of the partition that
-        #was just made into testing data. The remainder after fair division is
-        #added to the training indices.
-        training_indexes.append(shuffled_indexs[0:i*partition_len] + shuffled_indexs[i*partition_len+partition_len:])
+        #when there's a remainder after partitioning,
+        #increase partition length by 1 and
+        #create partitions until remainder is 0
+        if (remainder > 0):
+            #setting start and stop indices for the partitons
+            current_index_end = i*(partition_len+1)+partition_len+1
+            current_index_start = i*(partition_len+1)
+            testing_indexes.append(shuffled_indexs[current_index_start:current_index_end])
+            training_indexes.append(shuffled_indexs[0:current_index_start] + shuffled_indexs[current_index_end:])
+        #When the final remainder is included, changes the program
+        #to only create partitions of the original length
+        else:
+            testing_indexes.append(shuffled_indexs[current_index_end:current_index_end + partition_len])
+            training_indexes.append(shuffled_indexs[0:current_index_end] + shuffled_indexs[current_index_end+partition_len:])
+            current_index_end += partition_len
+            current_index_start += partition_len
+        #subtracts 1 from the remainder each time
+        remainder -= 1
     return training_indexes, testing_indexes
