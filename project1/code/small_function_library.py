@@ -245,4 +245,5 @@ def KCrossValMSE(X,z,k,scaling = True):
         z_testing_fit = X_testing @ beta
 
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
-    return MSE_crossval
+    MSE_estimate = np.mean(MSE_crossval)
+    return MSE_estimate
