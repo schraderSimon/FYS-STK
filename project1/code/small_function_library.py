@@ -210,3 +210,38 @@ def KfoldCross(X_matrix,k):
         #subtracts 1 from the remainder each time
         remainder -= 1
     return training_indexes, testing_indexes
+
+def KCrossValMSE(X,k,scaling = True):
+    #getting indices from Kfoldcross
+    trainIndx, testIndx = KfoldCross(X,k)
+    #init empty MSE array
+    MSE_crossval = np.zeros(k)
+    #redef scaler, with_mean = False to prevent singular matrix
+    #for later inversion
+    scaler = StandardScaler(with_mean=False)
+    for i in range(k):
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+
+        z_training = z[trainIndx[i]]
+        z_testing = z[testIndx[i]]
+        #If Scaling == True
+        if (scaling):
+            #Scale X
+            scaler.fit(X_training)
+            X_training_scaled = scaler.transform(X_training)
+            X_testing_scaled = scaler.transform(X_testing)
+            #perform OLS regression
+            beta, beta_variance = LinearRegression(X_training_scaled,z_training)
+            z_training_fit = X_training_scaled @ beta
+            z_testing_fit = X_testing_scaled @ beta
+            #calculate MSE for each fold
+            MSE_crossval[i] = MSE(z_testing,z_testing_fit)
+            continue
+        #If scaling == False
+        beta, beta_variance = LinearRegression(X_training,z_training)
+        z_training_fit = X_training @ beta
+        z_testing_fit = X_testing @ beta
+
+        MSE_crossval[i] = MSE(z_testing,z_testing_fit)
+    return MSE_crossval
