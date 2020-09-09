@@ -56,8 +56,10 @@ def DesignMatrix(x,polydgree):
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training),
 #  the lambda coefficient, and the degree of the approximating polynomial.
 #Returns the beta coeffs. and their variance
-def RidgeRegression(X_training,y_training,Lambda,PolyApproxDegree):
-    I = np.eye(PolyApproxDegree)
+#IMPORTANT: This form of Ridge regression assumes that X_training has been centered
+
+def RidgeRegression(X_training,y_training,Lambda):
+    I = np.eye(len(X_training[0,:]))
     inverse_matrix = np.linalg.inv(X_training.T @ X_training+Lambda*I)
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
@@ -247,4 +249,40 @@ def KCrossValMSE(X,z,k,scaling = True):
 
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
     MSE_estimate = np.mean(MSE_crossval)
+    print("MSE OLS")
+    print(MSE_estimate)
+    return MSE_estimate
+
+def KCrossValRidgeMSE(X,z,k,Lambda):
+    #getting indices from Kfoldcross
+    trainIndx, testIndx = KfoldCross(X,k)
+    #init empty MSE array
+    MSE_crossval = np.zeros(k)
+    #redef scaler, with_mean = True
+    scaler = StandardScaler(with_mean=True)
+    for i in range(k):
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+
+        z_training = z[trainIndx[i]]
+        z_testing = z[testIndx[i]]
+        #Scale X
+        scaler.fit(X_training)
+        X_training_scaled = scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+        ######################## ASK ABOUT THE TWO LINES UNDERNEATH AND WHY INCLUDING THEM GIVES BETTER MSE THAN NOT
+        #WHEN THE DATA IS SUPPOSED TO BE CENTERED.
+        X_training_scaled[:,0] = 1
+        X_testing_scaled[:,0] = 1
+        #perform Ridge regression
+        beta, beta_variance = RidgeRegression(X_training_scaled,z_training,Lambda)
+        #print(beta)
+        z_training_fit = X_training_scaled @ beta
+        z_testing_fit = X_testing_scaled @ beta
+        #calculate MSE for each fold
+        MSE_crossval[i] = MSE(z_testing,z_testing_fit)
+    
+    MSE_estimate = np.mean(MSE_crossval)
+    #print("MSE Ridge")
+    #print(MSE_estimate)
     return MSE_estimate
