@@ -217,9 +217,8 @@ def KCrossValMSE(X,z,k,scaling = True):
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
     MSE_crossval = np.zeros(k)
-    #redef scaler, with_mean = False to prevent singular matrix
-    #for later inversion
-    scaler = StandardScaler(with_mean=False)
+    #redef scaler, with_mean = True
+    scaler = StandardScaler(with_mean=True)
     for i in range(k):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]
@@ -232,6 +231,8 @@ def KCrossValMSE(X,z,k,scaling = True):
             scaler.fit(X_training)
             X_training_scaled = scaler.transform(X_training)
             X_testing_scaled = scaler.transform(X_testing)
+            X_training_scaled[:,0] = 1
+            X_testing_scaled[:,0] = 1
             #perform OLS regression
             beta, beta_variance = LinearRegression(X_training_scaled,z_training)
             z_training_fit = X_training_scaled @ beta
