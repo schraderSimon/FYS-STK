@@ -286,3 +286,17 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     #print("MSE Ridge")
     #print(MSE_estimate)
     return MSE_estimate
+
+def ArraySmoother(Arr, interval):
+    NrIntervals = len(Arr)//interval
+    k=0
+    smoothed = np.zeros(len(Arr))
+    for i in range(NrIntervals):
+        smoothed[i*interval:(i+1)*interval] = np.mean(Arr[i*interval:(i+1)*interval])
+        k+=1
+    smoothed[k*interval:] = np.mean(Arr[k*interval:])
+    return smoothed
+    
+
+
+    

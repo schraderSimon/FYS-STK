@@ -10,12 +10,12 @@ np.random.seed(sum([ord(c) for c in "corona"]))
 k = 4
 n_bootstraps=5000
 
-nr_lambdas = 50
+nr_lambdas = 800
 min_lambda = -4
-lambda_val = np.logspace(min_lambda,1,nr_lambdas)
+lambda_val = np.logspace(min_lambda,5,nr_lambdas)
 
-mindeg = 4
-maxdeg=4
+mindeg = 6
+maxdeg = 6
 
 #set nr_lambdas to 1 and lambda_val interval to desired Lambda for best result
 csv_polydegree_comp = False
@@ -23,10 +23,10 @@ csv_polydegree_comp = False
 csv_Lambdaval_comp = True
 
 
-datapoints=100
+datapoints=90
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+0.1*np.random.normal(0,1, datapoints)
+z=FrankeFunction(x,y)+0.4*np.random.normal(0,1, datapoints)
 
 MSE_test_kfoldRidge_lambda = np.zeros(nr_lambdas)
 
@@ -71,6 +71,11 @@ if (csv_Lambdaval_comp):
     dict = {'Lambda value': lambda_val,'MSE Kfold-crossvalidation Ridge': MSE_test_kfoldRidge_lambda}
     df = pd.DataFrame(dict)
     df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/RidgeRegression_Lambda_error.csv')
+    MSE_test_kfoldRidge_lambda_smooth = ArraySmoother(MSE_test_kfoldRidge_lambda,10)
+    plt.plot(np.log10(lambda_val),MSE_test_kfoldRidge_lambda,'r--')
+    plt.plot(np.log10(lambda_val),MSE_test_kfoldRidge_lambda_smooth)
+    plt.show()
+
 
 
 
