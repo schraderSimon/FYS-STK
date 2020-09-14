@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage[margin=1in]{geometry}
+
+\title{Project 1 in FYS-STK4155}
+\author{Adrian Martinsen Kleven & Simon Elias Schrader }
+\date{Autumn 2020}
+\usepackage{hyperref}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\listoffigures
+\listoftables
+
+
+\clearpage
+\section{Abstract}
+In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=1.7]{universe}
+\caption{Some random picture.}
+\label{fig:universe}
+\end{figure}
+\section{Introduction}
+\section{Methods}
+\subsection{Linear Regression}
+The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. Due to the linearity, this is equal to find the fitting parameters $\bm{\beta}$ that represent the best linear fit of y to the input data $\bm{x}$. There are several approaches to define the best linear fit, and in this article, we looked at three different methods that define the best fit in a different way each. All methods have in common that they define a loss function, which describes the deviation from the fit to the real data, that needs to be minimized.
+\subsubsection{Ordinary Least Squares Regression}
+In Ordinary Least Square regression, 
+\subsubsection{Ridge Regression}
+\subsubsection{LASSO Regression}
+\subsection{Bias-variance trade-off}
+\subsection{Resampling Methods and Data Splitting}
+Here one might mention that the data has to be split in a test and a training set and why that should be done. 
+\subsubsection{Bootstrap method}
+The Bootstrap method is a method that can be used to calculate statistical quantities. The main idea is the following: Let n be the size of the training set $Z=(z_1,z_2,...z_n)$, where each $z_i$ contains p predictors and one target value, that is $z_i=(x_{i,1},x_{i,2},...x_{i,p},y_i)$. Now, n data points $z_i$ are drawn randomly from Z with replacement. This is done $B$ times, creating $B$ new sets $Z'_j$. We can now create a fitting model for each of the sets  $Z'_j$. For each of these data sets $Z'_j$, we can now calculate any variable $\hat\theta_j$ given the data. Now, the distribution of $\hat\theta_j$ can be used to estimate the distribution of $\theta$ and get values of interest, such as the mean value or the variance. In this article, Bootstrap is used to get information about the test MSE, variance and bias in order to evaluate the quality of the fit. This is done by using the B bootstrap sets $Z'_j$ to calculate the fitting parameters $\beta$ and calculate B fits to the test set. $\tilde{Y_j}$. From these B fits, we can then approximate the test MSE, variance and bias.\\
+TODO: Talk some more about the mathematical validity of Bootstrap.
+\subsubsection{K-fold Cross validation}
+\subsection{Fitting the Franke function}
+\subsection{Oslo data?}
+\section{Computational Implementation ? Possibly put this in methods?}
+\subsection{Scaling?}
+\section{Results}
+\section{Conclusion}
+
+\section{Conclusion}
+``I always thought something was fundamentally wrong with the universe'' \citep{hastie01statisticallearning}
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
