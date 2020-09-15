@@ -1,6 +1,8 @@
 import numpy as np
 import random as rn
 from sklearn.preprocessing import StandardScaler
+from sklearn import linear_model
+
 def bootstrap_bias(test,predict,n):
     bias=np.zeros(n)
     for i in range(n):
@@ -72,6 +74,11 @@ def LinearRegression(X_training,y_training):
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
+def LASSORegression(X_training,y_training,Lambda):
+    clf = linear_model.Lasso(alpha=Lambda)#,max_iter = 100000)
+    clf.fit(X_training,y_training)
+    print(clf.coef_)
+    return clf.coef_ #beta.
 
 #Returns the evaluation of a polynomial with the coefficients beta at point x
 def Coeff_to_Poly(x,beta):
@@ -175,7 +182,7 @@ def KfoldCross(X_matrix,k):
 """
 
 
-#Returns the training and testing indices for 
+#Returns the training and testing indices for
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
     #Creating an array of shuffled indices
@@ -252,6 +259,39 @@ def KCrossValMSE(X,z,k,scaling = True):
     print("MSE OLS")
     print(MSE_estimate)
     return MSE_estimate
+def KCrossValLASSOMSE(X,z,k,Lambda):
+    #getting indices from Kfoldcross
+    trainIndx, testIndx = KfoldCross(X,k)
+    #init empty MSE array
+    MSE_crossval = np.zeros(k)
+    MSE_crossval_OLS = np.zeros(k)
+    #redef scaler, with_mean = True
+    scaler = StandardScaler()
+    for i in range(k):
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+        z_training = z[trainIndx[i]]
+        z_testing = z[testIndx[i]]
+        z_training=z_training#-np.mean(z_training) NO NO SUBTRACTION EVEN THOUGH I DON'T KNOW WHY
+        z_testing=z_testing#-np.mean(z_training) NO NO SUBTRACTION
+        scaler.fit(X_training)
+        X_training_scaled = scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+        clf = linear_model.Lasso(alpha=Lambda,max_iter = 10000)
+        clf.fit(X_training_scaled,z_training)
+        z_training_fit=clf.predict(X_training_scaled)
+        z_testing_fit=clf.predict(X_testing_scaled)
+        #z_training_fit = X_training_scaled @ beta
+        #z_testing_fit = X_testing_scaled @ beta
+        OLS=linear_model.LinearRegression()
+        OLS.fit(X_training_scaled,z_training)
+        z_testing_fit_OLS=OLS.predict(X_testing_scaled)
+        MSE_crossval[i] = MSE(z_testing,z_testing_fit)
+        MSE_crossval_OLS[i]=MSE(z_testing,z_testing_fit_OLS)
+    MSE_estimate = np.mean(MSE_crossval)
+    MSE_estimate_OLS=np.mean(MSE_crossval_OLS)
+    print("LAMBDA: %f LASSO: %f OLS:%f"%(Lambda,MSE_estimate,MSE_estimate_OLS))
+    return MSE_estimate
 
 def KCrossValRidgeMSE(X,z,k,Lambda):
     #getting indices from Kfoldcross
@@ -259,21 +299,23 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     #init empty MSE array
     MSE_crossval = np.zeros(k)
     #redef scaler, with_mean = True
-    scaler = StandardScaler(with_mean=True)
+    scaler = StandardScaler(with_mean=False)
     for i in range(k):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]
 
         z_training = z[trainIndx[i]]
         z_testing = z[testIndx[i]]
+        z_training=z_training#-np.mean(z_training)
+        z_testing=z_testing#-np.mean(z_training)
         #Scale X
         scaler.fit(X_training)
         X_training_scaled = scaler.transform(X_training)
         X_testing_scaled = scaler.transform(X_testing)
         ######################## ASK ABOUT THE TWO LINES UNDERNEATH AND WHY INCLUDING THEM GIVES BETTER MSE THAN NOT
         #WHEN THE DATA IS SUPPOSED TO BE CENTERED.
-        X_training_scaled[:,0] = 1
-        X_testing_scaled[:,0] = 1
+        #X_training_scaled[:,0] = 1
+        #X_testing_scaled[:,0] = 1
         #perform Ridge regression
         beta, beta_variance = RidgeRegression(X_training_scaled,z_training,Lambda)
         #print(beta)
@@ -281,7 +323,7 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
         z_testing_fit = X_testing_scaled @ beta
         #calculate MSE for each fold
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
-    
+
     MSE_estimate = np.mean(MSE_crossval)
     #print("MSE Ridge")
     #print(MSE_estimate)
@@ -296,7 +338,3 @@ def ArraySmoother(Arr, interval):
         k+=1
     smoothed[k*interval:] = np.mean(Arr[k*interval:])
     return smoothed
-    
-
-
-    
