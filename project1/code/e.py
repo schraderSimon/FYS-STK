@@ -9,18 +9,18 @@ np.random.seed(sum([ord(c) for c in "corona"]))
 k = 4
 n_bootstraps=5000
 
-nr_lambdas = 300
-min_lambda = -10
-max_lambda=0
+nr_lambdas = 100
+min_lambda = -6
+max_lambda=-2
 lambda_val = np.logspace(min_lambda,0,nr_lambdas)
 
 mindeg = 5
 maxdeg = 5
 
-datapoints=300
+datapoints=200
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+0.1*np.random.normal(0,1, datapoints)
+z=FrankeFunction(x,y)+np.random.normal(0,0.1, datapoints)
 
 MSE_test_kfoldLASSO_lambda = np.zeros(nr_lambdas)
 
@@ -33,6 +33,6 @@ for deg in range(mindeg,maxdeg+1):
     for i in range(nr_lambdas):
         MSE_test_kfoldLASSO_lambda[i] = KCrossValLASSOMSE(X,z,k,lambda_val[i])
 MSE_test_kfoldLASSO_lambda_smooth = ArraySmoother(MSE_test_kfoldLASSO_lambda,10)
-plt.plot(np.log10(lambda_val),MSE_test_kfoldLASSO_lambda,'r--')
-plt.plot(np.log10(lambda_val),MSE_test_kfoldLASSO_lambda_smooth)
+plt.plot(np.log10(lambda_val),(MSE_test_kfoldLASSO_lambda),'r--')
+plt.plot(np.log10(lambda_val),(MSE_test_kfoldLASSO_lambda_smooth))
 plt.show()

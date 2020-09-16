@@ -4,6 +4,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
 
 def bootstrap_bias(test,predict,n):
+    """
+    Input: The target data test (1D array),
+    The prediction data predict (2D array of length n),
+    the length n, which is the amount of bootstraps.
+    Output: The averaged bias.
+    """
     bias=np.zeros(n)
     for i in range(n):
         bias[i]=np.mean((test-np.mean(predict[:,i]))**2)
@@ -13,6 +19,12 @@ def bootstrap_bias(test,predict,n):
     return np.mean(bias)
 
 def bootstrap_variance(test,predict,n):
+    """
+    Input: The target data test (1D array),
+    The prediction data predict (2D array of length n),
+    the length n, which is the amount of bootstraps.
+    Output: The averaged variance.
+    """
     variance=np.zeros(n)
     for i in range(n):
         variance[i]=np.mean((predict[:,i]-np.mean(predict[:,i]))**2)
@@ -23,6 +35,12 @@ def bootstrap_variance(test,predict,n):
     return np.mean(variance)
 
 def bootstrap_MSE(test,predict,n):
+    """
+    Input: The target data test (1D array),
+    The prediction data predict (2D array of length n),
+    the length n, which is the amount of bootstraps.
+    Output: The averaged MSE.
+    """
     error=np.zeros(n)
     for i in range(n):
         error[i]=np.mean((predict[:,i]-test)**2)
@@ -42,6 +60,10 @@ def resample(X,y):
     return X_resampled, y_resampled
 
 def R2(y_data,y_model):
+    """
+    Input: The original target data, the fitted data
+    Output: The R2 value.
+    """
     return 1- np.sum((y_data - y_model)**2)/np.sum((y_data-np.mean(y_data))**2)
 
 def MSE(y_data,y_model):
@@ -61,6 +83,9 @@ def DesignMatrix(x,polydgree):
 #IMPORTANT: This form of Ridge regression assumes that X_training has been centered
 
 def RidgeRegression(X_training,y_training,Lambda):
+    """Input: The design matrix X, and the targets Y and a value for LAMBDA
+        Output: The Ridge Regression beta.
+    """
     I = np.eye(len(X_training[0,:]))
     inverse_matrix = np.linalg.inv(X_training.T @ X_training+Lambda*I)
     beta_variance = np.diagonal(inverse_matrix)
@@ -70,11 +95,17 @@ def RidgeRegression(X_training,y_training,Lambda):
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
 #Returns the beta coeffs. and their variance
 def LinearRegression(X_training,y_training):
+    """Input: The design matrix X, and the targets Y
+        Output: The OLS beta.
+    """
     inverse_matrix = np.linalg.inv(X_training.T @ X_training)
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
 def LASSORegression(X_training,y_training,Lambda):
+    """Input: The design matrix X, and the targets Y and a value for LAMBDA
+        Output: The LASSO Regression beta. Uses scikit-learn.
+    """
     clf = linear_model.Lasso(alpha=Lambda)#,max_iter = 100000)
     clf.fit(X_training,y_training)
     print(clf.coef_)
@@ -89,6 +120,7 @@ def Coeff_to_Poly(x,beta):
 
 #The Franke Function.
 def FrankeFunction(x,y):
+    """The Franke Function"""
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
@@ -185,6 +217,13 @@ def KfoldCross(X_matrix,k):
 #Returns the training and testing indices for
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
+    """
+    For a given k and a given X,
+    this gives you a set of randomly chosen training and testing indeces
+    which are, of course, distinct. Used in K-Fold Cross validation.
+    Returns: 2 2D arrays of length k containing the relevant data.
+
+    """
     #Creating an array of shuffled indices
     shuffled_indexs = ShuffleIndex(X_matrix)
     #getting the length of the array
@@ -222,6 +261,14 @@ def KfoldCross(X_matrix,k):
     return training_indexes, testing_indexes
 
 def KCrossValMSE(X,z,k,scaling = True):
+    """
+    For a given design matrix X and an outputs z,
+    This function performs k-fold Cross Validation
+    and calculates the OLS fit for a given Lambda for each k.
+    The output is the estimate (average over k performs) for the mean square error.
+    Input: X (matrix), z (vector), k (integer), lambda (double)
+    Output: test error estimate (double)
+    """
     #getting indices from Kfoldcross
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
@@ -259,7 +306,16 @@ def KCrossValMSE(X,z,k,scaling = True):
     print("MSE OLS")
     print(MSE_estimate)
     return MSE_estimate
+
 def KCrossValLASSOMSE(X,z,k,Lambda):
+    """
+    For a given design matrix X and an outputs z,
+    This function performs k-fold Cross Validation
+    and calculates the LASSO fit for a given Lambda.
+    The output is the estimate for the mean square error.
+    Input: X (matrix), z (vector), k (integer), lambda (double)
+    Output: test error estimate (double)
+    """
     #getting indices from Kfoldcross
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
@@ -272,18 +328,16 @@ def KCrossValLASSOMSE(X,z,k,Lambda):
         X_testing = X[testIndx[i],:]
         z_training = z[trainIndx[i]]
         z_testing = z[testIndx[i]]
-        z_training=z_training#-np.mean(z_training) NO NO SUBTRACTION EVEN THOUGH I DON'T KNOW WHY
-        z_testing=z_testing#-np.mean(z_training) NO NO SUBTRACTION
+        z_training=z_training#-np.mean(z_training) #NO NO SUBTRACTION EVEN THOUGH I DON'T KNOW WHY
+        z_testing=z_testing#-np.mean(z_training) #NO NO SUBTRACTION
         scaler.fit(X_training)
-        X_training_scaled = scaler.transform(X_training)
-        X_testing_scaled = scaler.transform(X_testing)
-        clf = linear_model.Lasso(alpha=Lambda,max_iter = 10000)
+        X_training_scaled =X_training#scaler.transform(X_training)
+        X_testing_scaled = X_testing#scaler.transform(X_testing)
+        clf = linear_model.Lasso(fit_intercept=True,alpha=Lambda,max_iter = 50000)
         clf.fit(X_training_scaled,z_training)
         z_training_fit=clf.predict(X_training_scaled)
         z_testing_fit=clf.predict(X_testing_scaled)
-        #z_training_fit = X_training_scaled @ beta
-        #z_testing_fit = X_testing_scaled @ beta
-        OLS=linear_model.LinearRegression()
+        OLS=linear_model.LinearRegression(fit_intercept=True)
         OLS.fit(X_training_scaled,z_training)
         z_testing_fit_OLS=OLS.predict(X_testing_scaled)
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
@@ -294,6 +348,14 @@ def KCrossValLASSOMSE(X,z,k,Lambda):
     return MSE_estimate
 
 def KCrossValRidgeMSE(X,z,k,Lambda):
+    """
+    For a given design matrix X and an outputs z,
+    This function performs k-fold Cross Validation
+    and calculates the RIDGE fit for a given Lambda for each k.
+    The output is the estimate (average over k performs) for the mean square error.
+    Input: X (matrix), z (vector), k (integer), lambda (double)
+    Output: test error estimate (double)
+    """
     #getting indices from Kfoldcross
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
