@@ -27,7 +27,7 @@ csv_Lambdaval_comp = True
 datapoints=2000
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+np.random.normal(0,1, datapoints)
+z=FrankeFunction(x,y)+np.random.normal(0,0.5, datapoints)
 
 MSE_test_kfoldRidge_lambda = np.zeros(nr_lambdas)
 

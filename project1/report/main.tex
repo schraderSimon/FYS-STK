@@ -37,9 +37,60 @@ In this project, we use some good methods and some shitty methods to test how we
 \section{Introduction}
 \section{Methods}
 \subsection{Linear Regression}
-The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. Due to the linearity, this is equal to find the fitting parameters $\bm{\beta}$ that represent the best linear fit of y to the input data $\bm{x}$. There are several approaches to define the best linear fit, and in this article, we looked at three different methods that define the best fit in a different way each. All methods have in common that they define a loss function, which describes the deviation from the fit to the real data, that needs to be minimized.
+The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. \\
+We assume hence that each target variable $y_i$ has a functional dependence of the predictor variables:
+\begin{equation*}
+y_i= \tilde y_i+\epsilon_i=\beta_0 + \beta_1x_{i0} + \beta_2x_{i1}+...+\beta_px_{i(p-1)} + \epsilon_i
+\end{equation*}
+As this is true for all y, this can be written in matrix form:
+\begin{equation*}
+\bm{y}= \bm{X\beta} + \bm{\epsilon}
+\end{equation*}
+where $\bm{y}$, and $\bm{\epsilon}$ are vectors of length n,  $\bm{\beta}$ is of length p and $\bm{X}$ is a matrix of size $n*p$. X is called the design matrix.
+ We now want to find fitting parameters $\bm{\beta}$ that represent the best linear fit of y to the input data $\bm{x}$. Hence, we want the fit
+ \begin{equation*}
+ \bm{\tildey}= \bm{X\beta}
+ \end{equation*}
+ to be as close to the target data $\bm{y}$ as possible.
+  There are several approaches to define the best linear fit, and in this article, we looked at three different methods that define the best fit in a different way each. All methods have in common that they define a loss function, which describes the deviation from the fit to the real data, that needs to be minimized.
 \subsubsection{Ordinary Least Squares Regression}
-In Ordinary Least Square regression,
+In Ordinary Least Square regression, the loss function is defined as the following:
+\begin{equation*}
+C(\bm{\beta})= \frac{1}{n}\sum_{i=0}^n\left( y_i-\tilde y_i \right)^2
+=\frac{1}{n}(\bm{y}-\bm{\tilde y})(\bm{y}-\bm{\tilde y})^T=
+\frac{1}{n}(\bm{y}-\bm{X\beta})(\bm{y}-\bm{X\beta})^T
+\end{equation*}
+The solution minimizing this problem is found by deriving $C(\bm{\beta})$ with regards to each $\beta_i$ and setting each derivative equal to zero. Doing this, we end up with the following equation (in matrix notation)
+\begin{equation*}
+\frac{\partial C(\bm{\beta})}{\partial\bm{\beta}}=0=\bm{X^T}(\bm{y}-\bm{X\beta})
+\end{equation*}
+which gives us
+\begin{equation*}
+\bm{\beta}=(\bm{X}^T\bm{X})^{-1}\bm{X}^T\bm{y}
+\end{equation*}
+which can be solved when $(\bm{X}^T\bm{X})$ is invertible.
+
+Under the assumption that true data y is given as
+\begin{equation*}
+\bm{y}=f(\bm{x})+\bm{\epsilon}
+\end{equation*}
+where $\bm{\epsilon}$ follows a normal distribution $N(0,\sigma^2)$, information about the variance and the expectation value can be deduced. Assuming that $f(\bm{x})=\bm{X\beta}$, it can be shown that
+\begin{equation*}
+\mathbb{E}(y_i)=\bm{X_{i,*}\beta}
+\end{equation*}
+\begin{equation*}
+Var(y_i)=\sigma^2
+\end{equation*}
+
+where $\bm{X_{i,*}}$ is the i-th row of the design matrix.
+
+For $\beta$, it can be shown that
+\begin{equation*}
+\mathbb{E}(\bm{\beta})=\bm{\beta}
+\end{equation*}
+\begin{equation*}
+Var(\bm{\beta})=\sigma^2(\bm{X}^T\bm{X}})^{-1}
+\end{equation*}
 \subsubsection{Ridge Regression}
 \subsubsection{LASSO Regression}
 \subsection{Bias-variance trade-off}
@@ -52,7 +103,26 @@ TODO: Talk some more about the mathematical validity of Bootstrap.
 \subsection{Fitting the Franke function}
 \subsection{Oslo data?}
 \section{Computational Implementation ? Possibly put this in methods?}
+\subsection{Sampling Franke Function}
+The Franke Function is given by
+\begin{align*}
+f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}+\frac{3}{4}\exp{\left(-\frac{(9x+1)^2}{49}- \frac{(9y+1)}{10}\right)} \\
+&+\frac{1}{2}\exp{\left(-\frac{(9x-7)^2}{4} - \frac{(9y-3)^2}{4}\right)} -\frac{1}{5}\exp{\left(-(9x-4)^2 - (9y-7)^2\right) }.
+\end{align*}
+and serves as a test function to check how well the implemented methods beform.
+We sample randomly points $x_i$ and $y_i$ between 0 and 1 and calculate the target points
+\begin{equation*}
+z_i=f(x_i,y_i)+\epsilon_i
+\end{equation*}
+where $\epsilon_i$ follow a normal distribution with standard deviation $\sigma$.
+\subsection{The Design Matrix}
+The Design Matrix implemented is a 2D-version of the Vandermonde Matrix, hence, approximate $z_i$ as, for a given degree $k$
+\begin{equation*}
+\tilde z_i=\beta_0+\beta_1x_i+\beta_2y_i+\beta_3x_i^2++\beta_2x_iy_i+...+\beta_py_i^k
+\end{equation*}
+In the practical implementation, we "drop" $\beta_0$ by removing the first column from the Design Matrix, as our data is scaled.
 \subsection{Scaling?}
+The design matrix is scaled using Scikit-Learn's StandardScaler.
 \section{Results}
 \section{Conclusion}
 

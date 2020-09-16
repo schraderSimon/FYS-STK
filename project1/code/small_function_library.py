@@ -184,36 +184,6 @@ def ShuffleIndex(X_matrix):
         shuffled_indexs[i] = rand_index
         shuffled_indexs[rand_val] = current_index
     return shuffled_indexs
-
-#First attempt at K fold crossvalidation... for posterity
-"""
-def KfoldCross(X_matrix,k):
-    shuffled_indexs = ShuffleIndex(X_matrix)
-    list_length = len(shuffled_indexs)
-    partition_len = list_length//k
-    remainder = list_length % k
-    partitions = []
-    print(list_length)###############delete
-    print(remainder)#################delete
-    for i in range(k):
-        partitions.append(shuffled_indexs[i*partition_len:(i+1)*partition_len])
-        if (remainder > 1):
-            partitions[i].extend(shuffled_indexs[-remainder:-remainder+1])
-            remainder -= 1
-    partitions[-1].append(shuffled_indexs[-1])
-
-    testing_indexes = np.zeros(k)
-    training_indexes = np.zeros(k)
-    for i in range(k):
-        testing_indexes[i].extend(partitions[i])
-        for j in range(k):
-            if (j != i):
-                training_indexes[i].extend(partitions[j])
-    return training_indexes, testing_indexes
-
-"""
-
-
 #Returns the training and testing indices for
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
@@ -331,9 +301,9 @@ def KCrossValLASSOMSE(X,z,k,Lambda):
         z_training=z_training#-np.mean(z_training) #NO NO SUBTRACTION EVEN THOUGH I DON'T KNOW WHY
         z_testing=z_testing#-np.mean(z_training) #NO NO SUBTRACTION
         scaler.fit(X_training)
-        X_training_scaled =X_training#scaler.transform(X_training)
-        X_testing_scaled = X_testing#scaler.transform(X_testing)
-        clf = linear_model.Lasso(fit_intercept=True,alpha=Lambda,max_iter = 50000)
+        X_training_scaled =scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+        clf = linear_model.Lasso(fit_intercept=True,alpha=Lambda,tol=0.01,max_iter = 500000)
         clf.fit(X_training_scaled,z_training)
         z_training_fit=clf.predict(X_training_scaled)
         z_testing_fit=clf.predict(X_testing_scaled)
@@ -368,16 +338,12 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
 
         z_training = z[trainIndx[i]]
         z_testing = z[testIndx[i]]
-        z_training=z_training#-np.mean(z_training)
+        z_training=z_training#np.mean(z_training)
         z_testing=z_testing#-np.mean(z_training)
         #Scale X
         scaler.fit(X_training)
         X_training_scaled = scaler.transform(X_training)
         X_testing_scaled = scaler.transform(X_testing)
-        ######################## ASK ABOUT THE TWO LINES UNDERNEATH AND WHY INCLUDING THEM GIVES BETTER MSE THAN NOT
-        #WHEN THE DATA IS SUPPOSED TO BE CENTERED.
-        #X_training_scaled[:,0] = 1
-        #X_testing_scaled[:,0] = 1
         #perform Ridge regression
         beta, beta_variance = RidgeRegression(X_training_scaled,z_training,Lambda)
         #print(beta)
