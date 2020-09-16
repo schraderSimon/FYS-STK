@@ -3,10 +3,80 @@ from imageio import imread
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-terrain1 = imread("../data/Korea.tif")
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, Normalizer, RobustScaler,MinMaxScaler
+from small_function_library import *
+
+terrain = imread("../data/Korea.tif")
 plt.figure()
 plt.title("Terrain over Parts of Korea")
-plt.imshow(terrain1, cmap="gray")
+plt.imshow(terrain, cmap="gray")
 plt.xlabel("X")
 plt.ylabel("Y")
+plt.show()
+datapoints=50000
+xs=np.random.randint(len(terrain),size=datapoints)
+ys=np.random.randint(len(terrain[1]),size=datapoints)
+xy_array=np.column_stack((xs,ys))
+z=[]
+for x,y in xy_array:
+    z.append(terrain[x,y])
+z=np.array(z)
+print(np.shape(terrain))
+maxdeg=8
+n_bootstraps=100
+MSE_train=np.zeros(maxdeg)
+MSE_test=np.zeros(maxdeg)
+bias=np.zeros(maxdeg)
+variance=np.zeros(maxdeg)
+R2_train=np.zeros(maxdeg)
+R2_test=np.zeros(maxdeg)
+for deg in range(maxdeg,maxdeg+1):
+    X=DesignMatrix_deg2(xs,ys,deg,True)
+    #print(X)
+    #X_shuffled=X.copy()
+    #np.random.shuffle(X_shuffled)
+    #print(X_shuffled)
+    X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
+    z_train_scaled=z_train#-np.mean(z_train)
+    z_test_scaled=z_test#-np.mean(z_train)
+    #scaler=StandardScaler()
+    #scaler.fit(X_train)
+    X_train_scaled=X_train
+    X_test_scaled=X_test
+    #X_train_scaled=scaler.transform(X_train)
+    #X_test_scaled=scaler.transform(X_test)
+    beta, beta_variance = LinearRegression(X_train_scaled,z_train_scaled)
+    z_train_scaled_fit=X_train_scaled@beta
+    MSE_train[deg-1]+=(MSE(z_train_scaled,z_train_scaled_fit))
+    R2_train[deg-1]+=(R2(z_train_scaled,z_train_scaled_fit))
+    z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
+    for i in range(n_bootstraps):
+        X_b, z_b=resample(X_train_scaled,z_train_scaled)
+        beta, beta_variance = LinearRegression(X_b,z_b)
+        z_test_scaled_fit[:,i]=X_test_scaled @ beta
+    MSE_test[deg-1] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit,n_bootstraps)
+    bias[deg-1] = bootstrap_bias(z_test_scaled,z_test_scaled_fit,n_bootstraps)
+    variance[deg-1] = bootstrap_variance(z_test_scaled,z_test_scaled_fit,n_bootstraps)
+    print(f"Degree: {deg}")
+x=np.linspace(0,len(terrain),len(terrain),dtype=int)
+y=np.linspace(0,len(terrain),len(terrain),dtype=int)
+terrain_fit=np.zeros((len(y),len(x)))
+leny=len(y)
+lenx=len(x)
+print(np.shape(terrain_fit))
+x, y = np.meshgrid(x,y)
+x=x.ravel()
+y=y.ravel()
+X=DesignMatrix_deg2(x,y,deg,True)
+z=X @ beta
+print("z: ")
+print(np.shape(z))
+for i in range(lenx):
+    for j in range(leny):
+        terrain_fit[j,i]=z[i*leny+j]
+plt.imshow(terrain_fit, cmap="gray")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.savefig("Worst_Fit_ever.png")
 plt.show()
