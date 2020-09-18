@@ -244,7 +244,7 @@ def KCrossValMSE(X,z,k,scaling = True):
     #init empty MSE array
     MSE_crossval = np.zeros(k)
     #redef scaler, with_mean = True
-    scaler = StandardScaler(with_mean=True)
+    scaler = StandardScaler()
     for i in range(k):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]

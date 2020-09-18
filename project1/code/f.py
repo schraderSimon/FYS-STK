@@ -23,7 +23,7 @@ for x,y in xy_array:
     z.append(terrain[x,y])
 z=np.array(z)
 print(np.shape(terrain))
-maxdeg=8
+maxdeg=5
 n_bootstraps=100
 MSE_train=np.zeros(maxdeg)
 MSE_test=np.zeros(maxdeg)
@@ -32,20 +32,21 @@ variance=np.zeros(maxdeg)
 R2_train=np.zeros(maxdeg)
 R2_test=np.zeros(maxdeg)
 for deg in range(maxdeg,maxdeg+1):
-    X=DesignMatrix_deg2(xs,ys,deg,True)
+    X=DesignMatrix_deg2(xs,ys,deg)
     #print(X)
     #X_shuffled=X.copy()
     #np.random.shuffle(X_shuffled)
     #print(X_shuffled)
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
-    z_train_scaled=z_train#-np.mean(z_train)
-    z_test_scaled=z_test#-np.mean(z_train)
-    #scaler=StandardScaler()
-    #scaler.fit(X_train)
-    X_train_scaled=X_train
-    X_test_scaled=X_test
-    #X_train_scaled=scaler.transform(X_train)
-    #X_test_scaled=scaler.transform(X_test)
+    mean_val=np.mean(z_train)
+    z_train_scaled=z_train-mean_val
+    z_test_scaled=z_test-mean_val
+    scaler=StandardScaler()
+    scaler.fit(X_train)
+    X_train_scaled=scaler.transform(X_train)
+    X_test_scaled=scaler.transform(X_test)
+    #X_train_scaled=X_train
+    #X_test_scaled=X_test
     beta, beta_variance = LinearRegression(X_train_scaled,z_train_scaled)
     z_train_scaled_fit=X_train_scaled@beta
     MSE_train[deg-1]+=(MSE(z_train_scaled,z_train_scaled_fit))
@@ -68,8 +69,8 @@ print(np.shape(terrain_fit))
 x, y = np.meshgrid(x,y)
 x=x.ravel()
 y=y.ravel()
-X=DesignMatrix_deg2(x,y,deg,True)
-z=X @ beta
+X=scaler.transform(DesignMatrix_deg2(x,y,deg))
+z=X @ beta+mean_val
 print("z: ")
 print(np.shape(z))
 for i in range(lenx):

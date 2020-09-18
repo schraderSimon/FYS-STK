@@ -27,7 +27,7 @@ csv_Lambdaval_comp = True
 datapoints=2000
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+np.random.normal(0,0.5, datapoints)
+z=FrankeFunction(x,y)+np.random.normal(0,0.3, datapoints)
 
 MSE_test_kfoldRidge_lambda = np.zeros(nr_lambdas)
 
@@ -39,8 +39,8 @@ MSE_test_boot = np.zeros(maxdeg-mindeg +1)
 for deg in range(mindeg,maxdeg+1):
     X=DesignMatrix_deg2(x,y,deg)
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
-    z_train_scaled=z_train#-np.mean(z_train)
-    z_test_scaled=z_test#-np.mean(z_train)
+    z_train_scaled=z_train-np.mean(z_train)
+    z_test_scaled=z_test-np.mean(z_train)
     #scaler=StandardScaler()
     #scaler.fit(X_train)
     X_train_scaled=X_train
