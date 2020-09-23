@@ -3,7 +3,8 @@ import random as rn
 from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
 from numba import jit
-
+lasso_tol=0.01
+lasso_iterations=10*1e5
 def bootstrap_bias(test,predict,n):
     """
     Input: The target data test (1D array),
@@ -32,7 +33,6 @@ def bootstrap_variance(test,predict,n):
     variance=np.zeros(len(test))
     for i in range(len(test)):
         variance[i]=np.mean((predict[i,:]-np.mean(predict[i,:]))**2)
-    print("variance:", variance[i])
     return np.mean(variance)
 
 def bootstrap_MSE(test,predict,n):
@@ -45,7 +45,6 @@ def bootstrap_MSE(test,predict,n):
     error=np.zeros(n)
     for i in range(n):
         error[i]=np.mean((predict[:,i]-test)**2)
-    print("error: ",error[i])
     return np.mean(error)
 def resample(X,y):
     """
@@ -102,13 +101,12 @@ def LinearRegression(X_training,y_training):
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
-def LASSORegression(X_training,y_training,Lambda):
+def LASSORegression(X_training,y_training,Lambda,tol=lasso_tol,iter=lasso_iterations):
     """Input: The design matrix X, and the targets Y and a value for LAMBDA
         Output: The LASSO Regression beta. Uses scikit-learn.
     """
-    clf = linear_model.Lasso(alpha=Lambda)#,max_iter = 100000)
+    clf = linear_model.Lasso(fit_intercept=False,alpha=Lambda,tol=tol,max_iter = iter)
     clf.fit(X_training,y_training)
-    print(clf.coef_)
     return clf.coef_ #beta.
 
 #Returns the evaluation of a polynomial with the coefficients beta at point x
@@ -249,8 +247,10 @@ def KCrossValMSE(X,z,k,scaling = True):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]
 
-        z_training = z[trainIndx[i]]
-        z_testing = z[testIndx[i]]
+        z_trainings = z[trainIndx[i]]
+        z_testings = z[testIndx[i]]
+        z_training=z_trainings-np.mean(z_trainings)
+        z_testing=z_testings-np.mean(z_trainings)
         #If Scaling == True
         if (scaling):
             #Scale X
@@ -273,11 +273,9 @@ def KCrossValMSE(X,z,k,scaling = True):
 
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
     MSE_estimate = np.mean(MSE_crossval)
-    print("MSE OLS")
-    print(MSE_estimate)
     return MSE_estimate
 
-def KCrossValLASSOMSE(X,z,k,Lambda):
+def KCrossValLASSOMSE(X,z,k,Lambda,tol=lasso_tol,iter=lasso_iterations):
     """
     For a given design matrix X and an outputs z,
     This function performs k-fold Cross Validation
@@ -292,18 +290,20 @@ def KCrossValLASSOMSE(X,z,k,Lambda):
     MSE_crossval = np.zeros(k)
     MSE_crossval_OLS = np.zeros(k)
     #redef scaler, with_mean = True
-    scaler = StandardScaler()
     for i in range(k):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]
-        z_training = z[trainIndx[i]]
-        z_testing = z[testIndx[i]]
-        z_training=z_training#-np.mean(z_training) #NO NO SUBTRACTION EVEN THOUGH I DON'T KNOW WHY
-        z_testing=z_testing#-np.mean(z_training) #NO NO SUBTRACTION
+        z_trainings = z[trainIndx[i]]
+        z_testings = z[testIndx[i]]
+        z_training=z_trainings-np.mean(z_trainings)
+        z_testing=z_testings-np.mean(z_trainings)
+        scaler = StandardScaler()
         scaler.fit(X_training)
+        z_training=z_training#-np.mean(z_training)
+        z_testing=z_testing#-np.mean(z_training)
         X_training_scaled =scaler.transform(X_training)
         X_testing_scaled = scaler.transform(X_testing)
-        clf = linear_model.Lasso(fit_intercept=True,alpha=Lambda,tol=0.01,max_iter = 500000)
+        clf = clf = linear_model.Lasso(fit_intercept=False,alpha=Lambda,tol=tol,max_iter = iter)
         clf.fit(X_training_scaled,z_training)
         z_training_fit=clf.predict(X_training_scaled)
         z_testing_fit=clf.predict(X_testing_scaled)
@@ -314,8 +314,48 @@ def KCrossValLASSOMSE(X,z,k,Lambda):
         MSE_crossval_OLS[i]=MSE(z_testing,z_testing_fit_OLS)
     MSE_estimate = np.mean(MSE_crossval)
     MSE_estimate_OLS=np.mean(MSE_crossval_OLS)
-    print("LAMBDA: %f LASSO: %f OLS:%f"%(Lambda,MSE_estimate,MSE_estimate_OLS))
+    #print("LAMBDA: %f LASSO: %f OLS:%f"%(Lambda,MSE_estimate,MSE_estimate_OLS))
     return MSE_estimate
+def KCrossValOLSMSE(X,z,k):
+    """
+    For a given design matrix X and an outputs z,
+    This function performs k-fold Cross Validation
+    and calculates the OLS fit.
+    The output is the estimate (average over k performs) for the mean square error.
+    Input: X (matrix), z (vector), k (integer)
+    Output: test error estimate (double)
+    """
+    #getting indices from Kfoldcross
+    trainIndx, testIndx = KfoldCross(X,k)
+    #init empty MSE array
+    MSE_crossval = np.zeros(k)
+    #redef scaler, with_mean = True
+    scaler = StandardScaler()
+    for i in range(k):
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+
+        z_trainings = z[trainIndx[i]]
+        z_testings = z[testIndx[i]]
+        z_training=z_trainings-np.mean(z_trainings)
+        z_testing=z_testings-np.mean(z_trainings)
+        #Scale X
+        scaler.fit(X_training)
+        X_training_scaled = scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+        #perform Ridge regression
+        beta, beta_variance = LinearRegression(X_training_scaled,z_training)
+        #print(beta)
+        z_training_fit = X_training_scaled @ beta
+        z_testing_fit = X_testing_scaled @ beta
+        #calculate MSE for each fold
+        MSE_crossval[i] = MSE(z_testing,z_testing_fit)
+
+    MSE_estimate = np.mean(MSE_crossval)
+    #print("MSE Ridge")
+    #print(MSE_estimate)
+    return MSE_estimate
+
 
 def KCrossValRidgeMSE(X,z,k,Lambda):
     """
@@ -331,15 +371,15 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     #init empty MSE array
     MSE_crossval = np.zeros(k)
     #redef scaler, with_mean = True
-    scaler = StandardScaler(with_mean=False)
+    scaler = StandardScaler()
     for i in range(k):
         X_training = X[trainIndx[i],:]
         X_testing = X[testIndx[i],:]
 
-        z_training = z[trainIndx[i]]
-        z_testing = z[testIndx[i]]
-        z_training=z_training#np.mean(z_training)
-        z_testing=z_testing#-np.mean(z_training)
+        z_trainings = z[trainIndx[i]]
+        z_testings = z[testIndx[i]]
+        z_training=z_trainings-np.mean(z_trainings)
+        z_testing=z_testings-np.mean(z_trainings)
         #Scale X
         scaler.fit(X_training)
         X_training_scaled = scaler.transform(X_training)

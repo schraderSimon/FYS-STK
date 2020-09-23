@@ -4,13 +4,15 @@ from sklearn.preprocessing import StandardScaler, Normalizer, RobustScaler,MinMa
 from small_function_library import *
 import matplotlib.pyplot as plt
 
-#np.random.seed(sum([ord(c) for c in "corona"]))
-datapoints=300 #Nice data for (100,6) and (500,10), 0.1 random, corona
+np.random.seed(sum([ord(c) for c in "CORONA"]))
+method="OLS"
+datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-maxdeg=9
+maxdeg=10
 n_bootstraps=5000
-z=FrankeFunction(x,y)+np.random.normal(0,0.1, datapoints)
+sigma=0.05
+z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 MSE_train=np.zeros(maxdeg)
 MSE_test=np.zeros(maxdeg)
 bias=np.zeros(maxdeg)
@@ -47,11 +49,12 @@ for deg in range(1,maxdeg+1):
     print(f"Degree: {deg}")
 
 plt.xticks(np.arange(0, maxdeg+1, step=1))
+plt.title(r"Method: %s, $\sigma$=%.3f, datapoints: %d, bootstrap: %d"%(method,sigma,datapoints,n_bootstraps))
 plt.plot(range(1,maxdeg+1),MSE_train,label="MSE_train")
 plt.plot(range(1,maxdeg+1),MSE_test,label="MSE_test")
 plt.plot(range(1,maxdeg+1),variance,label="variance")
 plt.plot(range(1,maxdeg+1),bias,label=r"$bias^2$")
 plt.xlabel("Polynomial degree")
+plt.savefig("../figures/Bias_Variance_%s_.pdf"%(method))
 plt.legend()
-resample(X,z)
 plt.show()

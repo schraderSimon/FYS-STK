@@ -25,12 +25,12 @@ z=np.array(z)
 print(np.shape(terrain))
 maxdeg=20
 n_bootstraps=1000
-MSE_train=np.zeros(maxdeg)
-MSE_test=np.zeros(maxdeg)
-bias=np.zeros(maxdeg)
-variance=np.zeros(maxdeg)
-R2_train=np.zeros(maxdeg)
-R2_test=np.zeros(maxdeg)
+MSE_train_OLS=np.zeros(maxdeg)
+MSE_test_OLS=np.zeros(maxdeg)
+bias_OLS=np.zeros(maxdeg)
+variance_OLS=np.zeros(maxdeg)
+R2_train_OLS=np.zeros(maxdeg)
+R2_test_OLS=np.zeros(maxdeg)
 for deg in range(1,maxdeg+1):
     X=DesignMatrix_deg2(xs,ys,deg)
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)

@@ -10,7 +10,7 @@ np.random.seed(sum([ord(c) for c in "corona"]))
 k = 4
 n_bootstraps=5000
 
-nr_lambdas = 800
+nr_lambdas = 100
 min_lambda = -5
 max_lambda = 5
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
@@ -50,7 +50,7 @@ for deg in range(mindeg,maxdeg+1):
     beta, beta_variance = LinearRegression(X_train_scaled,z_train_scaled)
     z_train_scaled_fit=X_train_scaled @ beta
     z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
-    for i in range(1):
+    for i in range(n_bootstraps):
         X_b, z_b=resample(X_train_scaled,z_train_scaled)
         beta, beta_variance = LinearRegression(X_b,z_b)
         z_test_scaled_fit[:,i]=X_test_scaled @ beta

@@ -5,22 +5,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 #np.random.seed(sum([ord(c) for c in "corona"]))
 #np.random.seed(670)
+np.random.seed(sum([ord(c) for c in "CORONA"]))
+method="LASSO"
+datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
+x=np.random.uniform(0,1,datapoints)
+y=np.random.uniform(0,1,datapoints)
+maxdeg=10
+n_bootstraps=5000
+sigma=0.05
+z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 
 k = 4
-n_bootstraps=500
-
-nr_lambdas = 100
-min_lambda = -4
-max_lambda=-1
+nr_lambdas = 200
+min_lambda = -6
+max_lambda=6
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
 mindeg = 1
 maxdeg = 10
 
-datapoints=200
-x=np.random.uniform(0,1,datapoints)
-y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+np.random.normal(0,0.3, datapoints)
 
 MSE_test_kfoldLASSO_lambda = np.zeros(nr_lambdas)
 
@@ -44,7 +47,7 @@ for deg in range(mindeg,maxdeg+1):
     #X_test_scaled=X_test
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
-    MSE_test_kfoldLASSO[deg-mindeg] = KCrossValLASSOMSE(X,z,k,min_lambda)
+    #MSE_test_kfoldLASSO[deg-mindeg] = KCrossValLASSOMSE(X,z,k,min_lambda)
 
     """
     use K-Fold Cross validation to find optimal Lambda
@@ -74,11 +77,13 @@ plt.xlabel(r"$log_{10}(\lambda)$")
 plt.ylabel(r"MSE")
 plt.show()
 plt.xticks(np.arange(0, maxdeg+1, step=1))
-plt.title("LASSO")
+plt.title(r"Method: %s, $\sigma$=%.3f, datapoints: %d, bootstrap: %d"%(method,sigma,datapoints,n_bootstraps))
+
 plt.plot(range(1,maxdeg+1),MSE_train,label="MSE_train")
 plt.plot(range(1,maxdeg+1),MSE_test,label="MSE_test")
 plt.plot(range(1,maxdeg+1),variance,label="variance")
 plt.plot(range(1,maxdeg+1),bias,label=r"$bias^2$")
+plt.savefig("../figures/Bias_Variance_%s_.png"%(method))
 plt.xlabel("Polynomial degree")
 plt.legend()
 plt.show()
