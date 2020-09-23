@@ -12,10 +12,10 @@ np.random.seed(sum([ord(c) for c in "CORONA"]))
 datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-n_bootstraps=50
+n_bootstraps=1000
 sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
-nr_lambdas = 10
+nr_lambdas = 100
 min_lambda = -5
 max_lambda = 2
 mindeg = 1
@@ -61,12 +61,15 @@ for deg in range(mindeg,maxdeg+1):
         z_test_scaled_fit_LASSO[:,i]=X_test_scaled @ beta
         beta, beta_variance=RidgeRegression(X_b,z_b,ideal_lambda_RIGDE)
         z_test_scaled_fit_RIDGE[:,i]=X_test_scaled @ beta
+        if(i%100==0):
+            print(i)
     MSEBOOTOLS[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_OLS,n_bootstraps)
     MSEBOOTLASSO[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_LASSO,n_bootstraps)
     MSEBOOTRIDGE[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_RIDGE,n_bootstraps)
     MSEkfoldRIDGE[deg-mindeg] = KCrossValRidgeMSE(X,z,k,ideal_lambda_RIGDE)
     MSEkfoldLASSO[deg-mindeg] = KCrossValLASSOMSE(X,z,k,ideal_lambda_LASSO,lasso_tol,lasso_iterations)
     MSEkfoldOLS[deg-mindeg] = KCrossValOLSMSE(X,z,k)
+
 fig, (ax0, ax1) = plt.subplots(ncols=2,figsize=(20, 10))
 xticks=np.arange(0, maxdeg+1, step=1)
 x_axis=range(1,maxdeg+1)
@@ -83,8 +86,8 @@ ax1.set_xticks(xticks)
 ax1.set_xlabel("Polynomial degree")
 ax1.set_ylabel("MSE")
 ax1.set_ylim(0,0.05)
-ax1.plot(x_axis,MSEkfoldRIDGE,label="MSE_RIDGE_kfold")
 ax1.plot(x_axis,MSEkfoldOLS,label="MSE_OLS_kfold")
+ax1.plot(x_axis,MSEkfoldRIDGE,label="MSE_RIDGE_kfold")
 ax1.plot(x_axis,MSEkfoldLASSO,label="MSE_LASSO_kfold")
 print(MSEkfoldRIDGE)
 

@@ -20,3 +20,11 @@ Thuesday 8th 21:35
 	look. Also, it might be a problem if we're comparing the methods for smaller and smaller sample sizes,
 	like kfoldCross vs Bootstrap
 
+Wednesday 23rd
+- I wrote about the Bias-Variance tradeoff. Only the proof is left now. 
+- I finally fixed, for good this time, the bug with scaling. The problem was that in Python, I technically didn't copy the array, but created a new array object. This lead to some rather weird behaviour. Fixing that was surprisingly easy.
+- I plotted MSE for all 3 methods, both in the Korea picture and in the Franke Function, both K-Fold and "normal"
+- I found good parameters that give reasonable results in terms of LASSO. For the FRANKE function, sigma = 0.05 gives superb data, a lasso tolerance of 0.03, and 10^5 lasso iterations are good data, as well as 500 data points. I recommend using that for all future data. SEED: CORONA (just gives a "neat" function lol)
+- I finished a, d and e (I made a new file d2 because I didn't want to touch yours) creating plots for the bias-variance tradeoff. 
+- Later, I will start two programs at home that need to run over night (very many bootstraps). As I'm positive that my program does what it is supposed to, this will give nice "final" data. 
+- Code-wise, the only thing left, really, is the bias-variance-tradeoff for the picture for all three methods, and of course, create other plots we are interested in. I might start writing on the results part of the report tomorrow, maybe the weekend, maybe next week. And make test functions. And some annoying fine-tuning. But I think we're good in time!!
