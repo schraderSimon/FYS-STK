@@ -2,6 +2,7 @@ import numpy as np
 import random as rn
 from sklearn.preprocessing import StandardScaler
 from sklearn import linear_model
+from numba import jit
 
 def bootstrap_bias(test,predict,n):
     """
@@ -46,7 +47,6 @@ def bootstrap_MSE(test,predict,n):
         error[i]=np.mean((predict[:,i]-test)**2)
     print("error: ",error[i])
     return np.mean(error)
-
 def resample(X,y):
     """
     Input: Arrays X (actually a matrix), y of equal size
@@ -128,7 +128,7 @@ def FrankeFunction(x,y):
     return term1 + term2 + term3 + term4
 
 #Design Matrix for a 2D-polynomial.
-
+@jit
 def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
     """
     Input: x,y (created as meshgrids), the maximal polynomial degree, if the intercept should be included or not.
@@ -366,3 +366,36 @@ def ArraySmoother(Arr, interval):
         k+=1
     smoothed[k*interval:] = np.mean(Arr[k*interval:])
     return smoothed
+@jit
+def fit_func(beta,x,y,polydegree,mean,inverse_var,include_intercept=False):
+    adder=0 #The matrix dimension is increased by one if include_intercept is True
+    p=round((polydegree+1)*(polydegree+2)/2)-1 #The total amount of coefficients
+    if include_intercept:
+        p+=1
+        adder=1
+    func=np.zeros(p)
+    if include_intercept:
+        func[0]=1
+    func[0+adder]=(x-mean[0+adder])*inverse_var[0+adder] # Adds x on the first column
+    func[1+adder]=(y-mean[1+adder])*inverse_var[1+adder] # Adds y on the second column
+    count=2+adder
+    xpot=[x**j for j in range(polydegree+1)]
+    ypot=[y**j for j in range(polydegree+1)]
+    for i in range(2,polydegree+1):
+        for j in range(i+1):
+            func[count]=(xpot[j]*ypot[i-j]-mean[count])*inverse_var[count]
+            count+=1;
+    z=func @ beta
+    return z
+def fit_terrain(x,y,beta,scaler,mean_valz,degree=5):
+    mean=scaler.mean_
+    var=scaler.scale_
+    terrain_fit=np.zeros((len(y),len(x)))
+    leny=len(y)
+    lenx=len(x)
+    print(lenx, leny)
+    inverse_var=1/var
+    for i in range(lenx):
+        for j in range(leny):
+            terrain_fit[j][i]=fit_func(beta,y[j],x[i],degree,mean,inverse_var)+mean_valz
+    return terrain_fit

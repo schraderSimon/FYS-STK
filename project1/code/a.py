@@ -4,12 +4,12 @@ from sklearn.preprocessing import StandardScaler, Normalizer, RobustScaler,MinMa
 from small_function_library import *
 import matplotlib.pyplot as plt
 
-np.random.seed(sum([ord(c) for c in "corona"]))
+#np.random.seed(sum([ord(c) for c in "corona"]))
 datapoints=300 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-maxdeg=5
-n_bootstraps=1000
+maxdeg=9
+n_bootstraps=5000
 z=FrankeFunction(x,y)+np.random.normal(0,0.1, datapoints)
 MSE_train=np.zeros(maxdeg)
 MSE_test=np.zeros(maxdeg)
