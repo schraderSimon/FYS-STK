@@ -5,6 +5,11 @@ from sklearn import linear_model
 from numba import jit
 lasso_tol=0.01
 lasso_iterations=10*1e5
+def bootstrap_r2(test,predict,n):
+    r2=np.zeros(n)
+    for i in range(n):
+        r2[i]=R2(test,predict[:,i])
+    return np.mean(r2)
 def bootstrap_bias(test,predict,n):
     """
     Input: The target data test (1D array),
@@ -101,6 +106,13 @@ def LinearRegression(X_training,y_training):
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
+def OLS_SVD(X,y):
+    print(X.shape)
+    u, s, vh = np.linalg.svd(X, full_matrices=False)
+    print(u.shape, s.shape, vh.shape)
+
+    beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y
+    return beta
 def LASSORegression(X_training,y_training,Lambda,tol=lasso_tol,iter=lasso_iterations):
     """Input: The design matrix X, and the targets Y and a value for LAMBDA
         Output: The LASSO Regression beta. Uses scikit-learn.

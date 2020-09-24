@@ -41,8 +41,7 @@ for deg in range(mindeg,maxdeg+1):
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
     z_train_scaled=z_train-np.mean(z_train)
     z_test_scaled=z_test-np.mean(z_train)
-    #scaler=StandardScaler()
-    #scaler.fit(X_train)
+
     X_train_scaled=X_train
     X_test_scaled=X_test
     #X_train_scaled=scaler.transform(X_train)

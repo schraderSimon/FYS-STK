@@ -4,6 +4,8 @@ from small_function_library import *
 import matplotlib.pyplot as plt
 from imageio import imread
 from sklearn.model_selection import train_test_split
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 filename="Korea"
 terrain = imread("../data/Korea.tif")
 np.random.seed(sum([ord(c) for c in "CORONA"]))
@@ -16,14 +18,14 @@ for xv,yv in xy_array:
     z.append(terrain[xv,yv])
 z=np.array(z)
 print(np.shape(terrain))
-n_bootstraps=100
-nr_lambdas = 10
-min_lambda = -5
-max_lambda = 2
+n_bootstraps=10; n_bootstraps_lasso = int(0.1*n_bootstraps)
+nr_lambdas = 5
+min_lambda = -7
+max_lambda = 7
 mindeg = 1
 maxdeg=20
 lasso_tol=0.4
-lasso_iterations=1e4
+lasso_iterations=1e1
 k=5
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 MSEkfoldLASSO = np.zeros(maxdeg-mindeg +1)
@@ -34,6 +36,10 @@ MSEBOOTRIDGE = np.zeros(maxdeg-mindeg +1)
 MSEBOOTOLS = np.zeros(maxdeg-mindeg +1)
 MSE_test_kfoldLASSO_lambda=np.zeros(nr_lambdas)
 MSE_test_kfoldRidge_lambda=np.zeros(nr_lambdas)
+R2BOOTLASSO = np.zeros(maxdeg-mindeg +1)
+R2BOOTRIDGE = np.zeros(maxdeg-mindeg +1)
+R2BOOTOLS = np.zeros(maxdeg-mindeg +1)
+
 for deg in range(mindeg,maxdeg+1):
     print("Degree:"+str(deg))
     X=DesignMatrix_deg2(x,y,deg)
@@ -45,7 +51,7 @@ for deg in range(mindeg,maxdeg+1):
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
     z_test_scaled_fit_OLS=np.zeros((len(z_test),n_bootstraps))
-    z_test_scaled_fit_LASSO=np.zeros((len(z_test),n_bootstraps))
+    z_test_scaled_fit_LASSO=np.zeros((len(z_test),n_bootstraps_lasso))
     z_test_scaled_fit_RIDGE=np.zeros((len(z_test),n_bootstraps))
     for i in range(nr_lambdas):
         """Find the ideal lambda value using K-fold Cross validation"""
@@ -57,23 +63,39 @@ for deg in range(mindeg,maxdeg+1):
 
     for i in range(n_bootstraps):
         X_b, z_b=resample(X_train_scaled,z_train_scaled)
-        beta, beta_variance = LinearRegression(X_b,z_b)
+        beta = OLS_SVD(X_b,z_b)
+        print(beta)
+        #reg = LinearRegression(fit_intercept=False).fit(X_b, z_b)
+        #beta, betavar= LinearRegression(X_B,z_B)
         z_test_scaled_fit_OLS[:,i]=X_test_scaled @ beta
 
         beta, beta_variance=RidgeRegression(X_b,z_b,ideal_lambda_RIGDE)
         z_test_scaled_fit_RIDGE[:,i]=X_test_scaled @ beta
         print(i)
-        if i > 3:
+        if i >= n_bootstraps_lasso:
             continue
         beta= LASSORegression(X_b,z_b,ideal_lambda_LASSO,lasso_tol,lasso_iterations)
 
         z_test_scaled_fit_LASSO[:,i]=X_test_scaled @ beta
     MSEBOOTOLS[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_OLS,n_bootstraps)
-    MSEBOOTLASSO[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_LASSO,n_bootstraps)
+    MSEBOOTLASSO[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_LASSO,n_bootstraps_lasso)
     MSEBOOTRIDGE[deg-mindeg] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit_RIDGE,n_bootstraps)
     MSEkfoldRIDGE[deg-mindeg] = KCrossValRidgeMSE(X,z,k,ideal_lambda_RIGDE)
     MSEkfoldLASSO[deg-mindeg] = KCrossValLASSOMSE(X,z,k,ideal_lambda_LASSO,lasso_tol,lasso_iterations)
     MSEkfoldOLS[deg-mindeg] = KCrossValOLSMSE(X,z,k)
+    R2BOOTLASSO[deg-mindeg] = bootstrap_r2(z_test_scaled,z_test_scaled_fit_LASSO,n_bootstraps_lasso)
+    R2BOOTRIDGE[deg-mindeg] = bootstrap_r2(z_test_scaled,z_test_scaled_fit_RIDGE,n_bootstraps)
+    R2BOOTOLS[deg-mindeg] = bootstrap_r2(z_test_scaled,z_test_scaled_fit_OLS,n_bootstraps)
+
+write_csv=True
+if (write_csv):
+    #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
+    dict = {'nr_lambdas':max_lambda, 'min_lambda':min_lambda,'max_lambda':nr_lambdas,"k":k ,'datapoints':datapoints , 'n_bootstrap': n_bootstraps,'n_bootstraps_lasso': n_bootstraps}
+    dict["R2_lasso"]=R2BOOTLASSO; dict["R2_ridge"]=R2BOOTRIDGE; dict["R2_OLS"]=R2BOOTOLS
+    dict["MSEBOOTRIDGE"]=MSEBOOTRIDGE;dict["MSEBOOTLASSO"]=MSEBOOTLASSO;dict["MSEBOOTRIDGE"]=MSEBOOTOLS
+    dict["MSEkfoldRIDGE"]=MSEkfoldRIDGE;dict["MSEBOOTLASSO"]=MSEkfoldLASSO;dict["MSEBOOTRIDGE"]=MSEkfoldOLS
+    df = pd.DataFrame(dict)
+    df.to_csv('../csvData/MSE_data_%s.csv'%filename)
 fig, (ax0, ax1) = plt.subplots(ncols=2,figsize=(20, 10))
 xticks=np.arange(0, maxdeg+1, step=1)
 x_axis=range(1,maxdeg+1)
@@ -99,4 +121,16 @@ ax0.legend()
 ax1.legend()
 
 plt.savefig("../figures/MSE_different_methods_%s.pdf"%filename)
+plt.show()
+
+plt.title(r" datapoints: %d, bootstrap: %d"%(datapoints,n_bootstraps))
+plt.xticks(xticks)
+plt.xlabel("Polynomial degree")
+plt.ylabel("R2-score")
+plt.ylim(0,1)
+plt.plot(x_axis,R2BOOTOLS,label="OLS")
+plt.plot(x_axis,R2BOOTRIDGE,label="Ridge")
+plt.plot(x_axis,R2BOOTLASSO,label="Lasso")
+plt.legend()
+plt.savefig("../figures/R2_bootstrap_different_methods_%s.pdf"%filename)
 plt.show()

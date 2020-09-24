@@ -1,5 +1,6 @@
 import numpy as np
 from imageio import imread
+import imageio
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -8,6 +9,7 @@ from sklearn.preprocessing import StandardScaler, Normalizer, RobustScaler,MinMa
 from small_function_library import *
 
 terrain = imread("../data/Korea.tif")
+imageio.imwrite("korea.png",terrain)
 plt.figure()
 plt.title("Terrain over Parts of Korea")
 plt.imshow(terrain, cmap="gray")

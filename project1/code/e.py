@@ -7,21 +7,22 @@ import pandas as pd
 #np.random.seed(670)
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 method="LASSO"
+write_csv=True
 datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-n_bootstraps=10
+n_bootstraps=100
 sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 lasso_tol,lasso_iterations=0.03,1e5
 k = 4
-nr_lambdas = 50
+nr_lambdas = 70
 min_lambda = -5
 max_lambda=2
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
-mindeg = 1
-maxdeg = 15
+mindeg = 5
+maxdeg = 20
 
 
 MSE_test_kfoldLASSO_lambda = np.zeros(nr_lambdas)
@@ -83,6 +84,11 @@ plt.plot(range(1,maxdeg+1),MSE_test,label="MSE_test")
 plt.plot(range(1,maxdeg+1),variance,label="variance")
 plt.plot(range(1,maxdeg+1),bias,label=r"$bias^2$")
 plt.xlabel("Polynomial degree")
-plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
 plt.legend()
+plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
+if (write_csv):
+    #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
+    dict = {'nr_lambdas':max_lambda, 'min_lambda':min_lambda,'max_lambda':nr_lambdas,'sigma':sigma ,'datapoints':datapoints , 'n_bootstrap': n_bootstraps, 'train_MSE':MSE_train, 'test_MSE': MSE_test, 'bias':bias, 'variance':variance}
+    df = pd.DataFrame(dict)
+    df.to_csv('../csvData/Lasso_data.csv')
 plt.show()

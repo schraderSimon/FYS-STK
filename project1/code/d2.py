@@ -10,17 +10,17 @@ method="RIDGE"
 datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-n_bootstraps=5
+n_bootstraps=1000
 sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 k = 4
-nr_lambdas = 200
+nr_lambdas = 120
 min_lambda = -6
 max_lambda=6
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
 mindeg = 1
-maxdeg = 15
+maxdeg = 20
 
 
 MSE_test_kfoldRidge_lambda = np.zeros(nr_lambdas)
@@ -81,6 +81,12 @@ plt.plot(range(1,maxdeg+1),MSE_test,label="MSE_test")
 plt.plot(range(1,maxdeg+1),variance,label="variance")
 plt.plot(range(1,maxdeg+1),bias,label=r"$bias^2$")
 plt.xlabel("Polynomial degree")
-plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
 plt.legend()
+plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
+write_csv=True
+if (write_csv):
+    #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
+    dict = {'nr_lambdas':max_lambda, 'min_lambda':min_lambda,'max_lambda':nr_lambdas,'sigma':sigma ,'datapoints':datapoints , 'n_bootstrap': n_bootstraps, 'train_MSE':MSE_train, 'test_MSE': MSE_test, 'bias':bias, 'variance':variance}
+    df = pd.DataFrame(dict)
+    df.to_csv('../csvData/Ridge_data.csv')
 plt.show()
