@@ -16,12 +16,12 @@ sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 lasso_tol,lasso_iterations=0.03,1e5
 k = 4
-nr_lambdas = 70
+nr_lambdas = 80
 min_lambda = -5
-max_lambda=2
+max_lambda=3
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
-mindeg = 5
+mindeg = 1
 maxdeg = 20
 
 

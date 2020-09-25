@@ -9,7 +9,7 @@ from sklearn.linear_model import LinearRegression
 filename="Korea"
 terrain = imread("../data/Korea.tif")
 np.random.seed(sum([ord(c) for c in "CORONA"]))
-datapoints=50000
+datapoints=5000
 x=np.random.randint(len(terrain),size=datapoints)
 y=np.random.randint(len(terrain[1]),size=datapoints)
 xy_array=np.column_stack((x,y))
@@ -17,14 +17,13 @@ z=[]
 for xv,yv in xy_array:
     z.append(terrain[xv,yv])
 z=np.array(z)
-print(np.shape(terrain))
-n_bootstraps=10; n_bootstraps_lasso = int(0.1*n_bootstraps)
-nr_lambdas = 5
-min_lambda = -7
-max_lambda = 7
+n_bootstraps=20; n_bootstraps_lasso = int(0.1*n_bootstraps)
+nr_lambdas = 36
+min_lambda = -9
+max_lambda = 9
 mindeg = 1
-maxdeg=20
-lasso_tol=0.4
+maxdeg=25
+lasso_tol=0.4 #
 lasso_iterations=1e1
 k=5
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)

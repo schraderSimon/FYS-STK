@@ -85,8 +85,8 @@ def DesignMatrix(x,polydgree):
 #  the lambda coefficient, and the degree of the approximating polynomial.
 #Returns the beta coeffs. and their variance
 #IMPORTANT: This form of Ridge regression assumes that X_training has been centered
-
 def RidgeRegression(X_training,y_training,Lambda):
+
     """Input: The design matrix X, and the targets Y and a value for LAMBDA
         Output: The Ridge Regression beta.
     """
@@ -94,8 +94,13 @@ def RidgeRegression(X_training,y_training,Lambda):
     inverse_matrix = np.linalg.inv(X_training.T @ X_training+Lambda*I)
     beta_variance = np.diagonal(inverse_matrix)
     beta = inverse_matrix @ X_training.T @ y_training
+    #return beta, beta_variance
+    u, s, vh = np.linalg.svd(X_training, full_matrices=False)
+    smat=np.zeros((vh.shape[0],u.shape[1]))
+    for i in range(len(s)):
+        smat[i][i]=s[i]
+    beta= vh.T @ (np.linalg.inv(smat.T@smat+(I*Lambda)) @ smat.T) @ u.T @ y_training
     return beta, beta_variance
-
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
 #Returns the beta coeffs. and their variance
 def LinearRegression(X_training,y_training):
@@ -104,13 +109,12 @@ def LinearRegression(X_training,y_training):
     """
     inverse_matrix = np.linalg.inv(X_training.T @ X_training)
     beta_variance = np.diagonal(inverse_matrix)
-    beta = inverse_matrix @ X_training.T @ y_training
+    u, s, vh = np.linalg.svd(X_training, full_matrices=False)
+    beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y_training
+    #beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
 def OLS_SVD(X,y):
-    print(X.shape)
     u, s, vh = np.linalg.svd(X, full_matrices=False)
-    print(u.shape, s.shape, vh.shape)
-
     beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y
     return beta
 def LASSORegression(X_training,y_training,Lambda,tol=lasso_tol,iter=lasso_iterations):
