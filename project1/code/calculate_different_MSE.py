@@ -12,7 +12,7 @@ np.random.seed(sum([ord(c) for c in "CORONA"]))
 datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-n_bootstraps=1000
+n_bootstraps=3000
 n_bootstraps_lasso=100
 sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)

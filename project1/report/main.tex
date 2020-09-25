@@ -15,6 +15,7 @@
 
 \usepackage{natbib}
 \usepackage{graphicx}
+\graphicspath{{../figures/presentable_data/}} %Setting the graphicspath
 \begin{document}
 
 \maketitle
@@ -68,7 +69,15 @@ which gives us
 \begin{equation*}
 \bm{\beta}=(\bm{X}^T\bm{X})^{-1}\bm{X}^T\bm{y}
 \end{equation*}
-which can be solved when $(\bm{X}^T\bm{X})$ is invertible.
+which can be solved when $(\bm{X}^T\bm{X})$ is invertible. In the case of strongly correlated data and large matrices, There might be issues in inverting $(\bm{X}^T\bm{X})$ due to the matrix being singular. Also, for very large matrices, there might be issues caused by the fact that many mathematical operations can introduce a numerical error. Hence, an equivalent, but more stable way to implement the solution for $\bm{\beta}$ is to use Singular Value Decomposition (SVD). As every matrix has a SVD decomposition, we can write
+\begin{equation}\label{SVD_OLS}
+\begin{split}\bm{\beta} & =\left(\bm{X}^T\bm{X}\right)^{-1}\bm{X}^T\bm{y}\\
+& = \left(\bm{V}\bm{D}^T\bm{U}^T\bm{U}\bm{D}\bm{V}^T\right)^{-1}\bm{V}\bm{D}^T\bm{U}^T\bm{y}\\
+& = \left(\bm{V}\bm{D}^T\bm{I}_p\bm{D}\bm{V}^T\right)^{-1}\bm{V}\bm{D}^T\bm{U}^T\bm{y}\\
+& = \left(\bm{V}\bm{D}^2\bm{V}^T\right)^{-1}\bm{V}\bm{D}^T\bm{U}^T\bm{y}\\
+& = \bm{V}\bm{D}^{-2}\bm{V}^T\bm{V}\bm{D}^T\bm{U}^T\bm{y}\\
+& = \bm{V}\bm{D}^{-1}\bm{U}^T\bm{y}\end{split}
+\end{equation}.
 
 Under the assumption that true data y is given as
 \begin{equation*}
@@ -149,12 +158,43 @@ The design matrix is scaled using Scikit-Learn's StandardScaler.
 \section{Results}
 \subsection{Error comparision}
 \subsubsection{Franke Function}
-As excpected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures XXX and XXX, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
+\caption{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\label{fig:LASSO_Bias_Variance}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{R2_different_methods_Franke.pdf}
+\caption{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\label{fig:LASSO_Bias_Variance}
+\end{figure}
+
+As excpected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures XXX and XXX, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. The large deviation between LASSO and OLS is due to the aforementioned error.
 \subsubsection{Map data}
 \subsection{Bias-Variance tradeoff}
 
 \subsubsection{Franke Function}
-Figures XXX, XXX and XXX show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure XXX on page XXX in HASTIE a lot. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Bias_Variance_LASSO.pdf}
+\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using LASSO regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\label{fig:LASSO_Bias_Variance}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Bias_Variance_OLS.pdf}
+\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using OLS regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\label{fig:Bias_Variance}
+\end{figure}\end{equation}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{Bias_Variance_RIDGE.pdf}
+\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using Ridge regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\label{fig:Ridge_Bias_Variance}
+\end{figure}
+Figures XXX, XXX and XXX show the MSE, the Training-MSE, the Variance, and the bias for the Franke Functio. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure XXX on page XXX in HASTIE a lot. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitely reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
 \subsubsection{Map data}
 
 \section{Conclusion}

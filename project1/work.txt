@@ -28,3 +28,12 @@ Wednesday 23rd
 - I finished a, d and e (I made a new file d2 because I didn't want to touch yours) creating plots for the bias-variance tradeoff. 
 - Later, I will start two programs at home that need to run over night (very many bootstraps). As I'm positive that my program does what it is supposed to, this will give nice "final" data. 
 - Code-wise, the only thing left, really, is the bias-variance-tradeoff for the picture for all three methods, and of course, create other plots we are interested in. I might start writing on the results part of the report tomorrow, maybe the weekend, maybe next week. And make test functions. And some annoying fine-tuning. But I think we're good in time!!
+
+Friday 25th
+All mandatory analysis for the Franke function is done, EXCEPT for the variance of the parameters. I would love you if you did that and put it in the result part. 
+Other things missing:
+- Different values for k in Crossfold. Only analysing for OLS should be enough here.
+- The ideal lambda parameter. You started on that
+- The same thing for the geographic data. I have already done a lot here, so the bias-variance-tradeoff here is simply a "rip off" of the stuff I already implemented. An error analysis for the three methods file is already created, it only needs to be run over night one day. I might do that on Saturday -> Sunday (comments on that, please!).
+- Write more in the theory and methods part
+I think we're good. :) 

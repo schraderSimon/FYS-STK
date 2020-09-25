@@ -6,6 +6,11 @@ from numba import jit
 lasso_tol=0.01
 lasso_iterations=10*1e5
 def bootstrap_r2(test,predict,n):
+    """Input: The target data test (1D array),
+    The prediction data predict (2D array of length n),
+    the length n, which is the amount of bootstraps.
+    Output: The averaged R2-value.
+    """
     r2=np.zeros(n)
     for i in range(n):
         r2[i]=R2(test,predict[:,i])

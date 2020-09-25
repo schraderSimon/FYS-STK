@@ -9,7 +9,7 @@ method="OLS"
 datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-maxdeg=12
+maxdeg=11
 n_bootstraps=10000
 sigma=0.05
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
@@ -52,8 +52,8 @@ plt.plot(range(1,maxdeg+1),MSE_test,label="MSE_test")
 plt.plot(range(1,maxdeg+1),variance,label="variance")
 plt.plot(range(1,maxdeg+1),bias,label=r"$bias^2$")
 plt.xlabel("Polynomial degree")
-plt.savefig("../figures/Bias_Variance_%s_.pdf"%(method))
 plt.legend()
+plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
 write_csv=True
 if (write_csv):
     #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
