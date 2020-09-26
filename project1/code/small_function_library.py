@@ -108,6 +108,7 @@ def RidgeRegression(X_training,y_training,Lambda):
     return beta, beta_variance
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
 #Returns the beta coeffs. and their variance
+
 def LinearRegression(X_training,y_training):
     """Input: The design matrix X, and the targets Y
         Output: The OLS beta.
@@ -337,6 +338,7 @@ def KCrossValLASSOMSE(X,z,k,Lambda,tol=lasso_tol,iter=lasso_iterations):
     MSE_estimate_OLS=np.mean(MSE_crossval_OLS)
     #print("LAMBDA: %f LASSO: %f OLS:%f"%(Lambda,MSE_estimate,MSE_estimate_OLS))
     return MSE_estimate
+
 def KCrossValOLSMSE(X,z,k):
     """
     For a given design matrix X and an outputs z,

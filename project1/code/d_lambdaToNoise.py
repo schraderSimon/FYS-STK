@@ -8,9 +8,9 @@ import pandas as pd
 
 k = 4
 
-nr_lambdas = 300
+nr_lambdas = 200
 min_lambda = -3
-lambda_val = np.logspace(min_lambda,7,nr_lambdas)
+lambda_val = np.logspace(min_lambda,1,nr_lambdas)
 
 deg = 6
 
@@ -45,7 +45,7 @@ for i in range(len(min_lambda)):
 
 plt.plot(function_noise,np.log10(min_lambda))
 plt.xlabel("Function noise")
-plt.ylabel("Log10(Lambda) of minimum MSE")
+plt.ylabel('$\log_{10}(\lambda)$'+' of minimum MSE')
 plt.title("The lambda value resulting in the smalles MSE as a function of the noise coefficient")
 plt.show()
 
