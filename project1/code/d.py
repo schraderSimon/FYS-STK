@@ -10,18 +10,18 @@ np.random.seed(sum([ord(c) for c in "corona"]))
 k = 4
 n_bootstraps=5000
 
-nr_lambdas = 100
-min_lambda = -5
-max_lambda = 5
+nr_lambdas = 1
+min_lambda = -3
+max_lambda = -3
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
-mindeg = 6
-maxdeg = 6
+mindeg = 1
+maxdeg = 14
 
 #set nr_lambdas to 1 and lambda_val interval to desired Lambda for best result
-csv_polydegree_comp = False
+csv_polydegree_comp = True
 #set mindeg, maxdeg to a zero degree difference at the polydegree of choice for best output
-csv_Lambdaval_comp = True
+csv_Lambdaval_comp = False
 
 
 datapoints=2000
@@ -64,16 +64,14 @@ if (csv_polydegree_comp):
     #OUTPUTS CSV FILE CONTAINING MSE COMPARISONS BETWEEN BOOTSTRAP, KFOLD-OLS AND KFOLD-RIDGE OVER A SPAN OF POLYNOMIAL DEGREES (SAMPLE TYPE 1)
     dict = {'polynomial degree': list(range(mindeg,maxdeg +1)),'MSE Bootstrap': MSE_test_boot, 'MSE Kfold-crossvalidation': MSE_test_kfold,'MSE Kfold-crossvalidation Ridge': MSE_test_kfoldRidge}
     df = pd.DataFrame(dict)
-    df.to_csv('../csvData/KfoldRidge_polydegree_comparison_error.csv')
+    df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/KfoldRidge_polydegree_comparison_error.csv')
 
 if (csv_Lambdaval_comp):
     #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
     dict = {'Lambda value': lambda_val,'MSE Kfold-crossvalidation Ridge': MSE_test_kfoldRidge_lambda}
     df = pd.DataFrame(dict)
     df.to_csv('../csvData/RidgeRegression_Lambda_error.csv')
-    MSE_test_kfoldRidge_lambda_smooth = ArraySmoother(MSE_test_kfoldRidge_lambda,10)
-    plt.plot(np.log10(lambda_val),MSE_test_kfoldRidge_lambda,'r--')
-    plt.plot(np.log10(lambda_val),MSE_test_kfoldRidge_lambda_smooth)
+    plt.plot(np.log10(lambda_val),MSE_test_kfoldRidge_lambda)
     plt.show()
 
 
