@@ -101,9 +101,24 @@ For $\beta$, it can be shown that
 Var(\bm{\beta})=\sigma^2(\bm{X}^T\bm{X}})^{-1}
 \end{equation*}
 \subsubsection{Ridge Regression}
+The above mentioned problems with OLS regression, namely those of correlated data and near singular matrices, can be amended by implementing ridge regression. This is done by introducing the regularization parameter $ \lambda$ in the cost function:
+\begin{equation*}
+    C(\boldsymbol{X},\boldsymbol{\beta})=\frac{1}{n}\left\{(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})^T(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})\right\}+\lambda\boldsymbol{\beta}^T\boldsymbol{\beta}
+\end{equation*}
+effectively imposing a penalty on the size of $\boldsymbol{\beta}$. This has the effect of decreasing the variance of the parameters $\beta$, and thereby reducing the impact of overfitting.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
+
+\begin{equation*}
+    \boldsymbol{\beta}^{\mathrm{Ridge}} = \left(\boldsymbol{X}^T\boldsymbol{X}+\lambda\boldsymbol{I}\right)^{-1}\boldsymbol{X}^T\boldsymbol{y}.
+\end{equation*}
+Where as before the matrix $\boldsymbol{X}^T\boldsymbol{X}$ could have been singular, by adding a non- zero, positive value to the diagonal, the eigenvalues become positive definite ensuring that the matrix is invertible.
 \subsubsection{LASSO Regression}
+As with ridge, LASSO regression implements a new component to the cost function. Only, in this case the penalty is proportional to the L1- norm $\vert\vert \boldsymbol{\beta}\vert\vert$:
+\begin{equation*}
+    C(\boldsymbol{X},\boldsymbol{\beta})=\frac{1}{n}\left\{(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})^T(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})\right\}+\lambda\vert\vert \boldsymbol{\beta}\vert\vert.
+\end{equation*}
+One of the problems with ridge regression is that rather than eliminating covariant features, it will tend to shrink parameters, reducing their influence but not removing them. This is due to the behaviour of the squaring term in the L2- norm, which penalizes few large numbers more than many small numbers. For example, $\vert\vert[\beta_1,\beta_2]\vert\vert_2 \leq \vert\vert[\beta_1+\beta_2,0]\vert\vert_2$. Whereas in LASSO, the area of the L1- norm in the parameter space is more likely to intersect the least square loss function along the orthogonal axes in the paramater space, along which, at least one of the parameters are zero.
 \subsection{Resampling Methods and Data Splitting}
-In order to get an approximate estimate of the quality of a fit, it is neccessary that the fit is tested on a set that it has not been trained on. As the training set determines the parameters $\bm{\beta}$, we need a set from the same distribution as the training set, which is different from the training set. For that reason, the full data set of predictors and targets is split into a test set and a training set. The test usually conatins $20-25\%$ of the full set, while the training set contains $75-80\%$. It is also possible to use a further validation set to do a final estimate using data that has never been "seen" by the programmer or the code, however, this was not implemented in this article.
+In order to get an approximate estimate of the quality of a fit, it is necessary that the fit is tested on a set that it has not been trained on. As the training set determines the parameters $\bm{\beta}$, we need a set from the same distribution as the training set, which is different from the training set. For that reason, the full data set of predictors and targets is split into a test set and a training set. The test usually contains $20-25\%$ of the full set, while the training set contains $75-80\%$. It is also possible to use a further validation set to do a final estimate using data that has never been "seen" by the programmer or the code, however, this was not implemented in this article.
 \subsection{Bias-variance relationship}
 In order to evaluate the quality of a fit, it is customary to evaluate the Mean Square Error (MSE) of the test data to the prediction. The Mean Square Error is defined as
 \begin{equation*}
@@ -132,7 +147,7 @@ TODO: Talk some more about the mathematical validity of Bootstrap.
 \subsection{Korea Data}
 \section{Computational Implementation}
 \subsection{Finding the ideal parameter $\lambda$}
-In order to find the ideal parameter $\lambda$ for both LASSO and Ridge Regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
+In order to find the ideal parameter $\lambda$ for both LASSO and Ridge Regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
 \subsection{Error in LASSO-Regression}
 As there is no way to find the parameters $\bm{beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$. We observed that decreasing the tolerance to 0.01 lead to no convergence even at $10^5$ iterations. Similarly, we used XXX as tolerance at $10^5$ maximum iterations for fitting the country data. As this is very time-consuming, we found it impossible to find the ideal parameters $\bm{beta}$ for LASSO-Regression. Each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
 \subsection{Sampling Franke Function}
@@ -156,22 +171,22 @@ In the practical implementation, we "drop" $\beta_0$ by removing the first colum
 \subsection{Scaling?}
 The design matrix is scaled using Scikit-Learn's StandardScaler.
 \section{Results}
-\subsection{Error comparision}
+\subsection{Error comparison}
 \subsubsection{Franke Function}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
-\caption{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
 \label{fig:LASSO_Bias_Variance}
 \end{figure}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{R2_different_methods_Franke.pdf}
-\caption{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\caption[Test $R^2$-value for LASSO, Rigde and OLS regression]{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
 \label{fig:LASSO_Bias_Variance}
 \end{figure}
 
-As excpected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures XXX and XXX, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. The large deviation between LASSO and OLS is due to the aforementioned error.
+As expected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures XXX and XXX, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. The large deviation between LASSO and OLS is due to the aforementioned error.
 \subsubsection{Map data}
 \subsection{Bias-Variance tradeoff}
 
@@ -179,22 +194,22 @@ As excpected from the theory, increasing the model complexity lead to a decrease
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{Bias_Variance_LASSO.pdf}
-\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using LASSO regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\caption[Bias, Variance, MSE & training MSE as a function of the polynomial degree using LASSO regression]{Bias, Variance, MSE & training MSE as a function of the polynomial degree using LASSO regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:LASSO_Bias_Variance}
 \end{figure}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{Bias_Variance_OLS.pdf}
-\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using OLS regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\caption[Bias, Variance, MSE & training MSE as a function of the polynomial degree using OLS regression]{Bias, Variance, MSE & training MSE as a function of the polynomial degree using OLS regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:Bias_Variance}
-\end{figure}\end{equation}
+\end{figure}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{Bias_Variance_RIDGE.pdf}
-\caption{Bias, Variance, MSE & training MSE as a function of the polynomial degree using Ridge regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\caption[Bias, Variance, MSE & training MSE as a function of the polynomial degree using Ridge regression]{Bias, Variance, MSE & training MSE as a function of the polynomial degree using Ridge regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:Ridge_Bias_Variance}
 \end{figure}
-Figures XXX, XXX and XXX show the MSE, the Training-MSE, the Variance, and the bias for the Franke Functio. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure XXX on page XXX in HASTIE a lot. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitely reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
+Figures XXX, XXX and XXX show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure XXX on page XXX in HASTIE a lot. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
 \subsubsection{Map data}
 
 \section{Conclusion}
