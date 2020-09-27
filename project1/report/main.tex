@@ -3,6 +3,14 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,      
+    urlcolor=cyan,
+    citecolor=black,
+}
 
 \usepackage{tikz}
 \usetikzlibrary{calc,patterns,angles,quotes,shapes.geometric, arrows}
@@ -34,15 +42,19 @@
 
 \clearpage
 \section{Abstract}
-In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
 
-\begin{figure}[H]
-\centering
-\includegraphics[scale=1.7]{universe}
-\caption{Some random picture.}
-\label{fig:universe}
-\end{figure}
+%In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
+
+%\begin{figure}[H]
+%\centering
+%\includegraphics[scale=1.7]{universe}
+%\caption{Some random picture.}
+%\label{fig:universe}
+%\end{figure}
+
+
 \section{Introduction}
+The purpose of this article is to explore three different linear regression algorithms, their utility, application and some of the theory behind them. These are Ordinary Least Squares (OLS), Ridge regression and LASSO regression. These methods are tested on a model dataset constructed using the Franke function \eqref{FrankeFunction}, then later applied to digital terrain data over South Korea in an attempt to accurately recreate the image. We explore the two resampling techniques K- fold cross validation and Bootstrapping. Studying the bias- variance trade off in model selection. Resampling becomes especially useful when evaluating the digital terrain data, with its limited resolution.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}
 \section{Methods}
 \subsection{Linear Regression}
 The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. \\
@@ -159,7 +171,7 @@ An important observation when fitting the data is that the Bias decreases as the
 The Bootstrap method is a method that can be used to calculate statistical quantities. The main idea is the following: Let n be the size of the training set $Z=(z_1,z_2,...z_n)$, where each $z_i$ contains p predictors and one target value, that is $z_i=(x_{i,1},x_{i,2},...x_{i,p},y_i)$. Now, n data points $z_i$ are drawn randomly from Z with replacement. This is done $B$ times, creating $B$ new sets $Z'_j$. We can now create a fitting model for each of the sets  $Z'_j$. For each of these data sets $Z'_j$, we can now calculate any variable $\hat\theta_j$ given the data. Now, the distribution of $\hat\theta_j$ can be used to estimate the distribution of $\theta$ and get values of interest, such as the mean value or the variance. In this article, Bootstrap is used to get information about the test MSE, variance and bias in order to evaluate the quality of the fit. This is done by using the B bootstrap sets $Z'_j$ to calculate the fitting parameters $\beta$ and calculate B fits to the test set. $\tilde{Y_j}$. From these B fits, we can then approximate the test MSE, variance and bias.\\
 TODO: Talk some more about the mathematical validity of Bootstrap.
 \subsubsection{K-fold Cross validation}
-K- fold Cross Validation is a useful technique for when you have a limited data set, and want to make sure that all features are captured in a training set. K- fold Cross Validation does this by partitioning the data set into $k$ so called folds, assigning $k-1$ folds as the training set and $1$ of the folds as the testing set. It does this $k$ times, making sure to utilize each fold as the testing set once. In this way, we end up generating $k$ different models, whose performance can be measured with respect to the testing fold or additionally, a separate testing set, withheld from the partitioning process.
+K- fold Cross Validation is a useful technique for when you have a limited data set, and want to make sure that all features are captured in a training set. K- fold Cross Validation does this by partitioning the data set into $k$ so called folds, assigning $k-1$ folds as the training set and $1$ of the folds as the testing set. It does this $k$ times, making sure to utilize each fold as the testing set once, as seen in figure \ref{kfoldcrossillustrated}. In this way, we end up generating $k$ different models, whose performance can be measured with respect to the testing fold or additionally, a separate testing set withheld from the partitioning process.
 
 \begin{figure}[H]
 \centering
@@ -217,6 +229,13 @@ K- fold Cross Validation is a useful technique for when you have a limited data 
 \end{tikzpicture}
 \caption[K-fold Cross Validation operation structure]{In this example, 5- fold Cross Validation is used on the entire dataset, with one model being generated for each row. The MSE on the test set is then calculated and averaged with the MSEs of every other model.}\label{kfoldcrossillustrated}
 \end{figure}
+The value we choose for $k$ will impact the accuracy of our model. To see this, we performed OLS regression on the same function \eqref{FrankeFunction} using different values for $k$ resulting in figure \ref{bestKOLS}.
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=1.4cm 0.2cm 2.5cm 1.2cm, clip=true,scale = 0.6]{MSE_OLS_k_comparison_2to10.pdf}
+\caption[MSE from OLS using different number of splits in k-fold CV]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV OLS on the Franke function \eqref{FrankeFunction}. We can see that higher values of $k$ consistently perform better though there is no clear correlation among the highest few values.}\label{bestKOLS}
+\end{figure}
 
 \subsection{Fitting the Franke function}
 \subsection{Korea Data}
@@ -247,21 +266,47 @@ In the practical implementation, we "drop" $\beta_0$ by removing the first colum
 The design matrix is scaled using Scikit-Learn's StandardScaler.
 \section{Results}
 \subsection{Error comparison}
+\subsubsection{Bootstrap vs. Cross validation}
+We're evaluating the performance of Bootstrap and K- fold cross validation in terms of MSE on the same dataset using a fixed value for $\sigma$, a fixed number of data points and fixed model complexity. The objective being to compare the two resampling methods, varying only the amount of folds used in K- fold cross validation. Using a dataset constructed from the Franke function, we get figure \ref{BootstrapVsKfold1}.
+
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=1.4cm 0.2cm 2.5cm 1.2cm, clip=true,scale = 0.5]{KfoldVsBootstrap_k5to10_8kBootstraps.pdf}
+\caption[Comparing MSE from Bootstrap vs. K- fold CV]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. We see that all iterations of K- fold cross validation perform better than 8000 bootstraps on this very limited data set of 100 entries}\label{BootstrapVsKfold1}
+\end{figure}
+Trying again, this time with 10 times as many data points. We get figure \ref{BootstrapVsKfold2}
+
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=1cm 0.2cm 1.5cm 1.2cm, clip=true,scale = 0.6]{KfoldVsBootstrap_k5to10_8kBootstraps_1000dps.pdf}
+\caption[Comparing MSE from Bootstrap vs. K- fold CV -1000 data points]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. Again, all iterations of K- fold cross validation perform better than 8000 bootstraps. However, increasing the number of data points made the difference significantly smaller, especially for the more complex models.}\label{BootstrapVsKfold2}
+\end{figure}
+Figures \ref{BootstrapVsKfold1} and \ref{BootstrapVsKfold2} give the impression that on a sufficiently large dataset, bootstrap competes with K- fold cross validation, if we can only increase the number of bootstraps sufficiently. This comes at a computational cost however and we've yet to quantize this.\\Using the same model as above, we run K- fold cross validation with $k=10$ and compare the elapsed time with Bootstrap. The result is shown in figure \ref{BootstrapVsKfold3}.
+
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=2.0cm 0.9cm 2.7cm 1.2cm, clip=true,scale = 0.55]{KfoldVsBootstrap_k10_8kBootstraps_elapsedTime_comparison.pdf}
+\caption[Comparing time elapsed from Bootstrap vs. K- fold CV]{MSE as a function of model complexity for $k=10$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. The time elapsed for each model is plotted. Not only does K- fold CV take considerably less time, but the time increases much slower with increased model complexity compared to Bootstrap.}\label{BootstrapVsKfold3}
+\end{figure}
+XXXXXXXXXXXXXXXXXXXXXX CAN THIS BE RIGHT? IT SEEMS RIDICULOUS. MAYBE I'M TIMING AT THE WRONG POINTS, ALTHOUGH I'M PRETTY SURE THEY'RE CORRECT XXXXXXXXXXXXXXXXXXXXXXXXX
 \subsubsection{Franke Function}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
 \caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
-\label{fig:LASSO_Bias_Variance}
+\label{fig:MSE_different_methods_Franke}
 \end{figure}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{R2_bootstrap_different_methods_Franke.pdf}
+\includegraphics[trim=0.7cm 0.2cm 1cm 0.85cm, clip=true,scale = 0.7]{R2_bootstrap_different_methods_Franke.pdf}
 \caption[Test $R^2$-value for LASSO, Rigde and OLS regression]{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
-\label{fig:LASSO_Bias_Variance}
+\label{fig:R2_different_methods_Franke}
 \end{figure}
 
-As expected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures XXX and XXX, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. The large deviation between LASSO and OLS is due to the aforementioned error.
+As expected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures \ref{fig:MSE_different_methods_Franke} and \ref{fig:R2_different_methods_Franke}, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. The large deviation between LASSO and OLS is due to the aforementioned error.
 \subsubsection{Map data}
 \subsection{Bias-Variance tradeoff}
 
@@ -284,7 +329,7 @@ As expected from the theory, increasing the model complexity lead to a decreased
 \caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree using Ridge regression]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using Ridge regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:Ridge_Bias_Variance}
 \end{figure}
-Figures XXX, XXX and XXX show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure XXX on page XXX in HASTIE a lot. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
+Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridge_Bias_Variance} show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure 2.11 on page 38 in Hastie et al. by a lot\citep{hastie01statisticallearning}. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
 \subsubsection{Map data}
 
 \section{Conclusion}

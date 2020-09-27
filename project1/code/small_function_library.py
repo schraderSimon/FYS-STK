@@ -366,7 +366,7 @@ def KCrossValOLSMSE(X,z,k):
         scaler.fit(X_training)
         X_training_scaled = scaler.transform(X_training)
         X_testing_scaled = scaler.transform(X_testing)
-        #perform Ridge regression
+        #perform regression
         beta, beta_variance = LinearRegression(X_training_scaled,z_training)
         #print(beta)
         z_training_fit = X_training_scaled @ beta

@@ -4,17 +4,17 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
 
-minNrk = 20
-maxNrk = 40
+minNrk = 2
+maxNrk = 10
 k = np.array([x for x in range(minNrk,maxNrk+1)])
 
-mindeg = 1
-maxdeg = 10
+mindeg = 2
+maxdeg = 8
 
-datapoints=200
+datapoints=400
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-z=FrankeFunction(x,y)+np.random.normal(0,0.4, datapoints)
+z=FrankeFunction(x,y)+np.random.normal(0,0.3, datapoints)
 
 MSE_test_kfold = np.zeros((len(k),maxdeg-mindeg+1))
 j = 0
@@ -30,7 +30,7 @@ for s in range(maxNrk-minNrk+1):
     j+=1
 plt.xlabel('Polynomial degree')
 plt.ylabel('MSE')
-plt.title('Mean Square Error of OLS using different numbers (k) of splits (#datapoints =' +str(datapoints)+r',$\sigma = 0.4$ )')
+plt.title('Mean Square Error of OLS using different numbers (k) of splits (#datapoints =' +str(datapoints)+r',$\sigma = 0.3$ )')
 plt.legend()
 plt.show()
 
