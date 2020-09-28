@@ -53,6 +53,6 @@ print(std_dev_ridge_L01)
 print('Max Std.dev. Ridge2')
 print(std_dev_ridge_L10)
 
-dict = {'polynomial degree': list(range(1,maxdeg +1)),r'OLS': Z_table*std_dev_OLS, r'Ridge ($\lambda = 0.1$)': Z_table*std_dev_ridge_L01,r'Ridge ($\lambda = 1.0$)': Z_table*std_dev_ridge_L10}
+dict = {'polynomial degree': list(range(1,maxdeg +1)),'OLS': Z_table*std_dev_OLS, 'Ridge (lambda = 0.1)': Z_table*std_dev_ridge_L01,'Ridge (lambda = 1.0)': Z_table*std_dev_ridge_L10}
 df = pd.DataFrame(dict)
 df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/deltaBeta_conf_int_95_OLS_vs_Ridge.csv')
