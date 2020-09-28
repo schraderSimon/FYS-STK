@@ -12,7 +12,7 @@ minNrk = 10
 maxNrk = 10
 k = np.array([i for i in range(minNrk,maxNrk+1)])
 
-n_bootstraps=8000
+n_bootstraps=20000
 
 maxdeg=6
 
@@ -32,10 +32,10 @@ idx_2 = 0
 for j in k:
     for deg in range(1,maxdeg+1):
         X=DesignMatrix_deg2(x,y,deg,True)
-        start = time.time()
+        #start = time.time()
         MSE_test_kfold[deg-1,idx] = KCrossValMSE(X,z,j)
-        end = time.time()
-        timeElapsed_kfold[idx_2] = end-start
+        #end = time.time()
+        #timeElapsed_kfold[idx_2] = end-start
         if (idx > 0):
             continue
         X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
@@ -50,31 +50,31 @@ for j in k:
         beta, beta_variance = LinearRegression(X_train_scaled,z_train_scaled)
         z_train_scaled_fit=X_train_scaled@beta
         z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
-        start = time.time()
+        #start = time.time()
         for i in range(n_bootstraps):
             X_b, z_b=resample(X_train_scaled,z_train_scaled)
             beta, beta_variance = LinearRegression(X_b,z_b)
             z_test_scaled_fit[:,i]=X_test_scaled @ beta
         MSE_test_boot[deg-1] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit,n_bootstraps)
-        end = time.time()
-        timeElapsed_bootstrap[idx_2] = end-start
+        #end = time.time()
+        #timeElapsed_bootstrap[idx_2] = end-start
         idx_2 +=1
     idx +=1
-print('time bootstrap')
-print(timeElapsed_bootstrap)
-print('time kfoldcross')
-print(timeElapsed_kfold)
+#print('time bootstrap')
+#print(timeElapsed_bootstrap)
+#print('time kfoldcross')
+#print(timeElapsed_kfold)
 plt.plot(list(range(1,maxdeg+1)),MSE_test_boot,label = 'Bootstrap')
 for i in range(len(k)):
     plt.plot(list(range(1,maxdeg+1)),MSE_test_kfold[:,i],label = str(k[i])+' fold CV')
-for i in range(maxdeg):
-    plt.annotate('%.3f s' % timeElapsed_bootstrap[i],(list(range(1,maxdeg+1))[i],MSE_test_boot[i]),color ='blue')
-    plt.annotate('%.3f s' % timeElapsed_kfold[i],(list(range(1,maxdeg+1))[i],MSE_test_kfold[i]),color ='orange')
+#for i in range(maxdeg):
+#    plt.annotate('%.3f s' % timeElapsed_bootstrap[i],(list(range(1,maxdeg+1))[i],MSE_test_boot[i]),color ='blue')
+#    plt.annotate('%.3f s' % timeElapsed_kfold[i],(list(range(1,maxdeg+1))[i],MSE_test_kfold[i]),color ='orange')
 plt.legend()
 plt.xlabel('polynomial degree')
 plt.ylabel('MSE')
-#plt.title('Comparing Bootstrap to k- fold CV (#Bootstraps = '+str(n_bootstraps)+', #datapoints = '+str(datapoints)+')')
-plt.title('Comparing Bootstrap to 10- fold CV elapsed time in seconds and MSE (#Bootstraps = '+str(n_bootstraps)+', #datapoints = '+str(datapoints)+')')
+plt.title('Comparing Bootstrap to k- fold CV (#Bootstraps = '+str(n_bootstraps)+', #datapoints = '+str(datapoints)+')')
+#plt.title('Comparing Bootstrap to 10- fold CV elapsed time in seconds and MSE (#Bootstraps = '+str(n_bootstraps)+', #datapoints = '+str(datapoints)+')')
 plt.show()
 
 #dict = {'polynomial degree': list(range(1,maxdeg +1)),'MSE Bootstrap': MSE_test_boot, 'MSE Kfold-crossvalidation': MSE_test_kfold}

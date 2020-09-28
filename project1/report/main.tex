@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{csvsimple}
 \usepackage{amssymb}
 \usepackage{hyperref}
 \hypersetup{
@@ -265,15 +266,33 @@ In the practical implementation, we "drop" $\beta_0$ by removing the first colum
 \subsection{Scaling?}
 The design matrix is scaled using Scikit-Learn's StandardScaler.
 \section{Results}
+
+\subsection{$\beta$ standard deviation in OLS and Ridge regression}
+Using OLS and Ridge regression, for a given polynomial degree, the radius of the 95'th percentile confidence interval of the parameter $\beta$ with the largest standard deviation was calculated and tabulated. The result is shown in table \ref{betaVarianceTable}.
+
+\begin{table}[H]\caption[Confidence interval of estimators in OLS vs. Ridge]{Half the width of the 95'th percentile confidence interval for the estimators $\beta$ in OLS and Ridge regression with the highest standard deviation, using the regularization parameter $\lambda$. }
+\label{betaVarianceTable}
+\begin{tabular}{|r|r|r|r|}
+\hline
+polynomial degree & OLS   & Ridge ($\lambda = 0.1$) & Ridge ($\lambda = 1.0$) \\ \hline
+1                 & 0.005 & 0.014                & 0.013          \\
+2                 & 0.023 & 0.062                & 0.047          \\
+3                 & 0.128 & 0.207                & 0.077          \\
+4                 & 0.632 & 0.250                & 0.086          \\
+5                 & 2.977 & 0.278                & 0.091 \\ \hline    
+\end{tabular}
+\end{table}
+It's clear that Ridge regression has the effect of tightening the confidence interval for the parameters $\beta$ belonging to the highest order polynomials. It's also clear that increasing the regularization parameter $\lambda$ has the expected effect of further tightening the confidence interval of the parameters. It's worth noting that while in OLS the values occupy four different orders of magnitude, but using Ridge, that decreases to two or one. The cost function imposing a penalty on the size of the $\beta$'s, forces every parameter to within a smaller subset of options. 
+
 \subsection{Error comparison}
 \subsubsection{Bootstrap vs. Cross validation}
-We're evaluating the performance of Bootstrap and K- fold cross validation in terms of MSE on the same dataset using a fixed value for $\sigma$, a fixed number of data points and fixed model complexity. The objective being to compare the two resampling methods, varying only the amount of folds used in K- fold cross validation. Using a dataset constructed from the Franke function, we get figure \ref{BootstrapVsKfold1}.
+Bootstrap and K- fold cross validation is here used to estimate the error in our models. We're evaluating the error estimation of Bootstrap and K- fold cross validation in terms of MSE on the same dataset using a fixed value for $\sigma$, a fixed number of data points and fixed model complexity. The objective being to compare the two resampling methods, varying only the amount of folds used in K- fold cross validation. Using a dataset constructed from the Franke function, we get figure \ref{BootstrapVsKfold1}.
 
 \begin{figure}[H]
 \centering
 
 \includegraphics[trim=1.4cm 0.2cm 2.5cm 1.2cm, clip=true,scale = 0.5]{KfoldVsBootstrap_k5to10_8kBootstraps.pdf}
-\caption[Comparing MSE from Bootstrap vs. K- fold CV]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. We see that all iterations of K- fold cross validation perform better than 8000 bootstraps on this very limited data set of 100 entries}\label{BootstrapVsKfold1}
+\caption[Comparing Error estimates from Bootstrap vs. K- fold CV]{Estimated MSE as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. We see that all iterations of K- fold cross validation makes a lower error estimate than 8000 bootstraps on this very limited data set of 100 entries}\label{BootstrapVsKfold1}
 \end{figure}
 Trying again, this time with 10 times as many data points. We get figure \ref{BootstrapVsKfold2}
 
@@ -281,17 +300,18 @@ Trying again, this time with 10 times as many data points. We get figure \ref{Bo
 \centering
 
 \includegraphics[trim=1cm 0.2cm 1.5cm 1.2cm, clip=true,scale = 0.6]{KfoldVsBootstrap_k5to10_8kBootstraps_1000dps.pdf}
-\caption[Comparing MSE from Bootstrap vs. K- fold CV -1000 data points]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. Again, all iterations of K- fold cross validation perform better than 8000 bootstraps. However, increasing the number of data points made the difference significantly smaller, especially for the more complex models.}\label{BootstrapVsKfold2}
+\caption[Comparing Error estimates from Bootstrap vs. K- fold CV -1000 data points]{Estimated MSE as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. Again, all iterations of K- fold cross validation makes a lower error estimate than 8000 bootstraps. However, increasing the number of data points made the difference significantly smaller, especially for the more complex models.}\label{BootstrapVsKfold2}
 \end{figure}
-Figures \ref{BootstrapVsKfold1} and \ref{BootstrapVsKfold2} give the impression that on a sufficiently large dataset, bootstrap competes with K- fold cross validation, if we can only increase the number of bootstraps sufficiently. This comes at a computational cost however and we've yet to quantize this.\\Using the same model as above, we run K- fold cross validation with $k=10$ and compare the elapsed time with Bootstrap. The result is shown in figure \ref{BootstrapVsKfold3}.
+Figures \ref{BootstrapVsKfold1} and \ref{BootstrapVsKfold2} give the impression that on a sufficiently large dataset, Bootstrap gives comparable error estimates with K- fold cross validation. Bootstrap, however comes at a significantly higher computational cost which we've yet to show explicitly.\\Using the same model as above, we run K- fold cross validation with $k=10$ and compare the elapsed time with Bootstrap. The result is shown in figure \ref{BootstrapVsKfold3}.
 
 \begin{figure}[H]
 \centering
 
-\includegraphics[trim=2.0cm 0.9cm 2.7cm 1.2cm, clip=true,scale = 0.55]{KfoldVsBootstrap_k10_8kBootstraps_elapsedTime_comparison.pdf}
-\caption[Comparing time elapsed from Bootstrap vs. K- fold CV]{MSE as a function of model complexity for $k=10$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. The time elapsed for each model is plotted. Not only does K- fold CV take considerably less time, but the time increases much slower with increased model complexity compared to Bootstrap.}\label{BootstrapVsKfold3}
+\includegraphics[trim=2.0cm 0.9cm 2.7cm 1.2cm, clip=true,scale = 0.5]{KfoldVsBootstrap_k10_8kBootstraps_elapsedTime_comparison.pdf}
+\caption[Comparing time elapsed from Bootstrap vs. K- fold CV]{Estimated MSE as a function of model complexity for $k=10$, using k- fold CV and Bootstrap OLS on the Franke function \eqref{FrankeFunction}. The time elapsed for each model is plotted. Not only does K- fold CV take considerably less time, but the time increases much slower with increased model complexity compared to Bootstrap.}\label{BootstrapVsKfold3}
 \end{figure}
-XXXXXXXXXXXXXXXXXXXXXX CAN THIS BE RIGHT? IT SEEMS RIDICULOUS. MAYBE I'M TIMING AT THE WRONG POINTS, ALTHOUGH I'M PRETTY SURE THEY'RE CORRECT XXXXXXXXXXXXXXXXXXXXXXXXX
+
+
 \subsubsection{Franke Function}
 \begin{figure}[H]
 \centering
@@ -334,6 +354,7 @@ Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridg
 
 \section{Conclusion}
 ``I always thought something was fundamentally wrong with the universe'' \citep{hastie01statisticallearning}
+\section{Appendix}
 
 \bibliographystyle{plain}
 \bibliography{references}
