@@ -36,14 +36,14 @@
 \graphicspath{{../figures/presentable_data/}} %Setting the graphicspath
 
 \begin{document}
-%\maketitle
+\maketitle
 \tableofcontents
 \listoffigures
 \listoftables
 
 \clearpage
 \section{Abstract}
-In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to Computers, doing so is increasingly possible using automatized methods. Using existing Using OLS, Ridge, and LASSO Regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and Geographic Data with 2D polynomials of varying degrees and analyzed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 5000 randomly chosen data points, using  OLS Regression, the MSE is around 22,500 at the ideal value, while using Ridge Regression, it is ~23,000. Hence, regression does not seem to be suitable for predicting geographical data. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates.
+In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to Computers, doing so is increasingly possible using automatized methods. Using existing OLS, Ridge, and LASSO Regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and Geographic Data with 2D polynomials of varying degrees and analysed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 5000 randomly chosen data points, using  OLS Regression, the MSE is around 22,500 at the ideal value, while using Ridge Regression, it is ~23,000. Hence, regression does not seem to be suitable for predicting geographical data. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates.
 %In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
 
 %\begin{figure}[H]
@@ -55,7 +55,7 @@ In almost all fields of science, extrapolating data and creating a fitting funct
 
 
 \section{Introduction}
-The purpose of this article is to explore three different linear regression algorithms, their utility, application and some of the theory behind them. These are Ordinary Least Squares (OLS), as well as the two Shrinkage methods Ridge regression and LASSO regression. In this article, we both compare these methods to another, as well as describe their applicability and their peculiarities. These methods are tested on a model dataset constructed using the Franke function \eqref{FrankeFunction} with added normally distributed noise, then later applied to digital terrain data over a part of South Korea in an attempt to accurately recreate the image. We explore the two resampling techniques K- fold cross validation and Bootstrapping. Studying the bias- variance trade off in model selection. Resampling is usually used for models where the amount of data is restricted, something which is not the case here, but it is nevertheless a valid way to predict various statistical values.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}
+The purpose of this article is to explore three different linear regression algorithms, their utility, application and some of the theory behind them. These are Ordinary Least Squares (OLS), as well as the two Shrinkage methods Ridge regression and LASSO regression. In this article, we compare these methods to one another, as well as describe their applicability and their peculiarities. These methods are tested on a model dataset constructed using the Franke function \eqref{FrankeFunction} with added normally distributed noise, then later applied to digital terrain data over a part of South Korea in an attempt to accurately recreate the image. We explore the two resampling techniques K- fold cross validation and Bootstrapping. Studying the bias- variance trade off in model selection. Resampling is usually used for models where the amount of data is restricted. Seeing as terrain data has a finite resolution, its application should be considered for error estimation or model selection although we don't cover this. The models we consider are not limited by lack of data, but resampling is nevertheless a valid method for predicting various statistical values.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}.
 \section{Methods}
 \subsection{Linear Regression}
 The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. \\
@@ -243,9 +243,9 @@ The value we choose for $k$ will impact the accuracy of our model. To see this, 
 \centering
 
 \includegraphics[trim=1.4cm 0.2cm 2.5cm 1.2cm, clip=true,scale = 0.6]{MSE_OLS_k_comparison_2to10.pdf}
-\caption[MSE from OLS using different number of splits in k-fold CV]{Mean squared error as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV OLS on the Franke function \eqref{FrankeFunction}. We can see that higher values of $k$ consistently perform better though there is no clear correlation among the highest few values.}\label{bestKOLS}
+\caption[Estimated MSE from OLS using different number of splits in k-fold CV]{Estimated MSE as a function of model complexity (polynomial degree) for different values of $k$, using k- fold CV OLS on the Franke function \eqref{FrankeFunction}. We can see that higher values of $k$ consistently make lower error estimates though there is no clear correlation among the highest few values.}\label{bestKOLS}
 \end{figure}
-
+We expect to see this trend based on the increasing size of the training set from $50\%$ to $75\%$ aso. going from $k=2$ to $k=3$ and on.
 \subsection{Fitting the Franke function}
 The Franke Function is given by
 \begin{align}\label{FrankeFunction}
@@ -255,11 +255,11 @@ f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}
 and serves as a test function to check how well the implemented methods perform. We also add normally distributed noise in order to evaluate the behaviour of our fit.
 
 \subsection{Geographic Data}
-In order to test how well the Regression methods work with real data, we downloaded Geographic Data representing the Taebaek Mountains in South Korea. This has a surface area of approximately $3601*3601 km^2$. We used a picture with resolution of 3601*3601 pixels, hence each square kilometer is represented as one pixel, where colour intensity represents the height (black equals height at sea level). This can be seen in figure XXX.
+In order to test how well the Regression methods work with real data, we downloaded Geographic Data representing the Taebaek Mountains in South Korea. This has a surface area of approximately $3601\times 3601 km^2$. We used a picture with resolution of $3601\times 3601$ pixels, hence each square kilometer is represented as one pixel, where colour intensity represents the height (black equals height at sea level). This can be seen in figure \ref{Korea}.
 \begin{figure}[H]
 \centering
 \includegraphics[trim=1cm 0.2cm 1.5cm 1.2cm, clip=true,scale = 0.05]{../figures/presentable_data/korea.png}
-\caption[Taebbaek Mountain]{The Taebaek Mountain area in South Korea. The original image has a resolution of 3601*3601 pixels.}\label{Korea}
+\caption[Taebbaek Mountain]{The Taebaek Mountain area in South Korea. The original image has a resolution of $3601\times 3601$ pixels.}\label{Korea}
 \end{figure}
 \section{Computational Implementation}
 \subsection{Finding the ideal parameter $\lambda$}
@@ -328,6 +328,7 @@ Figures \ref{BootstrapVsKfold1} and \ref{BootstrapVsKfold2} give the impression 
 
 
 \subsubsection{Franke Function}
+Using resampling methods, the MSE for OLS, Ridge- and LASSO regression on the Franke function were plotted against the model complexity.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
