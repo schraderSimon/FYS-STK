@@ -108,17 +108,16 @@ def RidgeRegression(X_training,y_training,Lambda):
     return beta, beta_variance
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
 #Returns the beta coeffs. and their variance
-
 def LinearRegression(X_training,y_training):
     """Input: The design matrix X, and the targets Y
         Output: The OLS beta.
     """
     inverse_matrix = np.linalg.inv(X_training.T @ X_training)
-    beta_variance = np.diagonal(inverse_matrix)
+    beta_variance = np.diag(inverse_matrix)
     u, s, vh = np.linalg.svd(X_training, full_matrices=False)
     beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y_training
-    #beta = inverse_matrix @ X_training.T @ y_training
     return beta, beta_variance
+
 def OLS_SVD(X,y):
     u, s, vh = np.linalg.svd(X, full_matrices=False)
     beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y
@@ -450,15 +449,17 @@ def fit_func(beta,x,y,polydegree,mean,inverse_var,include_intercept=False):
             count+=1;
     z=func @ beta
     return z
-def fit_terrain(x,y,beta,scaler,mean_valz,degree=5):
+def fit_terrain(x,y,beta,scaler,mean_valz,degree=5,scaling=1):
     mean=scaler.mean_
+    print(mean)
     var=scaler.scale_
-    terrain_fit=np.zeros((len(y),len(x)))
-    leny=len(y)
-    lenx=len(x)
+    print(var)
+    terrain_fit=np.zeros((int(len(y)/scaling),int(len(x)/scaling)))
+    leny=int(len(y)/scaling)
+    lenx=int(len(x)/scaling)
     print(lenx, leny)
     inverse_var=1/var
     for i in range(lenx):
         for j in range(leny):
-            terrain_fit[j][i]=fit_func(beta,y[j],x[i],degree,mean,inverse_var)+mean_valz
+            terrain_fit[j][i]=fit_func(beta,y[j*scaling],x[i*scaling],degree,mean,inverse_var)+mean_valz
     return terrain_fit
