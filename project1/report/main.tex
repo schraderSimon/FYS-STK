@@ -43,7 +43,7 @@
 
 \clearpage
 \section{Abstract}
-In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to Computers, doing so is increasingly possible using automatized methods. Using existing OLS, Ridge, and LASSO regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and Geographic Data with 2D polynomials of varying degrees and analysed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 50,000 randomly chosen data points, using  OLS regression, the MSE is around 18,000 at the ideal value, while using Ridge regression, it is ~16,500. Hence, regression does not seem to be suitable for predicting geographical data, but manages to include the general traits. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates. 
+In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to computers, doing so is increasingly possible using automatized methods. Using existing OLS, Ridge, and LASSO regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and geographic data with 2D polynomials of varying degrees and analysed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 50,000 randomly chosen data points, using  OLS regression, the MSE is around 18,000 at the ideal value, while using Ridge regression, it is ~16,500. Hence, regression does not seem to be suitable for predicting geographical data, but manages to include the general traits. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates. 
 %In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
 
 %\begin{figure}[H]
@@ -254,7 +254,7 @@ f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}
 and serves as a test function to check how well the implemented methods perform. We also add normally distributed noise in order to evaluate the behaviour of our fit.
 
 \subsection{Geographic Data}
-In order to test how well the Regression methods work with real data, we downloaded Geographic Data representing the Taebaek Mountains in South Korea. This has a surface area of approximately $3601\times 3601 km^2$. We used a picture with resolution of $3601\times 3601$ pixels, hence each square kilometer is represented as one pixel, where colour intensity represents the height (black equals height at sea level). This can be seen in figure \ref{Korea}.
+In order to test how well the Regression methods work with real data, we downloaded geographic data representing the Taebaek Mountains in South Korea. This has a surface area of approximately $3601\times 3601 km^2$. We used a picture with resolution of $3601\times 3601$ pixels, hence each square kilometer is represented as one pixel, where colour intensity represents the height (black equals height at sea level). This can be seen in figure \ref{Korea}.
 \begin{figure}[H]
 \centering
 \includegraphics[trim=1cm 0.2cm 1.5cm 1.2cm, clip=true,scale = 0.05]{../figures/presentable_data/korea.png}
@@ -265,7 +265,7 @@ In order to test how well the Regression methods work with real data, we downloa
 In order to find the ideal parameter $\lambda$ for both LASSO and Ridge regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
 \subsection{Error in LASSO-Regression}
 As there is no way to find the parameters $\bm{\beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. We observed that setting the tolerance to 0.01 lead to no convergence even at $10^5$ iterations at higher polynomial degrees when fitting the Franke Function. Having LASSO converge is very time-consuming, we found it impossible to run a large-scale numerical experiment with properly converging LASSO regression when the datasets are large, many polynomial degrees are to be included, and there a large number of bootstraps. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$.  Similarly, we used 0.3 as tolerance at $10^2$ maximum iterations for fitting the country data - this is not sufficient to get a proper fit.  Hence, each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
-\subsection{Sampling Franke Function}
+\subsection{Sampling Franke Function}https://www.linuxmint.com/start/ulyana/
 We sample randomly points $x_i$ and $y_i$ between 0 and 1 and calculate the target points
 \begin{equation*}
 z_i=f(x_i,y_i)+\epsilon_i
@@ -337,7 +337,7 @@ Using resampling methods, the MSE for OLS, Ridge- and LASSO regression on the Fr
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does not converge.}
+\caption[Test MSE for LASSO, Rigde and OLS regression (Franke)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does not converge.}
 \label{fig:MSE_different_methods_Franke}
 \end{figure}
 \begin{figure}[H]
@@ -352,16 +352,16 @@ We also ran a small simulation where LASSO regression does converge. This can be
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke_small.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does converge.}
+\caption[Test MSE for LASSO, Rigde and OLS regression (Franke, small)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does converge.}
 \label{fig:ConvergingLasso_Franke}
 \end{figure}
 
-\subsubsection{Geographic data}
+\subsubsection{Geographic Data}
 Figure \ref{fig:MSE_Korea} shows the Mean Square Error of fitting the geographic data as a function of polynomial degree for both Bootstrap and K-Fold Cross Validation for all three methods. We have chosen a value $\lambda$ which minimizes the MSE. 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/presentable_data/MSE_different_methods_Korea_LARGE.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
+\caption[Test MSE for LASSO, Rigde and OLS regression (geo, 20000 points)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
 \label{fig:MSE_Korea}
 \end{figure}
 We found out that, using Bootstrap to estimate, the minimal MSE for both OLS and Ridge is around 20,000, slightly lower for Ridge with 19,000. Using 5-fold Cross Validation, we found the error to be 19,000 for OLS and 18,000 for Ridge-Regression. It is possible that the Ridge error might go down even more as the minimum occurs at the final degree(=30) we have included. We did not include higher polynomial degrees as this is computationally very expensive. The data looks similar to the data attained when fitting the Franke Function, just in a different magnitude of error: The error decreases sharply as the model complexity is increased, remains rather constant (or increases slowly) as it is increased more, and then raises again, sharply for OLS. The LASSO data is unreliable, as we have chosen to only include it for completeness reasons - we did not manage to reach a sufficiently converged value, hence the MSE is much larger than the minimal possible LASSO data.\\
@@ -369,7 +369,7 @@ We also run a second simulation with only 5000 datapoints. There, the minimal MS
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{figures/presentable_data/MSE_different_methods_Korea50000_NOBOOTSTRAP.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using 5-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
+\caption[Test MSE for LASSO, Rigde and OLS regression (geo, 50000 points)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using 5-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
 \label{fig:MSE_Korea_XXL}
 \end{figure}
 
@@ -395,7 +395,7 @@ We also run a second simulation with only 5000 datapoints. There, the minimal MS
 \end{figure}
 Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridge_Bias_Variance} show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. We chose a very small set for the LASSO regression where the results converge properly, so this cannot be compared to the other sets directly. However, figure \ref{fig:ConvergingLasso_Franke} contains the MSE for OLS and LASSO as well that was created with the same data. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure 2.11 on page 38 in Hastie et al. by a lot\citep{hastie01statisticallearning}. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. 
 
-\subsubsection{Geographic data}
+\subsubsection{Geographic Data}
 
 Figure \ref{fig:biasVariance_Korea} shows the bias, the variance and the MSE as a function of polynomial degree for Ridge and OLS regression. We have chosen a value $\lambda$ which minimizes the MSE. We decided not to include LASSO as the LASSO data we attained is not the true LASSO data.
 \begin{figure}[H]
