@@ -89,7 +89,7 @@ plt.show()
 
 """
 run as python3 create_picture.py filename scaling_factor
-for example python3 plot_geographic_data.py Korea50000_NOBOOTSTRAP.csv 7
+for example python3 create_picture.py Korea50000_NOBOOTSTRAP.csv 7
 
 
 """
