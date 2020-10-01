@@ -76,11 +76,18 @@ def R2(y_data,y_model):
     return 1- np.sum((y_data - y_model)**2)/np.sum((y_data-np.mean(y_data))**2)
 
 def MSE(y_data,y_model):
+    """
+    Input: Two arrays of equal length
+    Output: The MSE between the two vectors
+    """
     n = np.size(y_model)
     return np.sum((y_data-y_model)**2)/n
 
-#returns a regular (exponent increases by one) design matrix from data x and polynomial of degree n
 def DesignMatrix(x,polydgree):
+    """
+    Input: Data x (array), the desired maximum degree (int)
+    Output: The reular design matrix (exponent increases by one) for a polynomial of degree polydgree
+    """
     X = np.zeros((len(x),polydgree+1))
     for i in range(polydgree+1):
         X[:,i] = x**i
@@ -90,16 +97,20 @@ def DesignMatrix(x,polydgree):
 #  the lambda coefficient, and the degree of the approximating polynomial.
 #Returns the beta coeffs. and their variance
 #IMPORTANT: This form of Ridge regression assumes that X_training has been centered
-def RidgeRegression(X_training,y_training,Lambda):
+def RidgeRegression(X_training,y_training,Lambda, include_beta_variance=True):
 
-    """Input: The design matrix X, and the targets Y and a value for LAMBDA
-        Output: The Ridge Regression beta.
+    """
+    Input: The design matrix X, and the targets Y and a value for LAMBDA, and wether the variance should be included too.
+    Output: The Ridge Regression beta and the variance (zero if include_beta_variance is zero)
+    This was implemented as SVD.
+
     """
     I = np.eye(len(X_training[0,:]))
-    inverse_matrix = np.linalg.inv(X_training.T @ X_training+Lambda*I)
-    beta_variance = np.diagonal(inverse_matrix)
-    beta = inverse_matrix @ X_training.T @ y_training
-    #return beta, beta_variance
+    if include_beta_variance:
+        inverse_matrix = np.linalg.inv(X_training.T @ X_training+Lambda*I)
+        beta_variance = np.diagonal(inverse_matrix)
+    else:
+        beta_variance=0
     u, s, vh = np.linalg.svd(X_training, full_matrices=False)
     smat=np.zeros((vh.shape[0],u.shape[1]))
     for i in range(len(s)):
@@ -108,20 +119,19 @@ def RidgeRegression(X_training,y_training,Lambda):
     return beta, beta_variance
 #Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
 #Returns the beta coeffs. and their variance
-def LinearRegression(X_training,y_training):
+def LinearRegression(X_training,y_training,include_beta_variance=True):
     """Input: The design matrix X, and the targets Y
-        Output: The OLS beta.
+        Output: The OLS beta and the variance (zero if include_beta_variance is zero)
     """
-    inverse_matrix = np.linalg.inv(X_training.T @ X_training)
-    beta_variance = np.diag(inverse_matrix)
+    if include_beta_variance:
+        inverse_matrix = np.linalg.inv(X_training.T @ X_training)
+        beta_variance = np.diag(inverse_matrix)
+    else:
+        beta_variance=0
     u, s, vh = np.linalg.svd(X_training, full_matrices=False)
     beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y_training
     return beta, beta_variance
 
-def OLS_SVD(X,y):
-    u, s, vh = np.linalg.svd(X, full_matrices=False)
-    beta= vh.T @ np.linalg.inv(np.diag(s)) @ u.T @ y
-    return beta
 def LASSORegression(X_training,y_training,Lambda,tol=lasso_tol,iter=lasso_iterations):
     """Input: The design matrix X, and the targets Y and a value for LAMBDA
         Output: The LASSO Regression beta. Uses scikit-learn.
@@ -139,7 +149,10 @@ def Coeff_to_Poly(x,beta):
 
 #The Franke Function.
 def FrankeFunction(x,y):
-    """The Franke Function"""
+    """
+    Input: x and y
+    Output: The Franke Function evaluated at x and y.
+    """
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
@@ -179,12 +192,12 @@ def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
             count+=1;
     return X
 
-#import numpy as np
-#import random as rn
-
-#Shuffles the rows of a matrix....
-# much more computationally intensive than shuffling its indices..
 def ShuffleRows(X_matrix):
+    """
+    Input: A matrix X_matrix
+    Output: The same matrix X with randomly shuffled rows
+    much more computationally intensive than shuffling its indices..
+    """
     length = len(X_matrix)
     for i in range(length):
         rand_index = rn.randint(0,length-1)
@@ -194,6 +207,10 @@ def ShuffleRows(X_matrix):
     return X_matrix
 #Returns a list of randomly shuffled indices for a matrix/array
 def ShuffleIndex(X_matrix):
+    """
+    Input: A matrix X_matrix
+    Output: An array containing the indeces of random shuffleing of the design matrix' row.
+    """
     length = len(X_matrix)
     shuffled_indexs = list(range(0,length))
     for i in range(length):
@@ -207,10 +224,10 @@ def ShuffleIndex(X_matrix):
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
     """
-    For a given k and a given X,
-    this gives you a set of randomly chosen training and testing indeces
+    Input: A design matrix X, the degree of k-fold Cross Validation k
+    Output: A set of randomly chosen training and testing indeces
     which are, of course, distinct. Used in K-Fold Cross validation.
-    Returns: 2 2D arrays of length k containing the relevant data.
+    2 2D arrays of length k containing the relevant data.
 
     """
     #Creating an array of shuffled indices
@@ -251,11 +268,10 @@ def KfoldCross(X_matrix,k):
 
 def KCrossValMSE(X,z,k,scaling = True):
     """
-    For a given design matrix X and an outputs z,
     This function performs k-fold Cross Validation
     and calculates the OLS fit for a given Lambda for each k.
     The output is the estimate (average over k performs) for the mean square error.
-    Input: X (matrix), z (vector), k (integer), lambda (double)
+    Input: X (matrix), z (vector), k (integer)
     Output: test error estimate (double)
     """
     #getting indices from Kfoldcross
@@ -430,6 +446,12 @@ def ArraySmoother(Arr, interval):
     return smoothed
 @jit
 def fit_func(beta,x,y,polydegree,mean,inverse_var,include_intercept=False):
+    """
+    THIS DOES NOT WORK
+    Input: Beta (array), x(array), y(array), polynomial degree (int),
+    scaling mean (float), inverse std (float), wether the output should be included
+    Output: z (float) fitted using the parameters
+    """
     adder=0 #The matrix dimension is increased by one if include_intercept is True
     p=round((polydegree+1)*(polydegree+2)/2)-1 #The total amount of coefficients
     if include_intercept:
@@ -450,6 +472,11 @@ def fit_func(beta,x,y,polydegree,mean,inverse_var,include_intercept=False):
     z=func @ beta
     return z
 def fit_terrain(x,y,beta,scaler,mean_valz,degree=5,scaling=1):
+    """
+    THIS DOES NOT WORK
+    Input: x(array), y(array), the choosen scaler, the mean value of the array z,polynomial degree (int), the scaling factor for the image
+    Output: A fitted, scaled image
+    """
     mean=scaler.mean_
     print(mean)
     var=scaler.scale_

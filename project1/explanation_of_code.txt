@@ -1,0 +1,13 @@
+a.py - OLS Fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.
+d2.py - Ridge Fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.
+e.py - LASSO fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.
+plot_from_data.py - Plots the MSE from the data created using a, d2 and e.
+plot_geographic_data.py - Plots MSE for the three methods using the file created by create_geographic_data.py
+  takes as arguments: Filename and wether bootstrap was used creating the data.
+create_picture.py - Recreates the picture using the ideal parameters from create_geographic_data.py for OLS and Ridge.
+calculate_different_MSE.py - Plots the MSE for the Franke Function using the same parameters for all 3 Regression methods.
+  parameters are to be put in the Source code manually as there are so many.
+create_geographic_data.py - Finds the MSE using k-fold Cross validation, the MSE, R2-Score, Bias^2, Variance using Bootstrap for the Image data.
+  Most parameters are to be put in the Source code manually as there are so many.
+testfunksjoner.py - tests if functions are implemented correctly.
+small-small_function_library.py - library containing important functions

@@ -21,3 +21,7 @@ plt.xlabel("Polynomial Degree")
 plt.ylabel("MSE")
 plt.legend()
 plt.show()
+
+"""
+run as python3 plot_from_data.py
+"""

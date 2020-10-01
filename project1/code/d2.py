@@ -6,8 +6,8 @@ import pandas as pd
 #np.random.seed(sum([ord(c) for c in "corona"]))
 #np.random.seed(670)
 np.random.seed(sum([ord(c) for c in "CORONA"]))
-method="RIDGE"
-datapoints=500 #Nice data for (100,6) and (500,10), 0.1 random, corona
+method="RIDGE"#Method name, important for file saving & plotting
+datapoints=500
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
 n_bootstraps=2000
@@ -19,8 +19,8 @@ min_lambda = -6
 max_lambda=6
 lambda_val = np.logspace(min_lambda,max_lambda,nr_lambdas)
 
-mindeg = 1
-maxdeg = 20
+mindeg = 1  #The minimal degree to be calculated
+maxdeg = 17  #The maximal degree to be calculated
 
 
 MSE_test_kfoldRidge_lambda = np.zeros(nr_lambdas)
@@ -38,12 +38,13 @@ for deg in range(mindeg,maxdeg+1):
     print(deg)
     X=DesignMatrix_deg2(x,y,deg)
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
-    z_train_scaled=z_train-np.mean(z_train)
-    z_test_scaled=z_test-np.mean(z_train)
+    z_train_scaled=z_train-np.mean(z_train) #remove mean
+    z_test_scaled=z_test-np.mean(z_train) #remove mean
     scaler=StandardScaler()
-    scaler.fit(X_train)
-    X_train_scaled=scaler.transform(X_train)
-    X_test_scaled=scaler.transform(X_test)
+    scaler.fit(X_train) #Scale
+
+    X_train_scaled=scaler.transform(X_train) #scale train Design matrix
+    X_test_scaled=scaler.transform(X_test) #scale test Design matrix
 
     """
     use K-Fold Cross validation to find optimal Lambda
@@ -51,7 +52,7 @@ for deg in range(mindeg,maxdeg+1):
     for i in range(nr_lambdas):
         MSE_test_kfoldRidge_lambda[i] = KCrossValRidgeMSE(X,z,k,lambda_val[i])
     optimal_lambda=lambda_val[np.argmin(MSE_test_kfoldRidge_lambda)]
-    beta,beta_variance=RidgeRegression(X_train_scaled,z_train_scaled,optimal_lambda)
+    beta,beta_variance=RidgeRegression(X_train_scaled,z_train_scaled,optimal_lambda) #the beta values for Ridge Regression
     z_train_scaled_fit=X_train_scaled@beta
     """
     Use bootstrap to get proper estimates
@@ -73,6 +74,8 @@ plt.plot(np.log10(lambda_val),(MSE_test_kfoldRidge_lambda_smooth))
 plt.xlabel(r"$log_{10}(\lambda)$")
 plt.ylabel(r"MSE")
 plt.show()
+
+
 plt.xticks(np.arange(0, maxdeg+1, step=1))
 plt.title(r"Method: %s, $\sigma$=%.3f, datapoints: %d, bootstrap: %d"%(method,sigma,datapoints,n_bootstraps))
 

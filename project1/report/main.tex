@@ -43,7 +43,7 @@
 
 \clearpage
 \section{Abstract}
-In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to Computers, doing so is increasingly possible using automatized methods. Using existing OLS, Ridge, and LASSO Regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and Geographic Data with 2D polynomials of varying degrees and analysed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 5000 randomly chosen data points, using  OLS Regression, the MSE is around 22,500 at the ideal value, while using Ridge Regression, it is ~23,000. Hence, regression does not seem to be suitable for predicting geographical data. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates.
+In almost all fields of science, extrapolating data and creating a fitting function in a reliable way, is tremendously important, and thanks to Computers, doing so is increasingly possible using automatized methods. Using existing OLS, Ridge, and LASSO regression, we fitted the Franke Function \eqref{FrankeFunction} with added noise and Geographic Data with 2D polynomials of varying degrees and analysed different statistical values of interest. We found that OLS is prone to overfitting due to a very large variance at high complexities, while Rigde and LASSO remain stable at these higher degrees. With our parameters \& data, Ridge and OLS regression gave about the same Mean Square Error (MSE), while LASSO did not converge to a desirable value at higher polynomial degrees and hence gave larger errors. For the geographical data, we found that, with 50,000 randomly chosen data points, using  OLS regression, the MSE is around 18,000 at the ideal value, while using Ridge regression, it is ~16,500. Hence, regression does not seem to be suitable for predicting geographical data, but manages to include the general traits. We also compared k-fold Cross Validation to Bootstrap and found out that these two methods do not give the same error estimates. 
 %In this project, we use some good methods and some shitty methods to test how well a polynomial can interpolate a superfancy exponential function (protip: It can't) . Then we use the same approaches to see how well random geographic data can be approximated. We expect this to look horrible. We're sorry for abusing math in that way. We shall contemplate Seppuku.
 
 %\begin{figure}[H]
@@ -55,7 +55,7 @@ In almost all fields of science, extrapolating data and creating a fitting funct
 
 
 \section{Introduction}
-The purpose of this article is to explore three different linear regression algorithms, their utility, application and some of the theory behind them. These are Ordinary Least Squares (OLS), as well as the two Shrinkage methods Ridge regression and LASSO regression. In this article, we compare these methods to one another, as well as describe their applicability and their peculiarities. These methods are tested on a model dataset constructed using the Franke function \eqref{FrankeFunction} with added normally distributed noise, then later applied to digital terrain data over a part of South Korea in an attempt to accurately recreate the image. We explore the two resampling techniques K- fold cross validation and Bootstrapping. Studying the bias- variance trade off in model selection. Resampling is usually used for models where the amount of data is restricted. Seeing as terrain data has a finite resolution, its application should be considered for error estimation or model selection although we don't cover this. The models we consider are not limited by lack of data, but resampling is nevertheless a valid method for predicting various statistical values.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}.
+The purpose of this article is to explore three different linear regression algorithms, their utility, application and some of the theory behind them. These are Ordinary Least Squares (OLS), as well as the two Shrinkage methods Ridge regression and LASSO regression.In this article, we compare these methods to one another and see how well they perform for the given problems, as well as describe their applicability and their peculiarities. These methods are tested on a model dataset constructed using the Franke function \eqref{FrankeFunction} with added normally distributed noise, then later applied to digital terrain data over a part of South Korea in an attempt to accurately recreate the image. We explore the two resampling techniques K- fold cross validation and Bootstrap and compare the error estimates achieved by both methods and compare their runtime. We study the Bias-Variance Tradeoff and prove that the Mean Square Error can be decomposed into an irreducible part, the squared Bias, and the Variance. Resampling is usually used for models where the amount of data is restricted. Seeing as terrain data has a finite resolution, its application should be considered for error estimation or model selection although we don't cover this. The models we consider are not limited by lack of data, but resampling is nevertheless a valid method for predicting various statistical values.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}.
 \section{Methods}
 \subsection{Linear Regression}
 The aim of Linear Regression is to find the conditional distribution $p(y|\bm{x})$ for y given $\bm{x}$. In Linear Regression, a linear functional dependence is assumed, and the aim is hence to create a linear function that fits a set of $p$ predictor variables $\bm{x}$ to a target variable $\bm{y}$, where there are $n$ discrete observations for each of the $p$ predictor variables and the target variable. That is, the aim is to find a functional relationship of the form $f(\bm{x})=y$. \\
@@ -74,7 +74,7 @@ where $\bm{y}$, and $\bm{\epsilon}$ are vectors of length n,  $\bm{\beta}$ is of
  \end{equation*}
  to be as close to the target data $\bm{y}$ as possible.
   There are several approaches to define the best linear fit, and in this article, we looked at three different methods that define the best fit in a different way each. All methods have in common that they define a loss function, which describes the deviation from the fit to the real data, that needs to be minimized.
-\subsubsection{Ordinary Least Squares Regression}
+\subsubsection{Ordinary Least Squares (OLS) Regression}
 In Ordinary Least Square regression, the loss function is defined as the following:
 \begin{equation*}
 C(\bm{\beta})= \frac{1}{n}\sum_{i=0}^n\left( y_i-\tilde y_i \right)^2
@@ -114,19 +114,19 @@ Var(y_i)=\sigma^2
 
 where $\bm{X_{i,*}}$ is the i-th row of the design matrix.
 
-For $\beta$, it can be shown that
+For $\beta$, it can be shown that \citep{HW2}
 \begin{equation*}
 \mathbb{E}(\bm{\beta})=\bm{\beta}
 \end{equation*}
 \begin{equation*}
 Var(\bm{\beta})=\sigma^2(\bm{X}^T\bm{X})^{-1}
 \end{equation*}
-\subsubsection{Ridge Regression}
+\subsubsection{Ridge regression}
 The above mentioned problems with OLS regression, namely those of correlated data and near singular matrices, can be amended by implementing ridge regression. This is done by introducing the regularization parameter $ \lambda$ in the cost function:
 \begin{equation*}
     C(\boldsymbol{X},\boldsymbol{\beta})=\frac{1}{n}\left\{(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})^T(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})\right\}+\lambda\boldsymbol{\beta}^T\boldsymbol{\beta}
 \end{equation*}
-effectively imposing a penalty on the size of $\boldsymbol{\beta}$. One of the consequences of Ridge Regression is that it "shrinks" the singular values $\sigma$ of the Design matrix X: It can be shown that \citep{hastie01statisticallearning}
+effectively imposing a penalty on the size of $\boldsymbol{\beta}$. One of the consequences of Ridge regression is that it "shrinks" the singular values $\sigma$ of the Design matrix X: It can be shown that \citep{hastie01statisticallearning}
 \begin{equation*}
 \bm{y}^{OLS}=\bm{X\hat\beta}^{OLS}=\bm{UU}^T\bm{y}
 \end{equation*}
@@ -134,7 +134,7 @@ effectively imposing a penalty on the size of $\boldsymbol{\beta}$. One of the c
 \bm{y}^{Ridge}=\bm{X\hat\beta}^{Ridge}=\sum_{j=1}^{p}\bm{u}_j\frac{\sigma_j^2}{\sigma_j^2+\lambda}\bm{u}^T_j\bm{y}
 \end{equation*}
 where $\bm{u}_j$ are the column of the matrix $\bm{U}$ from the SVD of $\bm{X}$. It also follows directly from this formula that the smaller singular values are shrunk more.\\
-This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact of overfitting.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
+This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact off overfitting.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
 
 \begin{equation*}
     \boldsymbol{\beta}^{\mathrm{Ridge}} = \left(\boldsymbol{X}^T\boldsymbol{X}+\lambda\boldsymbol{I}\right)^{-1}\boldsymbol{X}^T\boldsymbol{y}.
@@ -148,7 +148,7 @@ There are several factors that determine how different regularization parameters
 \includegraphics[trim=2cm 1.0cm 2cm 1.4cm, clip=true,scale = 0.5]{Smallest_MSE_lambda_over_noise.pdf}
 \caption[Optimal regularization parameter to noise]{Performing Ridge regression on the Franke function \eqref{FrankeFunction}, with a normally distributed error term $\sigma\epsilon$.}\label{lambdatonoise}
 \end{figure}
-\subsubsection{LASSO Regression}
+\subsubsection{LASSO regression}
 As with ridge, LASSO regression implements a new component to the cost function. Only, in this case the penalty is proportional to the L1- norm $\vert\vert \boldsymbol{\beta}\vert\vert$:
 \begin{equation*}
     C(\boldsymbol{X},\boldsymbol{\beta})=\frac{1}{n}\left\{(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})^T(\boldsymbol{y}-\boldsymbol{X}\boldsymbol{\beta})\right\}+\lambda\vert\vert \boldsymbol{\beta}\vert\vert.
@@ -177,8 +177,7 @@ Var[\bm{\tilde y}]^2=n^{-1}\sum_i^N\left(\tilde y_i - avg( \bm{\tilde y})\right)
 Where $avg()$ stands for the average value.This is because the true values $f_i$ are not known and thus impossible to obtain.\\
 An important observation when fitting the data is that the Bias decreases as the model gets more complex, while the variance increases. When the Bias is large, important relations of the underlying data are not considered. When the Variance is high, small, unimportant features in the training set have too high of an impact. This is called overfitting. The aim is hence to find the model complexity that gives the lowest MSE. This is usually the case around the point where the Bias has the same magnitude as the Variance.
 \subsubsection{Bootstrap method}
-The Bootstrap method is a method that can be used to calculate statistical quantities. The main idea is the following: Let n be the size of the training set $Z=(z_1,z_2,...z_n)$, where each $z_i$ contains p predictors and one target value, that is $z_i=(x_{i,1},x_{i,2},...x_{i,p},y_i)$. Now, n data points $z_i$ are drawn randomly from Z with replacement. This is done $B$ times, creating $B$ new sets $Z'_j$. We can now create a fitting model for each of the sets  $Z'_j$. For each of these data sets $Z'_j$, we can now calculate any variable $\hat\theta_j$ given the data. Now, the distribution of $\hat\theta_j$ can be used to estimate the distribution of $\theta$ and get values of interest, such as the mean value or the variance. In this article, Bootstrap is used to get information about the test MSE, variance and bias in order to evaluate the quality of the fit. This is done by using the B bootstrap sets $Z'_j$ to calculate the fitting parameters $\beta$ and calculate B fits to the test set. $\tilde{Y_j}$. From these B fits, we can then approximate the test MSE, variance and bias.\\
-TODO: Talk some more about the mathematical validity of Bootstrap.
+The Bootstrap method is a method that can be used to calculate statistical quantities. The main idea is the following: Let n be the size of the training set $Z=(z_1,z_2,...z_n)$, where each $z_i$ contains p predictors and one target value, that is $z_i=(x_{i,1},x_{i,2},...x_{i,p},y_i)$. Now, n data points $z_i$ are drawn randomly from Z with replacement. This is done $B$ times, creating $B$ new sets $Z'_j$. We can now create a fitting model for each of the sets  $Z'_j$. For each of these data sets $Z'_j$, we can now calculate any variable $\hat\theta_j$ given the data. Now, the distribution of $\hat\theta_j$ can be used to estimate the distribution of $\theta$ and get values of interest, such as the mean value or the variance. In this article, Bootstrap is used to get information about the test MSE, variance and bias in order to evaluate the quality of the fit. This is done by using the B bootstrap sets $Z'_j$ to calculate the fitting parameters $\beta$ and calculate B fits to the test set. $\tilde{Y_j}$. From these B fits, we can then approximate the test MSE, variance and bias.
 \subsubsection{K-fold Cross validation}
 K- fold Cross Validation is a useful technique for when you have a limited data set, and want to make sure that all features are captured in a training set. K- fold Cross Validation does this by partitioning the data set into $k$ so called folds, assigning $k-1$ folds as the training set and $1$ of the folds as the testing set. It does this $k$ times, making sure to utilize each fold as the testing set once, as seen in figure \ref{kfoldcrossillustrated}. In this way, we end up generating $k$ different models, whose performance can be measured with respect to the testing fold or additionally, a separate testing set withheld from the partitioning process.
 
@@ -259,19 +258,21 @@ In order to test how well the Regression methods work with real data, we downloa
 \begin{figure}[H]
 \centering
 \includegraphics[trim=1cm 0.2cm 1.5cm 1.2cm, clip=true,scale = 0.05]{../figures/presentable_data/korea.png}
-\caption[Taebbaek Mountain]{The Taebaek Mountain area in South Korea. The original image has a resolution of $3601\times 3601$ pixels.}\label{Korea}
+\caption[Taebbaek Mountain]{The Taebaek Mountain area in South Korea. The original image has a resolution of $3601\times 3601$ pixels. Downloaded from \url{https://earthexplorer.usgs.gov/} }\label{Korea}
 \end{figure}
 \section{Computational Implementation}
 \subsection{Finding the ideal parameter $\lambda$}
-In order to find the ideal parameter $\lambda$ for both LASSO and Ridge Regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
+In order to find the ideal parameter $\lambda$ for both LASSO and Ridge regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
 \subsection{Error in LASSO-Regression}
-As there is no way to find the parameters $\bm{beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$. We observed that decreasing the tolerance to 0.01 lead to no convergence even at $10^5$ iterations. Similarly, we used XXX as tolerance at $10^5$ maximum iterations for fitting the country data. As this is very time-consuming, we found it impossible to find the ideal parameters $\bm{beta}$ for LASSO-Regression. Each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
+As there is no way to find the parameters $\bm{\beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. We observed that setting the tolerance to 0.01 lead to no convergence even at $10^5$ iterations at higher polynomial degrees when fitting the Franke Function. Having LASSO converge is very time-consuming, we found it impossible to run a large-scale numerical experiment with properly converging LASSO regression when the datasets are large, many polynomial degrees are to be included, and there a large number of bootstraps. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$.  Similarly, we used 0.3 as tolerance at $10^2$ maximum iterations for fitting the country data - this is not sufficient to get a proper fit.  Hence, each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
 \subsection{Sampling Franke Function}
 We sample randomly points $x_i$ and $y_i$ between 0 and 1 and calculate the target points
 \begin{equation*}
 z_i=f(x_i,y_i)+\epsilon_i
 \end{equation*}
 where $\epsilon_i$ follow a normal distribution with standard deviation $\sigma$. We used different values for $\sigma$, usually in the range $[0.01,1]$, which has a profound impact on the fit. 
+\subsection{Sampling Image Data}
+We sampled N randomly chosen points from the picture, where $N \in \{5000, 20000, 50000 \}$.
 \subsection{The Design Matrix}
 The Design Matrix implemented is a 2D-version of the Vandermonde Matrix, hence, approximate $z_i$ as, for a given degree $k$
 \begin{equation*}
@@ -279,7 +280,11 @@ The Design Matrix implemented is a 2D-version of the Vandermonde Matrix, hence, 
 \end{equation*}
 In the practical implementation, we "drop" $\beta_0$ by removing the first column from the Design Matrix, as our data is scaled.
 \subsection{Scaling}
-The design matrix is scaled using Scikit-Learn's StandardScaler. While this is not necessarily necessary for OLS, scaling is needed in order to ascertain that Ridge Regression \& LASSO Regression scale parameters equally, giving an overall better result. 
+The design matrix is scaled using Scikit-Learn's StandardScaler. While this is not necessarily necessary for OLS, scaling is needed in order to ascertain that Ridge regression \& LASSO regression scale parameters equally, giving an overall better result. 
+\subsection{Test functions}
+In order to ascertain the validity of our results, we implemented several test functions, where we tested that the Design Matrix is set up properly, that the functions performing the Regressions give the expected results, and that the main error estimates ($R^2$ \& MSE) are implemented correctly. 
+\subsection{Explanation of Code}
+As stated in the Introduction, all data can be found on our \href{https://github.com/schraderSimon/FYS-STK/tree/master/project1}{Github address}. In the main folder, an explanation of the code can be found. How the code is to be executed, is stated in the bottom of each file.
 \section{Results}
 
 \subsection{$\beta$ standard deviation in OLS and Ridge regression}
@@ -332,32 +337,48 @@ Using resampling methods, the MSE for OLS, Ridge- and LASSO regression on the Fr
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does not converge.}
 \label{fig:MSE_different_methods_Franke}
 \end{figure}
 \begin{figure}[H]
 \centering
 \includegraphics[trim=0.7cm 0.2cm 1cm 0.85cm, clip=true,scale = 0.7]{R2_bootstrap_different_methods_Franke.pdf}
-\caption[Test $R^2$-value for LASSO, Rigde and OLS regression]{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\caption[Test $R^2$-value for LASSO, Rigde and OLS regression]{Test $R^2$-value for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. The LASSO method did not converge here.}
 \label{fig:R2_different_methods_Franke}
 \end{figure}
 
-As expected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased R2-Score for all three methods when fitting the Franke Function. However, as can be seen in figures \ref{fig:MSE_different_methods_Franke} and \ref{fig:R2_different_methods_Franke}, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the R2 score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. As Bootstrap and Cross Validation are two very different methods to estimating a value of interest, the MSE in this case, different results are not surprising anyways. It would however be troublesome if the two methods gave different "ideal" models. The large deviation between LASSO and OLS is due to the aforementioned error.
+As expected from the theory, increasing the model complexity lead to a decreased Mean-Square-Error and an increased $R^2$ score for all three methods when fitting the Franke Function. However, as can be seen in figures \ref{fig:MSE_different_methods_Franke} and \ref{fig:R2_different_methods_Franke}, the mean square error for the Ordinary Least Square approximation suddenly raises sharply (and the $R^2$ score drops sharply) after some complexity is reached: This behaviour cannot be observed with LASSO and Ridge. Neither LASSO nor Ridge give conceivably better results than OLS when looking at the complexity giving the best results, that is, with the chosen parameters, OLS, LASSO and Ridge regression are about equally fast. As OLS is the most basic method, easiest to implement and also fastest, we figured out that it is the most suitable method for this problem - adding more complexity while avoiding a high variance (Ridge or LASSO) does not improve the quality of the fit.  Another interesting observation is that there is much more fluctuation in the MSE when using bootstrap than when using 5-fold Cross validation. We are not quite sure why this happens, but we assume that one possible cause is that when using bootstrap, some very "undesirable" combinations of values might be chosen, which leads to a very high Bootstrap. Thus, the graphs might look smoother when running more Bootstrap-samples. Another reason is that the training set in the Bootstrap method is not equally large as the training set when using 5-fold cross validation (75\% vs 80\%). We also observed that Bootstrap is more time-demanding than k-fold Cross Validation. As Bootstrap and Cross Validation are two very different methods to estimating a value of interest, the MSE in this case, different results are not surprising anyways. It would however be troublesome if the two methods gave different "ideal" models. The large deviation between LASSO and OLS is due to the aforementioned error. \\
+We also ran a small simulation where LASSO regression does converge. This can be found in figure \ref{fig:ConvergingLasso_Franke}. From this graph, we see that LASSO behaves similarly to Ridge regression - the error does remain low even when the OLS regression MSE raises sharply. The LASSO fit is sometimes above the OLS fit, which means that the ideal parameter $\lambda$ for LASSO-regression has not been found. It is also interesting to see that Cross-Validation attributes finds a sharp "rise" in Ridge regression at degree 5, while LASSO regression doesn't have that.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{MSE_different_methods_Franke_small.pdf}
+\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. Here, LASSO does converge.}
+\label{fig:ConvergingLasso_Franke}
+\end{figure}
+
 \subsubsection{Geographic data}
 Figure \ref{fig:MSE_Korea} shows the Mean Square Error of fitting the geographic data as a function of polynomial degree for both Bootstrap and K-Fold Cross Validation for all three methods. We have chosen a value $\lambda$ which minimizes the MSE. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/MSE_different_methods_Korea.pdf}
-\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title.}
+\includegraphics[width=0.95\textwidth]{figures/presentable_data/MSE_different_methods_Korea_LARGE.pdf}
+\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
 \label{fig:MSE_Korea}
 \end{figure}
-The data looks similar to the data attained when fitting the Franke Function, just in a different magnitude of error: The error decreases sharply as the model complexity is increased, remains rather constant (or increases slowly) as it is increased more, and then raises again, sharply for OLS. The LASSO data is unreliable, as we have chosen to only include it for completeness reasons - we did not manage to reach a sufficiently converged value, hence the MSE is much larger than the minimal possible LASSO data.
+We found out that, using Bootstrap to estimate, the minimal MSE for both OLS and Ridge is around 20,000, slightly lower for Ridge with 19,000. Using 5-fold Cross Validation, we found the error to be 19,000 for OLS and 18,000 for Ridge-Regression. It is possible that the Ridge error might go down even more as the minimum occurs at the final degree(=30) we have included. We did not include higher polynomial degrees as this is computationally very expensive. The data looks similar to the data attained when fitting the Franke Function, just in a different magnitude of error: The error decreases sharply as the model complexity is increased, remains rather constant (or increases slowly) as it is increased more, and then raises again, sharply for OLS. The LASSO data is unreliable, as we have chosen to only include it for completeness reasons - we did not manage to reach a sufficiently converged value, hence the MSE is much larger than the minimal possible LASSO data.\\
+We also run a second simulation with only 5000 datapoints. There, the minimal MSE was found to be around 23,000 for both OLS and Ridge using Bootstrap. From this, we assume that it is possible to attain even more precise fits with more fits, however, having the MSE reduced by 15\% while taking 4 times as many data points, is not impressive. We also run a third simulation with 50.000 data points. There, we used Cross-validation for the error estimate in order to reduce time usage. The result can be seen in figure \ref{fig:MSE_Korea_XXL}. The reason why we stopped at polynomial degree 40 and didn't try reducing the Ridge regression MSE further, is that higher polynomial degrees led to numerical overflow. Here, we got a minimal MSE of 16,500 for Ridge regression and 18,000 using OLS regression. This difference shows that Ridge regression can perform substantially better than OLS regression, but it also shows that the error reduction rate is really slow.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/presentable_data/MSE_different_methods_Korea50000_NOBOOTSTRAP.pdf}
+\caption[Test MSE for LASSO, Rigde and OLS regression]{Test MSE for LASSO, Rigde and OLS regression. Estimated using 5-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
+\label{fig:MSE_Korea_XXL}
+\end{figure}
+
 \subsection{Bias-Variance tradeoff}
 \subsubsection{Franke Function}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.65\textwidth]{Bias_Variance_LASSO.pdf}
-\caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree using LASSO regression]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using LASSO regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
+\caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree using LASSO regression]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using LASSO regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title. Here, the LASSO method converges.}
 \label{fig:LASSO_Bias_Variance}
 \end{figure}
 \begin{figure}[H]
@@ -372,30 +393,36 @@ The data looks similar to the data attained when fitting the Franke Function, ju
 \caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree using Ridge regression]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using Ridge regression. The values for $\sigma$, the size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:Ridge_Bias_Variance}
 \end{figure}
-Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridge_Bias_Variance} show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure 2.11 on page 38 in Hastie et al. by a lot\citep{hastie01statisticallearning}. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. There seems to be especially little variation in the LASSO approach, however, it is possible that this is due to the aforementioned issue with LASSO regression, as we have not found the ideal LASSO-coefficients due to the large error.
+Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridge_Bias_Variance} show the MSE, the Training-MSE, the Variance, and the bias for the Franke Function. We chose a very small set for the LASSO regression where the results converge properly, so this cannot be compared to the other sets directly. However, figure \ref{fig:ConvergingLasso_Franke} contains the MSE for OLS and LASSO as well that was created with the same data. In all figures, the aforementioned statement that the variance increases and the bias decreases with increasing model complexity, hold true. Especially for the OLS, we see that this resembles  figure 2.11 on page 38 in Hastie et al. by a lot\citep{hastie01statisticallearning}. One can see that OLS is more prone to a higher variance at higher polynomial degrees, as is expected - shrinkage methods explicitly reduce the variance. 
 
 \subsubsection{Geographic data}
 
-Figure \ref{fig:biasVariance_Korea} shows the bias, the variance and the MSE as a function of polynomial degree for Ridge and OLS Regression. We have chosen a value $\lambda$ which minimizes the MSE. We decided not to include LASSO as the LASSO data we attained is not the true LASSO data.
+Figure \ref{fig:biasVariance_Korea} shows the bias, the variance and the MSE as a function of polynomial degree for Ridge and OLS regression. We have chosen a value $\lambda$ which minimizes the MSE. We decided not to include LASSO as the LASSO data we attained is not the true LASSO data.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/presentable_data/Bias_variance_Korea.pdf}
-\caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree for Geodata]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using OLS and Ridge regression. The size of the dataset and the number of bootstraps can be found in the title.}
+\caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree for geodata]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using OLS and Ridge regression. The size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:biasVariance_Korea}
 \end{figure}
  Again, one can see how the Bias decreases more or less monotonously for both methods, until it eventually stagnates, while the variance increases later on. However, the increase in variance is not as drastic for Ridge regression, where it goes up, but never above 10.000, while it explodes for OLS, which fits with our expectations. 
 \subsection{Evaluation of the Geographic Fit}
-Figure \ref{fig:Korea_plot} shows scaled versions of the original data using the Ridge fit giving the minimal error, the OLS fit giving the minimal error, as well as the scaled original picture.
+Figure \ref{fig:Korea_plot} and \ref{fig:Korea_plot_XXL} show scaled versions of the original data using the Ridge fit giving the minimal error, the OLS fit giving the minimal error, as well as the scaled original picture.
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{Fitted_images.pdf}
-\caption[Fitted Geodata]{Fit of the Geodata with parameters that reduce the MSE using Ridge Regression and OLS Regression. The original (scaled) image is included as well. 5000 data points were used.}
+\caption[Fitted geodata with 20000 points]{Fit of the geodata with parameters that reduce the MSE using Ridge regression and OLS regression. The original (scaled) image is included as well. 20,000 data points were used.}
 \label{fig:Korea_plot}
 \end{figure}
-Just from this picture, we can see a lot. Both the OLS and the Ridge fit manage to fit the area in such a way that is generally correct - the large mountain ranges and the deep valleys are included, the sea is the "deepest" part, and of course, the dimensions are correct. However, there is a profound lack of detail both in the OLS and in the Ridge fit. Even the "easy" part (the dark area, which symbolizes the sea) is not very well fitted (it goes below zero), which lies in the nature of a polynomial fit. This is rather frustrating, as both creating these images and finding the ideal parameters is very time-consuming. Increasing the data points would most likely give a better result, but by the fact that the MSE does not go well below 20.000, it is unlikely that there is a huge improvement. A MSE of 20.000 means that the minimal root MSE is around 140, which, while different from the Mean Absolute Error, still gives an indication on the "average difference" between the original data and our fit. All of this combined shows that Regression is not the ideal way to match such complex data where there does not seem to exist a functional relationship with little error. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{figures/presentable_data/Fitted_imagesKorea50000_NOBOOTSTRAP.pdf}
+\caption[Fitted geodata with 50000 points]{Fit of the geodata with parameters that reduce the MSE using Ridge regression and OLS regression. The original (scaled) image is included as well. 50,000 data points were used.}
+\label{fig:Korea_plot_XXL}
+\end{figure}
+Just from these pictures, we can see a lot. Both the OLS and the Ridge fit manage to fit the area in such a way that is generally correct - the large mountain ranges and the deep valleys are included, the sea is the "deepest" part, and of course, the dimensions are correct. We also see how having a larger sample set increases the quality of the fit - there are more details in figure \ref{fig:Korea_plot_XXL} that lack in figure \ref{fig:Korea_plot}.  However, there is a profound lack of detail both in the OLS and in the Ridge fit. Even the "easy" part (the dark area, which symbolizes the sea) is not very well fitted (it goes below zero), which lies in the nature of a polynomial fit. This is rather frustrating, as both creating these images and finding the ideal parameters is very time-consuming. Increasing the data points would give an even better result, but by the fact that the MSE is above 15,000, it is unlikely that there is a huge improvement. A MSE of 15,000 means that the minimal root MSE is around 120, which, while different from the Mean Absolute Error, still gives an indication on the "average difference" between the original data and our fit. All of this combined shows that Regression is not the ideal way to match such complex data where there does not seem to exist a functional relationship with little error. 
 \section{Conclusion}
-Our analysis of methods has given a lot of insight. First of all, fitting a "simple" function such as the  Franke function, can be done with little loss using any of the methods, especially when the underlying error is small. Sadly, this cannot be said about complex data such as the geographic data, where it was not possible to predict more than the most basic traits due to the nature of the data, making it look like a picture from the late 18th century. OLS seems to be sufficient for both problems, as it reached an MSE on pair with Ridge regression. If this is the case, it is the ideal method, as it is computationally cheap. However, OLS is prone to overfitting, which is not the case with Ridge regression. LASSO is a very expensive method due to the lack of an analytical solution, and in this analysis, it has been prohibitively expensive. Finding the parameter $\lambda$ by iterating over all values is very expensive, and using more clever methods is necessary in large-scale projects. \\
-Error estimation is no easy task, and two of the most used methods give different error estimates - while they are in the same magnitude, they do differ largely, especially where there are steep changes. 
+Our analysis of methods has given a lot of insight. First of all, fitting a "simple" function such as the  Franke function, can be done with little loss using any of the methods, especially when the underlying error is small. Sadly, this cannot be said about complex data such as the geographic data, where it was not possible to predict more than the most basic traits due to the nature of the data, making it look like a picture from the late 18th century. OLS seems to be sufficient for fitting the Franke Function, but Ridge Regression performed much better on the geographic data. However, OLS is computationally cheaper, but on the other hand, OLS is prone to overfitting, which is not the case with Ridge regression. LASSO is a very expensive method due to the lack of an analytical solution, and in this analysis, it has been prohibitively expensive. Finding the parameter $\lambda$ by iterating over all values is very expensive, and using more clever methods is necessary in large-scale projects. \\
+Error estimation is no easy task, and two of the most used methods give different error estimates - while they are in the same magnitude, they do differ largely, especially where there are steep changes. k-fold Cross Validation is the preferred method for large projects, especially when using numerical solvers such as we did for LASSO regression - this is because the Bootstrap method can be extremely slow.
 \section{Appendix}
 \subsection{Proof that the MSE can be decomposed into Bias and Variance}
 \begin{equation}\label{Proof}
@@ -411,7 +438,7 @@ MSE(y,\tilde y) & =\mathbb{E}\left[({y}-{\tilde y})^2  \right] \\
 &=\sigma^2+Bias(\tilde y)^2+Var(\tilde y)
 \end{split}
 \end{equation}
-where we used that $\mathbb{E}\left[\epsilon\right]=0$, that $[(f-\mathbb{E}\left[\tilde y\right])$ simply is a number (f is deterministic) and that $\epsilon$ and $\tilde y$ are independent variables (hence the expected value can be seperated), as well as the fact that $\mathbb{E}\left[\mathbb{E}\left[\tilde y\right]-\tilde y\right]=\mathbb{E}\left[\tilde y\right]-\mathbb{E}\left[\tilde y\right]=0$ 
+where we used that $\mathbb{E}\left[\epsilon\right]=0$, that $(f-\mathbb{E}\left[\tilde y\right])$ simply is a number (as f is deterministic) and that $\epsilon$ and $\tilde y$ are independent variables (hence the expected value can be seperated), as well as the fact that $\mathbb{E}\left[\mathbb{E}\left[\tilde y\right]-\tilde y\right]=\mathbb{E}\left[\tilde y\right]-\mathbb{E}\left[\tilde y\right]=0$ 
 \bibliographystyle{plain}
 \bibliography{references}
 \end{document}

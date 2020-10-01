@@ -6,26 +6,36 @@ from sklearn.preprocessing import StandardScaler, Normalizer, RobustScaler,MinMa
 from small_function_library import *
 import numpy as np
 import pandas as pd
-terrain = imread("../data/Korea.tif")
+import sys
+terrain = imread("../data/Korea.tif") #terrain data
 np.random.seed(sum([ord(c) for c in "CORONA"]))
-datapoints=5000
-x=np.random.randint(len(terrain),size=datapoints)
-y=np.random.randint(len(terrain[1]),size=datapoints)
-xy_array=np.column_stack((x,y))
-z=[]
-for xv,yv in xy_array:
-    z.append(terrain[xv,yv])
-z=np.array(z)
-data=pd.read_csv("../csvData/Korea.csv")
+
+try:
+    filename=sys.argv[1]
+except:
+    filename="Korea20000.csv" #File containing the relevant data
+try:
+    scaling_factor=step=7 #how much the resulting images should be scaled. This cannot be one, otherwise the machine crashes (too large matrix)
+except:
+    scaling_factor=step=7
+data=pd.read_csv("../csvData/%s"%filename)
 mindeg=data["mindeg"][0];maxdeg=data["maxdeg"][0]
 k=data["k"][0]
 datapoints=data["datapoints"][0]
 n_bootstraps=data["n_bootstrap"][0]
 n_bootstraps_lasso=data["n_bootstraps_lasso"][0]
-
-ideal_degree_OLS=np.argmin(data["MSEBOOTOLS"])
-ideal_degree_RIDGE=np.argmin(data["MSEBOOTRIDGE"])
+x=np.random.randint(len(terrain),size=datapoints) #random points for x
+y=np.random.randint(len(terrain[1]),size=datapoints) #random points for y
+xy_array=np.column_stack((x,y))
+z=[]
+for xv,yv in xy_array:
+    z.append(terrain[xv,yv])
+z=np.array(z)
+ideal_degree_OLS=np.argmin(data["MSEkfoldOLS"])
+ideal_degree_RIDGE=np.argmin(data["MSEkfoldRIDGE"])
 ideal_lambda_RIDGE=data["ideal_lambda_RIDGE"][ideal_degree_RIDGE]
+ideal_degree_OLS+=data["mindeg"][0]; #S
+ideal_degree_RIDGE+=data["mindeg"][0];
 X_OLS=DesignMatrix_deg2(x,y,ideal_degree_OLS)
 z_mean=np.mean(z)
 z_scaled=z-z_mean
@@ -35,7 +45,6 @@ X_OLS_scaled=scaler.transform(X_OLS)
 betaOLS, beta_varianceOLS = LinearRegression(X_OLS_scaled,z_scaled)
 
 
-scaling_factor=step=5
 px=np.arange(0,len(terrain),step,dtype=int)
 py=np.arange(0,len(terrain),step,dtype=int)
 terrain_fit_OLS=np.zeros((len(py),len(px)))
@@ -75,7 +84,12 @@ im0=ax0.imshow(terrain_fit_OLS, cmap=mapstyle,vmin = _min, vmax = _max)
 im2=ax2.imshow(terrain_scaled, cmap=mapstyle,vmin = _min, vmax = _max)
 cbar=plt.colorbar(im2,ax=ax2)
 cbar.set_label("Height [m]")
-#fig.colorbar(im0,ax=ax0)
-#fig.colorbar(im1,ax=ax1)
-plt.savefig("../figures/Fitted_images.pdf")
+plt.savefig("../figures/Fitted_images%s.pdf"%filename[:-4])
 plt.show()
+
+"""
+run as python3 create_picture.py filename scaling_factor
+for example python3 plot_geographic_data.py Korea50000_NOBOOTSTRAP.csv 7
+
+
+"""
