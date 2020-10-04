@@ -4,8 +4,8 @@ The "selected_results" folder contains selected runs that can be benchmarked aga
  - Korea20000.csv contains data (the parameters can be found in the file) for fitting the geographic data with 20.000 points. The individual columns contain data for different polynomial degrees (starting at mindeg). Created with create_geographic_data.py 
 - Korea50000_NOBOOTSTRAP.csv contains data contains data (the parameters can be found in the file) for fitting the geographic data with 20.000 points. Bootstrap was not used. The individual columns contain data for different polynomial degrees (starting at mindeg). Created with create_geographic_data.py
 - MSE_data_Franke.csv contains the different MSE's for all three regression methods used. The individual columns contain data for different polynomial degrees (starting at 1). Created with calculate_different_MSE.py.
-- OLS_data_sigma0.100data800.csv contains the different data required to plot the bias-variance-tradeoff plots. Created with a.
--
+- OLS_data_sigma0.100data800.csv contains the different data required to plot the bias-variance-tradeoff plots. Created with a.py
+
 The "report" map contains the report.
 The "csvData" folder contains (without explicitely deleting anything) data used to create plots (and much more).
 The "data" map contains .tif containing the Korea geographic data.
