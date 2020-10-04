@@ -1,3 +1,14 @@
+Here is an explanation of the folder layout:
+The "code" folder contains the code used to produce the data.
+The "selected_results" folder contains selected runs that can be benchmarked against our code.
+ - Korea20000.csv contains data (the parameters can be found in the file) for fitting the geographic data with 20.000 points.
+- Korea50000_NOBOOTSTRAP.csv contains data ru
+The "report" map contains the report.
+The "csvData" folder contains (without explicitely deleting anything) data used to create plots (and much more).
+The "data" map contains .tif containing the Korea geographic data.
+The "figures" map contains figures (and some more) that were used in the report.
+Here is an explanation of what the single code files are and what they do. Each file contains a "running example" in the bottom of the file explaining how it is executed:
+
 a.py - OLS Fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.
 d2.py - Ridge Fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.
 e.py - LASSO fit to the Franke Function. parameters are to be put in the Source code manually as there are so many.

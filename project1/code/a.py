@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 method="OLS" #Method name, important for file saving & plotting
-datapoints=500
+datapoints=800
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
-maxdeg=11 #The maximal degree to be calculated
-n_bootstraps=10000
-sigma=0.05
+maxdeg=13 #The maximal degree to be calculated
+n_bootstraps=5000
+sigma=0.1
+mindeg=1
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 MSE_train=np.zeros(maxdeg)
 MSE_test=np.zeros(maxdeg)
@@ -29,14 +30,14 @@ for deg in range(1,maxdeg+1):
     scaler.fit(X_train) #Scale
     X_train_scaled=scaler.transform(X_train) #scale train Design matrix
     X_test_scaled=scaler.transform(X_test) #scale test Design matrix
-    beta = LinearRegression(X_train_scaled,z_train_scaled) #the beta values for Linear Regression
+    beta,beta_variance = LinearRegression(X_train_scaled,z_train_scaled) #the beta values for Linear Regression
     z_train_scaled_fit=X_train_scaled@beta
-    MSE_train[deg-1]+=(MSE(z_train_scaled,z_train_scaled_fit)) #Train MSE
+    MSE_train[deg-1]+=MSE(z_train_scaled,z_train_scaled_fit) #Train MSE
     R2_train[deg-1]+=(R2(z_train_scaled,z_train_scaled_fit)) #Train R2
     z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
     for i in range(n_bootstraps):
         X_b, z_b=resample(X_train_scaled,z_train_scaled) #Resampled X, z
-        beta = LinearRegression(X_b,z_b)
+        beta,beta_variance = LinearRegression(X_b,z_b)
         z_test_scaled_fit[:,i]=X_test_scaled @ beta
     MSE_test[deg-1] =bootstrap_MSE(z_test_scaled,z_test_scaled_fit,n_bootstraps)
     bias[deg-1] = bootstrap_bias(z_test_scaled,z_test_scaled_fit,n_bootstraps)
@@ -55,9 +56,9 @@ plt.savefig("../figures/Bias_Variance_%s.pdf"%(method))
 write_csv=True #If a file with data should be created
 if (write_csv):
     #OUTPUTS CSV FILE CONTAINING MSE OF KFOLD-RIDGE OVER A SPAN OF LAMBDA VALUES (SAMPLE TYPE 2)
-    dict = {'sigma':sigma ,'datapoints':datapoints , 'n_bootstrap': n_bootstraps, 'train_MSE':MSE_train, 'test_MSE': MSE_test, 'bias':bias, 'variance':variance}
+    dict = {'Degree':np.array(range(mindeg,maxdeg+1)),'sigma':sigma ,'datapoints':datapoints , 'n_bootstrap': n_bootstraps, 'train_MSE':MSE_train, 'test_MSE': MSE_test, 'bias':bias, 'variance':variance}
     df = pd.DataFrame(dict)
-    df.to_csv('../csvData/OLS_data.csv')
+    df.to_csv('../csvData/OLS_data_sigma%.3fdata%d.csv'%(sigma,datapoints))
 
 plt.show()
 
