@@ -134,7 +134,7 @@ effectively imposing a penalty on the size of $\boldsymbol{\beta}$. One of the c
 \bm{y}^{Ridge}=\bm{X\hat\beta}^{Ridge}=\sum_{j=1}^{p}\bm{u}_j\frac{\sigma_j^2}{\sigma_j^2+\lambda}\bm{u}^T_j\bm{y}
 \end{equation*}
 where $\bm{u}_j$ are the column of the matrix $\bm{U}$ from the SVD of $\bm{X}$. It also follows directly from this formula that the smaller singular values are shrunk more.\\
-This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact off overfitting.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
+This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact of overfitting.\\We later show the dependence that the variance of $\beta$ has on the regularization parameter. To do this, we need an expression to estimate the variance of our predictions for the $\beta$'s. It's given by $\sigma^2(\hat{\beta}_j) = \sigma^2\sqrt{[X^TX+\lambda \hat{I}]^{-1}_{jj}}$\cite{HW1}\cite{HW2}, meaning the diagonal elements of the matrix computed as part of Ridge with matrix inversion. Here, $\sigma^2$ could be estimated by $\sigma^2 = \frac{1}{N-p-1}\sum\limits_{i=1}^N(z_i-\bar{z}_i)^2$\citep{hastie01statisticallearning}, however in our case, the value of $\sigma^2$ is known, as we're the ones constructing the data set.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
 
 \begin{equation*}
     \boldsymbol{\beta}^{\mathrm{Ridge}} = \left(\boldsymbol{X}^T\boldsymbol{X}+\lambda\boldsymbol{I}\right)^{-1}\boldsymbol{X}^T\boldsymbol{y}.
@@ -264,7 +264,7 @@ In order to test how well the Regression methods work with real data, we downloa
 \subsection{Finding the ideal parameter $\lambda$}
 In order to find the ideal parameter $\lambda$ for both LASSO and Ridge regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
 \subsection{Error in LASSO-Regression}
-As there is no way to find the parameters $\bm{\beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn \citep{scikit-learn} in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. We observed that setting the tolerance to 0.01 lead to no convergence even at $10^5$ iterations at higher polynomial degrees when fitting the Franke Function. Having LASSO converge is very time-consuming, we found it impossible to run a large-scale numerical experiment with properly converging LASSO regression when the datasets are large, many polynomial degrees are to be included, and there a large number of bootstraps. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$.  Similarly, we used 0.3 as tolerance at $10^2$ maximum iterations for fitting the country data - this is not sufficient to get a proper fit.  Hence, each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
+As there is no way to find the parameters $\bm{\beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn \cite{scikit-learn} in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. We observed that setting the tolerance to 0.01 lead to no convergence even at $10^5$ iterations at higher polynomial degrees when fitting the Franke Function. Having LASSO converge is very time-consuming, we found it impossible to run a large-scale numerical experiment with properly converging LASSO regression when the datasets are large, many polynomial degrees are to be included, and there a large number of bootstraps. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$.  Similarly, we used 0.3 as tolerance at $10^2$ maximum iterations for fitting the country data - this is not sufficient to get a proper fit.  Hence, each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
 \subsection{Sampling Franke Function}https://www.linuxmint.com/start/ulyana/
 We sample randomly points $x_i$ and $y_i$ between 0 and 1 and calculate the target points
 \begin{equation*}
@@ -361,7 +361,7 @@ We also ran a small simulation where LASSO regression does converge. This can be
 Figure \ref{fig:MSE_Korea} shows the Mean Square Error of fitting the geographic data as a function of polynomial degree for both Bootstrap and K-Fold Cross Validation for all three methods. We have chosen a value $\lambda$ which minimizes the MSE. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/MSE_different_methods_Korea_LARGE.pdf}
+\includegraphics[width=0.95\textwidth]{MSE_different_methods_Korea_LARGE.pdf}
 \caption[Test MSE for LASSO, Rigde and OLS regression (geo, 20000 points)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using Bootstrap (left) or k-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
 \label{fig:MSE_Korea}
 \end{figure}
@@ -369,7 +369,7 @@ We found out that, using Bootstrap to estimate, the minimal MSE for both OLS and
 We also run a second simulation with only 5000 datapoints. There, the minimal MSE was found to be around 23,000 for both OLS and Ridge using Bootstrap. From this, we assume that it is possible to attain even more precise fits with more fits, however, having the MSE reduced by 15\% while taking 4 times as many data points, is not impressive. We also run a third simulation with 50.000 data points. There, we used Cross-validation for the error estimate in order to reduce time usage. The result can be seen in figure \ref{fig:MSE_Korea_XXL}. The reason why we stopped at polynomial degree 40 and didn't try reducing the Ridge regression MSE further, is that higher polynomial degrees led to numerical overflow. Here, we got a minimal MSE of 16,500 for Ridge regression and 18,000 using OLS regression. This difference shows that Ridge regression can perform substantially better than OLS regression, but it also shows that the error reduction rate is really slow.
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{figures/presentable_data/MSE_different_methods_Korea50000_NOBOOTSTRAP.pdf}
+\includegraphics[width=0.65\textwidth]{MSE_different_methods_Korea50000_NOBOOTSTRAP.pdf}
 \caption[Test MSE for LASSO, Rigde and OLS regression (geo, 50000 points)]{Test MSE for LASSO, Rigde and OLS regression. Estimated using 5-Fold Cross validations. The exact parameters can be found in the graph's title. LASSO regression did not converge.}
 \label{fig:MSE_Korea_XXL}
 \end{figure}
@@ -400,7 +400,7 @@ Figures \ref{fig:LASSO_Bias_Variance}, \ref{fig:Bias_Variance} and \ref{fig:Ridg
 Figure \ref{fig:biasVariance_Korea} shows the bias, the variance and the MSE as a function of polynomial degree for Ridge and OLS regression. We have chosen a value $\lambda$ which minimizes the MSE. We decided not to include LASSO as the LASSO data we attained is not the true LASSO data.
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/Bias_variance_Korea.pdf}
+\includegraphics[width=0.95\textwidth]{Bias_variance_Korea.pdf}
 \caption[Bias, Variance, MSE \& training MSE as a function of the polynomial degree for geodata]{Bias, Variance, MSE \& training MSE as a function of the polynomial degree using OLS and Ridge regression. The size of the dataset and the number of bootstraps can be found in the title.}
 \label{fig:biasVariance_Korea}
 \end{figure}
@@ -415,7 +415,7 @@ Figure \ref{fig:Korea_plot} and \ref{fig:Korea_plot_XXL} show scaled versions of
 \end{figure}
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{figures/presentable_data/Fitted_imagesKorea50000_NOBOOTSTRAP.pdf}
+\includegraphics[width=1.0\textwidth]{Fitted_imagesKorea50000_NOBOOTSTRAP.pdf}
 \caption[Fitted geodata with 50000 points]{Fit of the geodata with parameters that reduce the MSE using Ridge regression and OLS regression. The original (scaled) image is included as well. 50,000 data points were used.}
 \label{fig:Korea_plot_XXL}
 \end{figure}
@@ -438,7 +438,7 @@ MSE(y,\tilde y) & =\mathbb{E}\left[({y}-{\tilde y})^2  \right] \\
 &=\sigma^2+Bias(\tilde y)^2+Var(\tilde y)
 \end{split}
 \end{equation}
-where we used that $\mathbb{E}\left[\epsilon\right]=0$, that $(f-\mathbb{E}\left[\tilde y\right])$ simply is a number (as f is deterministic) and that $\epsilon$ and $\tilde y$ are independent variables (hence the expected value can be seperated), as well as the fact that $\mathbb{E}\left[\mathbb{E}\left[\tilde y\right]-\tilde y\right]=\mathbb{E}\left[\tilde y\right]-\mathbb{E}\left[\tilde y\right]=0$ 
+where we used that $\mathbb{E}\left[\epsilon\right]=0$, that $(f-\mathbb{E}\left[\tilde y\right])$ simply is a number (as f is deterministic) and that $\epsilon$ and $\tilde y$ are independent variables (hence the expected value can be separated), as well as the fact that $\mathbb{E}\left[\mathbb{E}\left[\tilde y\right]-\tilde y\right]=\mathbb{E}\left[\tilde y\right]-\mathbb{E}\left[\tilde y\right]=0$ 
 \subsection{Figures}
 \begin{figure}[H]
 \centering
