@@ -3,8 +3,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
-#np.random.seed(sum([ord(c) for c in "corona"]))
-#np.random.seed(670)
+
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 method="RIDGE"#Method name, important for file saving & plotting
 datapoints=500

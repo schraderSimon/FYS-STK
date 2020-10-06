@@ -100,7 +100,7 @@ def DesignMatrix(x,polydgree):
 def RidgeRegression(X_training,y_training,Lambda, include_beta_variance=True):
 
     """
-    Input: The design matrix X, and the targets Y and a value for LAMBDA, and wether the variance should be included too.
+    Input: The design matrix X, and the targets Y and a value for LAMBDA, and whether the variance should be included too.
     Output: The Ridge Regression beta and the variance (zero if include_beta_variance is zero)
     This was implemented as SVD.
 
@@ -435,6 +435,7 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     #print(MSE_estimate)
     return MSE_estimate
 
+#(Not used)-- averages an array over a given interval to smooth out jagged plots
 def ArraySmoother(Arr, interval):
     NrIntervals = len(Arr)//interval
     k=0
