@@ -6,6 +6,7 @@ import pandas as pd
 
 
 """ PARAMETERS START"""
+np.random.seed(sum([ord(c) for c in "corona"]))
 k = 4
 nr_lambdas = 80
 smallest_lambda = -3
@@ -15,31 +16,38 @@ nr_noiseVal = 40
 """ PARAMETERS END"""
 
 
-#Creating a list of values for function noise
-
+#Creating a list of values for function noise and lambda values
 function_noise = np.linspace(0,1,nr_noiseVal)
-
 lambda_val = np.logspace(smallest_lambda,1,nr_lambdas)
 
+#Setting up the dataset apart from z, which appears in the for loop
+#to get the average over two independent runs (This is only for the case of no random.seed
+#which has been added to make the results reproducible)
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
 
+#Initializing a matrix for the MSE's and a list for the lambda values 
+#resulting in the smalles MSE at a given model complexity
 MSE_test_kfoldRidge_lambda = np.zeros((nr_lambdas,nr_noiseVal))
+min_lambda = np.zeros(nr_noiseVal)
 
+#setting up design matrix
 X=DesignMatrix_deg2(x,y,deg,True)
 
 t = 0
+#Run over all noise values in list
 for noise in function_noise:
+    #z is calculated for each noise value 
     z=FrankeFunction(x,y)+noise*np.random.normal(0,1, datapoints)
     for i in range(nr_lambdas):
-        #Averaging over two runs to hopefully avoid extreme outliers
+        #Averaging over two runs to hopefully avoid extreme outliers (does not work with random.seed)
         MSE_test_kfoldRidge_lambda[i,t] = (KCrossValRidgeMSE(X,z,k,lambda_val[i]) + KCrossValRidgeMSE(X,z,k,lambda_val[i]))/2
     t += 1
     print(t, "out of ",nr_noiseVal)
 
-min_lambda = np.zeros(nr_noiseVal)
 
 
+#picking out the lambda that resulted in the smalles MSE
 for i in range(len(min_lambda)):
     min_lambda[i] = min(MSE_test_kfoldRidge_lambda[:,i])
 
@@ -61,13 +69,13 @@ RUN EXAMPLES:
 ###############################################################################################################################################
 Random seed: sum([ord(c) for c in "corona"],k = 4, nr_lambdas = 80, smallest_lambda = -3, deg = 4, datapoints = 200, nr_noiseVal = 40
 Lambda resulting in smallest MSE
-[0.00480359 0.0055031  0.00801271 0.01237581 0.01625353 0.02241479
- 0.03373827 0.03653577 0.04834668 0.05958756 0.07687711 0.09220621
- 0.10292206 0.11424014 0.127878   0.17096495 0.18752849 0.23711585
- 0.23612681 0.26127658 0.25646683 0.33055715 0.32883442 0.41701454
- 0.40256273 0.35451488 0.54922584 0.41894652 0.64126143 0.71786912
- 0.56203241 0.74364191 0.76392082 0.60484718 0.83028891 0.8694009
- 0.85052272 0.73369273 0.93014298 1.01511184]
+[0.00435159 0.0053001  0.00674357 0.01176623 0.01649331 0.02352091
+ 0.03208273 0.04074036 0.04821939 0.05245691 0.07219758 0.0742093
+ 0.09544288 0.13183089 0.1626366  0.15889123 0.17450586 0.20418628
+ 0.18672632 0.22714777 0.30777509 0.2829011  0.35567369 0.32183287
+ 0.3618193  0.51812621 0.53293298 0.55327763 0.57738223 0.44308535
+ 0.51168843 0.65366006 0.66805317 0.65787447 0.83007886 0.92389982
+ 0.97536661 0.91069425 0.77592796 0.92177808]
 ###############################################################################################################################################
 
 """
