@@ -43,7 +43,7 @@ for deg in range(1,maxdeg+1):
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
 
-    p = len(X[0,:])+1
+    p = len(X[0,:])
     print('polydegree={0}'.format(int(deg)))
 
     for i in range(len(lambda_val_ridge)):
@@ -64,7 +64,7 @@ print('Max Std.dev. Ridge')
 print(std_dev_ridge)
 
 """ OUTPUT CSV """
-dict = {'polynomial degree': [i for i in range(1,maxdeg+1)], 'OLS conf. int. radius':  np.round(Z_table*std_dev_ridge[:,0],2), 'OLS_beta_max':  max_beta[:,0], 'OLS_beta_min':  min_beta[:,0],
-'Ridge conf. int. radius (lambda = {0})'.format(lambda_val_ridge[1]): np.round(Z_table*std_dev_ridge[:,1],2), 'Ridge_beta_max(lambda = {0})'.format(lambda_val_ridge[1]):  max_beta[:,1],'Ridge_beta_min(lambda = {0})'.format(lambda_val_ridge[1]):  min_beta[:,1],'Ridge conf. int. radius (lambda = {0})'.format(lambda_val_ridge[2]): np.round(Z_table*std_dev_ridge[:,2],2), 'Ridge_beta_max(lambda = {0})'.format(lambda_val_ridge[2]):  max_beta[:,2], 'Ridge_beta_min(lambda = {0})'.format(lambda_val_ridge[2]):  min_beta[:,2]}
+dict = {'polynomial degree': [i for i in range(1,maxdeg+1)], 'OLS C.I.R.':  np.round(Z_table*std_dev_ridge[:,0],2), 'OLS_b_max':  max_beta[:,0], 'OLS_b_min':  min_beta[:,0],
+'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[1]): np.round(Z_table*std_dev_ridge[:,1],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[1]):  max_beta[:,1],'Ridge_b_min(L = {0})'.format(lambda_val_ridge[1]):  min_beta[:,1],'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[2]): np.round(Z_table*std_dev_ridge[:,2],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[2]):  max_beta[:,2], 'Ridge_b_min(L = {0})'.format(lambda_val_ridge[2]):  min_beta[:,2]}
 df = pd.DataFrame(dict)
 df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/g_confidence_intervals_maxdeg({0}).csv'.format(maxdeg))
