@@ -52,7 +52,7 @@ for deg in range(1,maxdeg+1):
     X_test_scaled=scaler.transform(X_test)
     
     #getting outputs for linear- and ridge regression
-    beta_OLS,beta_var_OLS= LinearRegression(X_train_scaled,z_train_scaled)
+    beta_OLS, beta_var_OLS= LinearRegression(X_train_scaled,z_train_scaled)
     beta_ridge1, beta_var_ridge1 = RidgeRegression(X_train,z_train,Lambda1)
     beta_ridge2, beta_var_ridge2 = RidgeRegression(X_train,z_train,Lambda2)
     #Calculating the standard deviation for the jj'th beta, then choosing the largest value as 

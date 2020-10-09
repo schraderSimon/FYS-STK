@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{adjustbox}
 \usepackage{csvsimple}
 \usepackage{amssymb}
 \usepackage{hyperref}
@@ -36,7 +37,7 @@
 \graphicspath{{../figures/presentable_data/}} %Setting the graphicspath
 
 \begin{document}
-%\maketitle
+\maketitle
 \tableofcontents
 \listoffigures
 \listoftables
@@ -326,10 +327,20 @@ polynomial degree & OLS   & Ridge ($\lambda = 0.1$) & Ridge ($\lambda = 1.0$) \\
 5                 & 2.977 & 0.278                & 0.091 \\ \hline
 \end{tabular}
 \end{table}
-It's clear that Ridge regression has the effect of tightening the confidence interval for the parameters $\beta$ belonging to the highest order polynomials. It's also clear that increasing the regularization parameter $\lambda$ has the expected effect of further tightening the confidence interval of the parameters. It's worth noting that while in OLS the values occupy four different orders of magnitude, but using Ridge, that decreases to two or one. The cost function imposing a penalty on the size of the $\beta$'s, forces every parameter to within a smaller subset of options.\\\\ For the same analysis on the terrain data, we got the following results
+It's clear that Ridge regression has the effect of tightening the confidence interval for the parameters $\beta$ belonging to the highest order polynomials. It's also clear that increasing the regularization parameter $\lambda$ has the expected effect of further tightening the confidence interval of the parameters. It's worth noting that while in OLS the values occupy four different orders of magnitude, but using Ridge, that decreases to two or one. The cost function imposing a penalty on the size of the $\beta$'s, forces every parameter to within a smaller subset of options.\\\\ For the same analysis on the terrain data, we got the results in table \ref{table2}.
 
 
-\csvautotabular{../csvData/g_confidence_intervals_maxdeg_15.csv}
+
+\begin{table}[H]\caption[Confidence intervals of estimators in OLS and Ridge regression for Geodata]{The column names  are abbreviated as: p.d.- Polynomial degree, C.I (Confidence Interval), meaning here, half the width of the 95'th percentile confidence interval for the estimators $\beta$ in OLS and Ridge regression with the highest standard deviation, using the regularization parameter $\lambda$ found in the parentheses. $b_{min/max}$ the lowest and highest value of $\beta$ used in the model}
+	\begin{adjustbox}{max width=\textwidth}
+		\csvautotabular{../csvData/g_confidence_intervals_maxdeg_15.csv}
+	\end{adjustbox}	
+	\label{table2}
+\end{table}
+
+Here too, wee see that the implementation of ridge regression results in much lower variance in the parameters $\beta$ while also reducing the maximal parameters by many orders of magnitude .
+
+
 
 
 \subsection{Error comparison}

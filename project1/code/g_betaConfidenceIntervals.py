@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import sys
 
+
 """make the data"""
 terrain = imread("../data/Korea.tif") #Open image file
 np.random.seed(sum([ord(c) for c in "CORONA"]))
@@ -43,13 +44,17 @@ for deg in range(1,maxdeg+1):
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
 
+    #The value of p from equation 4 in the report is calculated by the number of degrees of freedom in the model
+    #namely the coefficients in the polynomial
     p = len(X[0,:])
     print('polydegree={0}'.format(int(deg)))
 
     for i in range(len(lambda_val_ridge)):
         beta_ridge, beta_var_ridge = RidgeRegression(X_train_scaled,z_train_scaled,lambda_val_ridge[i])
 
+        #calculating the difference between the model estimates and the function values
         z_diff = z_test_scaled-X_test_scaled @ beta_ridge
+        #Calculating the expression 4 in the report
         sigma_squared_estimate = 1/(len(z_test_scaled)-p-1)*(z_diff @ z_diff)
         std_dev_ridge[counter,i] = round(np.sqrt(np.amax(beta_var_ridge*sigma_squared_estimate)),2)
         max_beta[counter,i] = np.round(np.amax(beta_ridge),2)
@@ -63,10 +68,11 @@ print('Random seed: '+'sum([ord(c) for c in "CORONA"]'+', datapoints = {0} ,Z_ta
 print('Max Std.dev. Ridge')
 print(std_dev_ridge)
 
+
+
 """ OUTPUT CSV """
-pd.set_option('display.float_format', '{:.2E}'.format)
-dict = {'poly.deg.': [i for i in range(1,maxdeg+1)], 'OLS C.I.R.':  np.round(Z_table*std_dev_ridge[:,0],2), 'OLS_b_max':  max_beta[:,0], 'OLS_b_min':  min_beta[:,0],
-'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[1]): np.round(Z_table*std_dev_ridge[:,1],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[1]):  max_beta[:,1],'Ridge_b_min(L = {0})'.format(lambda_val_ridge[1]):  min_beta[:,1],'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[2]): np.round(Z_table*std_dev_ridge[:,2],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[2]):  max_beta[:,2], 'Ridge_b_min(L = {0})'.format(lambda_val_ridge[2]):  min_beta[:,2]}
+
+dict = {'p.d.': [i for i in range(1,maxdeg+1)], 'OLS C.I.':  ["%.2E" % number for number in np.round(Z_table*std_dev_ridge[:,0],2)], 'OLS b_{max}':  ["%.2E" % number for number in max_beta[:,0]], 'OLS b_{min}': ["%.2E" % number for number in min_beta[:,0]], 'R({0}) C.I.'.format(lambda_val_ridge[1]): ["%.2E" % number for number in np.round(Z_table*std_dev_ridge[:,1],2)], 'R. b_{max}':  ["%.2E" % number for number in max_beta[:,1]],'R. b_{min}':  ["%.2E" % number for number in min_beta[:,1]],'R.({0}) C.I.'.format(lambda_val_ridge[2]): ["%.2E" % number for number in np.round(Z_table*std_dev_ridge[:,2],2)], 'R._2 b_{max}':  ["%.2E" % number for number in max_beta[:,2]], 'R._2 b_{min}':  ["%.2E" % number for number in min_beta[:,2]]}
 df = pd.DataFrame(dict)
 df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/g_confidence_intervals_maxdeg_{0}.csv'.format(maxdeg),index=False)
 
