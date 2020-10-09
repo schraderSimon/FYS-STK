@@ -1,4 +1,4 @@
-,polynomial degree,OLS C.I.R.,OLS_b_max,OLS_b_min,Ridge C.I.R. (L = 0.01),Ridge_b_max(L = 0.01),Ridge_b_min(L = 0.01),Ridge C.I.R. (L = 1),Ridge_b_max(L = 1),Ridge_b_min(L = 1)
+,poly.deg.,OLS C.I.R.,OLS_b_max,OLS_b_min,Ridge C.I.R. (L = 0.01),Ridge_b_max(L = 0.01),Ridge_b_min(L = 0.01),Ridge C.I.R. (L = 1),Ridge_b_max(L = 1),Ridge_b_min(L = 1)
 0,1,2.96,40.69,28.71,2.96,40.69,28.71,2.96,40.69,28.71
 1,2,10.41,374.11,-284.45,10.41,374.11,-284.45,10.41,374.05,-284.3
 2,3,51.06,1101.82,-1147.4,51.04,1101.74,-1147.11,50.41,1094.57,-1119.41
