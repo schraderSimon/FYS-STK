@@ -67,4 +67,25 @@ print(std_dev_ridge)
 dict = {'poly.deg.': [i for i in range(1,maxdeg+1)], 'OLS C.I.R.':  np.round(Z_table*std_dev_ridge[:,0],2), 'OLS_b_max':  max_beta[:,0], 'OLS_b_min':  min_beta[:,0],
 'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[1]): np.round(Z_table*std_dev_ridge[:,1],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[1]):  max_beta[:,1],'Ridge_b_min(L = {0})'.format(lambda_val_ridge[1]):  min_beta[:,1],'Ridge C.I.R. (L = {0})'.format(lambda_val_ridge[2]): np.round(Z_table*std_dev_ridge[:,2],2), 'Ridge_b_max(L = {0})'.format(lambda_val_ridge[2]):  max_beta[:,2], 'Ridge_b_min(L = {0})'.format(lambda_val_ridge[2]):  min_beta[:,2]}
 df = pd.DataFrame(dict)
-df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/g_confidence_intervals_maxdeg({0}).csv'.format(maxdeg))
+df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/g_confidence_intervals_maxdeg_{0}.csv'.format(maxdeg),index=False)
+
+"""
+Run Example:
+Random seed: sum([ord(c) for c in "CORONA"], datapoints = 50000 ,Z_table = 1.96, deg.max. = 15, lambda_vals=[0, 0.01, 1]
+Max Std.dev. Ridge
+[[1.51000000e+00 1.51000000e+00 1.51000000e+00]
+ [5.31000000e+00 5.31000000e+00 5.31000000e+00]
+ [2.60500000e+01 2.60400000e+01 2.57200000e+01]
+ [1.28060000e+02 1.27600000e+02 9.78000000e+01]
+ [5.40600000e+02 4.91910000e+02 1.28130000e+02]
+ [2.89653000e+03 1.11619000e+03 1.36270000e+02]
+ [1.47870900e+04 1.19276000e+03 1.45280000e+02]
+ [7.42867000e+04 1.26451000e+03 1.54830000e+02]
+ [3.97810430e+05 1.35832000e+03 1.58080000e+02]
+ [2.12928902e+06 1.41993000e+03 1.58870000e+02]
+ [1.06439332e+07 1.46686000e+03 1.59540000e+02]
+ [5.35286089e+07 1.51121000e+03 1.62070000e+02]
+ [2.49256454e+07 1.52466000e+03 1.61760000e+02]
+ [1.29024831e+07 1.53464000e+03 1.62110000e+02]
+ [3.59159606e+07 1.55956000e+03 1.64030000e+02]]
+"""
