@@ -25,7 +25,7 @@ z=np.array(z) #data to be fitted
 
 nr_lambdas_ridge = 3
 
-maxdeg=5
+maxdeg=15
 Z_table = 1.96
 lambda_val_ridge = [0,0.01,1]
 
@@ -60,6 +60,6 @@ print('Max Std.dev. Ridge')
 print(std_dev_ridge)
 
 """ OUTPUT CSV """
-dict = {'polynomial degree': [i for i in range(1,maxdeg+1)], 'OLS':  Z_table*std_dev_ridge[:,0], 'Ridge (lambda = {0})'.format(lambda_val_ridge[1]): Z_table*std_dev_ridge[:,1],'Ridge (lambda = {0})'.format(lambda_val_ridge[1]): Z_table*std_dev_ridge[:,2]}
+dict = {'polynomial degree': [i for i in range(1,maxdeg+1)], 'OLS':  np.round(Z_table*std_dev_ridge[:,0]), 'Ridge (lambda = {0})'.format(lambda_val_ridge[1]): np.round(Z_table*std_dev_ridge[:,1]),'Ridge (lambda = {0})'.format(lambda_val_ridge[2]): np.round(Z_table*std_dev_ridge[:,2])}
 df = pd.DataFrame(dict)
 df.to_csv('C:/Users/adria/Documents/Studier/FYS-STK4155/FYS-STK/project1/csvData/g_confidence_intervals_maxdeg({0}).csv'.format(maxdeg))
