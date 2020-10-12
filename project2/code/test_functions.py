@@ -43,3 +43,9 @@ def test_optimizers_ridge():
 
 test_optimizers_ridge()
 test_optimizers()
+prediction_train=nn.predict(X_train_scaled)
+prediction_test=nn.predict(X_test_scaled)
+print("Test MSE: %f" %MSE(prediction_test,z_test_scaled))
+print("Train MSE: %f" %MSE(prediction_train,z_train_scaled))
+print(prediction_train[:5])
+print(z_train_scaled[:5])
