@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{adjustbox}
 \usepackage{csvsimple}
 \usepackage{amssymb}
 \usepackage{hyperref}
@@ -93,9 +94,13 @@ where we have defined the mean value  of $\bm{y}$ as
 The $R^2$-score is equal to 1 if and only if the two arrays are identical, and values close to 1 indicate that two vectors are similar (or that a fit is good). 
 The Variance $\sigma^2$ is defined as 
 \begin{equation}\label{variance}
-\sigma^2=\mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\end{equation}
+\sigma^2=\mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]
+\end{equation}
 for a random variable X. When fitting the Franke Function \ref{FrankeFunction}, $\sigma^2$ is known, however, when fitting the terrain data, it has to be estimated. The following estimator is used:
-$$\hat\sigma^2 = \frac{1}{N-p-1}\sum\limits_{i=1}^N(y_i-\bar{y}_i)^2$$
+\begin{equation}\label{variance_estimate}
+\hat\sigma^2 = \frac{1}{N-p-1}\sum\limits_{i=1}^N(y_i-\bar{y}_i)^2
+\end{equation}
+
 where $N-p-1$ is the degrees of freedom. and p is the number of input variables in the regression model.
 \subsubsection{Ordinary Least Squares (OLS) Regression}
 In Ordinary Least Square regression, the loss function is defined as the following:
@@ -157,7 +162,7 @@ effectively imposing a penalty on the size of $\boldsymbol{\beta}$. One of the c
 \bm{y}^{Ridge}=\bm{X\hat\beta}^{Ridge}=\sum_{j=1}^{p}\bm{u}_j\frac{\sigma_j^2}{\sigma_j^2+\lambda}\bm{u}^T_j\bm{y}
 \end{equation*}
 where $\bm{u}_j$ are the column of the matrix $\bm{U}$ from the SVD of $\bm{X}$. It also follows directly from this formula that the smaller singular values are shrunk more.\\
-This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact of overfitting.\\We later show the dependence that the variance of $\beta$ has on the regularization parameter. To do this, we need an expression to estimate the variance of our predictions for the $\beta$'s. It's given by $\sigma^2(\hat{\beta}_j) = \sigma^2\sqrt{[X^TX+\lambda \hat{I}]^{-1}_{jj}}$\cite{HW1}\cite{HW2}, meaning the diagonal elements of the matrix computed as part of Ridge with matrix inversion. Here, $\sigma^2$ could be estimated by $\sigma^2 = \frac{1}{N-p-1}\sum\limits_{i=1}^N(z_i-\bar{z}_i)^2$\citep{hastie01statisticallearning}, however in our case, the value of $\sigma^2$ is known, as we're the ones constructing the data set.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
+This has the side effect of decreasing the variance of the parameters $\beta$, as well as the values $\beta$ themselves (it can be shown \citep{Ridge_Lecture_Notes} that the variance for all $\lambda>0$ is always lower than when using OLS), and thereby reducing the impact of overfitting.\\We later show the dependence that the variance of $\beta$ has on the regularization parameter. To do this, we need an expression to estimate the variance of our predictions for the $\beta$'s. It's given by $\sigma^2(\hat{\beta}_j) = \sigma^2[X^TX+\lambda \hat{I}]^{-1}_{jj}$\cite{HW1}\cite{HW2}, meaning the diagonal elements of the matrix computed as part of Ridge with matrix inversion. Here, $\sigma^2$ could be estimated by equation \eqref{variance_estimate}\citep{hastie01statisticallearning}, however in our case, the value of $\sigma^2$ is known, as we're the ones constructing the data set.\\The expression for the optimal value of $\boldsymbol{\beta}$ becomes
 
 \begin{equation*}
     \boldsymbol{\beta}^{\mathrm{Ridge}} = \left(\boldsymbol{X}^T\boldsymbol{X}+\lambda\boldsymbol{I}\right)^{-1}\boldsymbol{X}^T\boldsymbol{y}.
@@ -169,7 +174,7 @@ There are several factors that determine how different regularization parameters
 \centering
 
 \includegraphics[trim=2cm 1.0cm 2cm 1.4cm, clip=true,scale = 0.5]{Smallest_MSE_lambda_over_noise.pdf}
-\caption[Optimal regularization parameter to noise]{Performing Ridge regression on the Franke function \eqref{FrankeFunction}, with a normally distributed error term $\sigma\epsilon$.}\label{lambdatonoise}
+\caption[Optimal regularization parameter to noise]{Performing Ridge regression on the Franke function \eqref{FrankeFunction}, with a normally distributed error term $\epsilon$.}\label{lambdatonoise}
 \end{figure}
 \subsubsection{LASSO regression}
 As with ridge, LASSO regression implements a new component to the cost function. Only, in this case the penalty is proportional to the L1- norm $\vert\vert \boldsymbol{\beta}\vert\vert$:
@@ -284,7 +289,7 @@ In order to test how well the Regression methods work with real data, we downloa
 In order to find the ideal parameter $\lambda$ for both LASSO and Ridge regression, we looped over a set of lambda-values in different magnitudes and estimated the MSE using 4-fold Cross Validation. We chose to use the parameter $\lambda$ that gave the lowest MSE, averaged over two uncorrelated runs. This was repeated for each fit, that is,  $\lambda$ was recalculated for each new Design Matrix X. This is because the ideal $\lambda$ value changes with model complexity.
 \subsection{Error in LASSO-Regression}
 As there is no way to find the parameters $\bm{\beta}$ for LASSO-Regression analytically, numerical methods need to be used. Here, we used Scikit-Learn \cite{scikit-learn} in order to solve the problem numerically. We have observed that the LASSO-method converges rather slowly. We observed that setting the tolerance to 0.01 lead to no convergence even at $10^5$ iterations at higher polynomial degrees when fitting the Franke Function. Having LASSO converge is very time-consuming, we found it impossible to run a large-scale numerical experiment with properly converging LASSO regression when the datasets are large, many polynomial degrees are to be included, and there a large number of bootstraps. For this reason, we have chosen the tolerance to be equal to 0.03 for fitting the Franke function, while the number of maximum iterations is chosen to be $10^5$.  Similarly, we used 0.3 as tolerance at $10^2$ maximum iterations for fitting the country data - this is not sufficient to get a proper fit.  Hence, each time the LASSO-fit was higher than the OLS fit, no ideal parameters have been found, as the ideal LASSO-fit cannot be no larger than the OLS-fit (because $\lambda=0$ is the OLS fit).
-\subsection{Sampling Franke Function}https://www.linuxmint.com/start/ulyana/
+\subsection{Sampling Franke Function}
 We sample randomly points $x_i$ and $y_i$ between 0 and 1 and calculate the target points
 \begin{equation*}
 z_i=f(x_i,y_i)+\epsilon_i
@@ -322,7 +327,21 @@ polynomial degree & OLS   & Ridge ($\lambda = 0.1$) & Ridge ($\lambda = 1.0$) \\
 5                 & 2.977 & 0.278                & 0.091 \\ \hline
 \end{tabular}
 \end{table}
-It's clear that Ridge regression has the effect of tightening the confidence interval for the parameters $\beta$ belonging to the highest order polynomials. It's also clear that increasing the regularization parameter $\lambda$ has the expected effect of further tightening the confidence interval of the parameters. It's worth noting that while in OLS the values occupy four different orders of magnitude, but using Ridge, that decreases to two or one. The cost function imposing a penalty on the size of the $\beta$'s, forces every parameter to within a smaller subset of options.
+It's clear that Ridge regression has the effect of tightening the confidence interval for the parameters $\beta$ belonging to the highest order polynomials. It's also clear that increasing the regularization parameter $\lambda$ has the expected effect of further tightening the confidence interval of the parameters. It's worth noting that while in OLS the values occupy four different orders of magnitude, but using Ridge, that decreases to two or one. The cost function imposing a penalty on the size of the $\beta$'s, forces every parameter to within a smaller subset of options.\\\\ For the same analysis on the terrain data, we got the results in table \ref{table2}.
+
+
+
+\begin{table}[H]\caption[Confidence intervals of estimators in OLS and Ridge regression for Geodata]{The column names  are abbreviated as: p.d.- Polynomial degree, C.I (Confidence Interval), meaning here, half the width of the 95'th percentile confidence interval for the estimators $\beta$ in OLS and Ridge regression with the highest standard deviation, using the regularization parameter $\lambda$ found in the parentheses. $b_{min/max}$ the lowest and highest value of $\beta$ used in the model}
+	\begin{adjustbox}{max width=\textwidth}
+		\csvautotabular{../csvData/g_confidence_intervals_maxdeg_15.csv}
+	\end{adjustbox}	
+	\label{table2}
+\end{table}
+
+Here too, wee see that the implementation of ridge regression results in much lower variance in the parameters $\beta$ while also reducing the maximal parameters by many orders of magnitude .
+
+
+
 
 \subsection{Error comparison}
 \subsubsection{Bootstrap vs. Cross validation}

@@ -47,6 +47,7 @@ for deg in range(mindeg,maxdeg+1):
     X_train_scaled=X_train
     X_test_scaled=X_test
 
+    #getting OLS regression coefficients, their variance is not used
     beta, beta_variance = LinearRegression(X_train_scaled,z_train_scaled)
     z_train_scaled_fit=X_train_scaled @ beta
     z_test_scaled_fit=np.zeros((len(z_test),n_bootstraps))
@@ -59,6 +60,7 @@ for deg in range(mindeg,maxdeg+1):
     #Calling kfold functions
     MSE_test_kfold[deg-mindeg] = KCrossValMSE(X,z,k)
     MSE_test_kfoldRidge[deg-mindeg] = KCrossValRidgeMSE(X,z,k,min_lambda)
+    #looping over all lambda values, and calling function to get MSE from K-fold cross validation with ridge regression
     for i in range(nr_lambdas):
         MSE_test_kfoldRidge_lambda[i] = KCrossValRidgeMSE(X,z,k,lambda_val[i])
 

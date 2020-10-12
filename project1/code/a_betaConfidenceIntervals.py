@@ -22,19 +22,24 @@ sigma=0.10
 
 method="OLS"
 
+#Setting up the data set
 x=np.random.uniform(0,1,datapoints)
 y=np.random.uniform(0,1,datapoints)
 
 z=FrankeFunction(x,y)+np.random.normal(0,sigma, datapoints)
 
+#initializing lists for the outputs
 beta_variance=np.zeros((maxdeg,maxdeg))
 
 std_dev_OLS = np.zeros(maxdeg)
 std_dev_ridge_L01 = np.zeros(maxdeg)
 std_dev_ridge_L10 = np.zeros(maxdeg)
 
+
 it = 0
+#For polynomial of degree deg:
 for deg in range(1,maxdeg+1):
+    #Setting up design matrix, train/test- split and scaling
     X=DesignMatrix_deg2(x,y,deg,False)
 
     X_train, X_test, z_train, z_test = train_test_split(X,z, test_size=0.25)
@@ -46,10 +51,12 @@ for deg in range(1,maxdeg+1):
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
     
-
-    beta_OLS,beta_var_OLS= LinearRegression(X_train_scaled,z_train_scaled)
+    #getting outputs for linear- and ridge regression
+    beta_OLS, beta_var_OLS= LinearRegression(X_train_scaled,z_train_scaled)
     beta_ridge1, beta_var_ridge1 = RidgeRegression(X_train,z_train,Lambda1)
     beta_ridge2, beta_var_ridge2 = RidgeRegression(X_train,z_train,Lambda2)
+    #Calculating the standard deviation for the jj'th beta, then choosing the largest value as 
+    #a representative sample
     std_dev_OLS[it] = np.amax(np.sqrt(beta_var_OLS*sigma**2))
     std_dev_ridge_L01[it] = np.amax(np.sqrt(beta_var_ridge1*sigma**2))
     std_dev_ridge_L10[it] = np.amax(np.sqrt(beta_var_ridge2*sigma**2))

@@ -142,6 +142,6 @@ if (write_csv):
 
 """
 run as python3 create_geographic_data.py filename bootstrap[True_or_False] maxdeg datapoints
-for example python3  python3 create_geographic_data.py TEST.csv True 5 5000
+for example python3 create_geographic_data.py TEST.csv True 5 5000
 
 """
