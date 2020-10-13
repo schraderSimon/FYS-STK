@@ -355,20 +355,14 @@ class NeuralNetwork():
         if type==("RELU"):
             return np.maximum(z,0,z)
         if type==("LeakyRELU"):
-            return np.where(z > 0, z, z * 0.01)
+            return np.maximum(z,0.01*z,z)
+            #return np.where(z > 0, z, z * 0.01)
         if type=="softmax":
             m=np.max(z)
             exp_term=np.exp(z-m) #This is to avoid problems of too large numbers
-            #print("Exp-term:")
-            #print(exp_term)
-            #print("Sum:")
-            #print(np.sum(exp_term, axis=1, keepdims=True))
             if np.isnan(z[0,0]):
                 sys.exit(1)
-                pass
             returnval= exp_term / np.sum(exp_term, axis=1, keepdims=True)
-            #print("Returnval: ")
-            #print(returnval)
             return returnval
     def derivative(self,a,z,type=0):
         #takes both a and z as arguments because some things are more efficient with a than z
@@ -464,7 +458,6 @@ class NeuralNetwork():
     def train(self):
         data_indices=np.arange(self.n_inputs)
         for i in range(self.epochs):
-            print(i)
             for j in range(self.iterations):
                 chosen_datapoints=np.random.choice(data_indices,size=self.batch_size,replace=False)
                 self.X_data = self.X_data_full[chosen_datapoints]
