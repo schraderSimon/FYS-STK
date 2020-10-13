@@ -280,57 +280,117 @@ class NeuralNetwork():
             self,
             X_data,
             Y_data,
-            errortype="MSE",
-            activation_function_type="sigmoid",
-            activation_function_type_output="linear",
-            gradienttype="RMSProp",
-            n_categories=1,
-            n_hidden_layers=1,
-            n_hidden_neurons=[50]*1,
-            epochs=2,
-            batch_size=32,
-            eta=1e-6,
-            lmbd=0.0):
+            errortype="MSE", #The type of error to be reduced
+            activation_function_type="sigmoid", #The activation function for the hidden layer
+            activation_function_type_output="linear", #The activation function for the output layer
+            solver="sgd", #The solver to be used (sgd or RMSProp)
+            n_categories=1, #The number of categories (1 for Regression, more for classification)
+            n_hidden_layers=1, #The number of hidden layers
+            n_hidden_neurons=[50]*1, #A list containing the number of neurons per layer (0 to n-1)
+            epochs=2, #The number of epochs
+            batch_size=32, #The Batch size
+            eta=1e-6, #The learning rate
+            lmbd=0.0, #The regularization parameter lambda
+            linear_coeff=1):
 
         self.X_data_full = X_data
         self.Y_data_full = Y_data
         self.n_categories=n_categories
-        self.n_inputs = X_data.shape[0]
-        self.n_features = X_data.shape[1]
+        self.n_inputs = X_data.shape[0] #The number of inputs
+        self.n_features = X_data.shape[1] # The number of n_features
         self.n_hidden_layers=n_hidden_layers
         self.n_hidden_neurons = n_hidden_neurons
         self.epochs = epochs
         self.batch_size = batch_size
-        self.iterations = self.n_inputs // self.batch_size
+        self.iterations = self.n_inputs // self.batch_size #The number of iterations per epoch
         self.eta = eta
         self.lmbd = lmbd
         self.errortype=errortype
         self.activation_function_type=activation_function_type
         self.activation_function_type_output=activation_function_type_output
-        self.gradienttype="RMSProp"
-        self.create_biases_and_weights()
+        self.solver=solver
+        self.linear_coeff=linear_coeff
+        self.create_biases_and_weights() #Creates biases and weights based on some paper
+        if self.solver=="RMSProp":
+            self.setUpRMSProp() #Intialises s for RMSProp
+
     def create_biases_and_weights(self):
         self.hidden_bias=[0]*self.n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers
-        self.hidden_weights[0] = np.random.randn(self.n_features, self.n_hidden_neurons[0])
-        self.hidden_bias[0] = np.zeros(self.n_hidden_neurons[0]) + 0.01
+        self.hidden_weights[0] = np.random.randn(self.n_features, self.n_hidden_neurons[0])*np.sqrt(2/self.n_inputs)
+        self.hidden_bias[0] = np.zeros(self.n_hidden_neurons[0]) + 0.001
         for i in range(1,self.n_hidden_layers):
-            self.hidden_weights[i]=np.random.randn(self.n_hidden_neurons[i-1], self.n_hidden_neurons[i])
-            self.hidden_bias[i] = np.zeros(self.n_hidden_neurons[i]) + 0.01
-        print(self.n_hidden_neurons[-1])
-        self.output_weights = np.random.randn(self.n_hidden_neurons[-1], self.n_categories)
-        self.output_bias = np.zeros(self.n_categories) + 0.01
+            self.hidden_weights[i]=np.random.randn(self.n_hidden_neurons[i-1], self.n_hidden_neurons[i])*np.sqrt(2/self.n_inputs)
+            self.hidden_bias[i] = np.zeros(self.n_hidden_neurons[i]) + 0.001
+        self.output_weights = np.random.randn(self.n_hidden_neurons[-1], self.n_categories)*np.sqrt(2/self.n_inputs)
+        self.output_bias = np.zeros(self.n_categories) + 0.001
+
+    def setUpRMSProp(self):
+        if self.solver=="sgd":
+            if self.lmbd > 0.0:
+                self.output_weights_gradient += self.lmbd * self.output_weights
+            self.output_weights -= self.eta * self.output_weights_gradient
+            self.output_bias -= self.eta * self.output_bias_gradient
+            for i in range(self.n_hidden_layers):
+                if self.lmbd > 0.0:
+                    self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
+                self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]
+                self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]
+        self.s=[]
+        self.s.append(np.zeros_like(self.output_weights))
+        self.s.append(np.zeros_like(self.output_bias))
+        for i in range(self.n_hidden_layers):
+            self.s.append(np.zeros_like(self.hidden_weights[i]))
+            self.s.append(np.zeros_like(self.hidden_bias[i]))
+        self.cbeta=0.9
     def activation_function(self,z,type=0):
         if type==0:
             type=self.activation_function_type
         if type==("linear"):
-            return 200*z
+            return self.linear_coeff*z
         if type==("sigmoid"):
             return 1/(1+np.exp(-z))
-        if type==("RELO"):
-            return np.max(z,0)
-        if type==("LeakyRELO"):
-            return max(z,0.01*z)
+        if type==("tanh"):
+            return 2*self.activation_function(2*z,type="sigmoid") -1
+        if type==("RELU"):
+            return np.maximum(z,0,z)
+        if type==("LeakyRELU"):
+            return np.where(z > 0, z, z * 0.01)
+        if type=="softmax":
+            m=np.max(z)
+            exp_term=np.exp(z-m) #This is to avoid problems of too large numbers
+            #print("Exp-term:")
+            #print(exp_term)
+            #print("Sum:")
+            #print(np.sum(exp_term, axis=1, keepdims=True))
+            if np.isnan(z[0,0]):
+                sys.exit(1)
+                pass
+            returnval= exp_term / np.sum(exp_term, axis=1, keepdims=True)
+            #print("Returnval: ")
+            #print(returnval)
+            return returnval
+    def derivative(self,a,z,type=0):
+        #takes both a and z as arguments because some things are more efficient with a than z
+        if type==0:
+            type=self.activation_function_type #If no activation type is given, use the object's
+        if type==("linear"):
+            return self.linear_coeff
+        if type==("sigmoid"):
+            return a*(1-a)
+        if type=="tanh":
+            return 1-a*a
+        if type=="RELU":
+            deriv=np.copy(z)
+            deriv[deriv<0]=0
+            deriv[deriv>0]=1
+            return deriv
+        if type=="LeakyRELU":
+            deriv=np.copy(z)
+            deriv[deriv>0]=1
+            deriv[deriv<0]=0.01
+            return deriv
+
     def feed_forward(self):
         # feed-forward for training
         self.z_h=[0]*self.n_hidden_layers
@@ -350,145 +410,61 @@ class NeuralNetwork():
         z_h[0] = np.matmul(X, self.hidden_weights[0]) + self.hidden_bias[0]
         a_h[0] = self.activation_function(z_h[0],self.activation_function_type)
         for i in range(1,self.n_hidden_layers):
-            self.z_h[i]=np.matmul(a_h[i-1], self.hidden_weights[i]) + self.hidden_bias[i]
-            self.a_h[i] = self.activation_function(z_h[i],self.activation_function_type)
+            z_h[i]=np.matmul(a_h[i-1], self.hidden_weights[i]) + self.hidden_bias[i]
+            a_h[i] = self.activation_function(z_h[i],self.activation_function_type)
         z_o = np.matmul(a_h[-1], self.output_weights) + self.output_bias
         return self.activation_function(z_o,self.activation_function_type_output)
     def elementwise_error(self):
         if self.errortype==("MSE"):
-            return (self.probabilities-self.Y_data)**2
+            return (self.probabilities-self.Y_data)*1/self.batch_size
         if self.errortype==("categorical"):
             return self.probabilities - self.Y_data
+    def solve(self):
+        if self.solver=="sgd":
+            if self.lmbd > 0.0:
+                self.output_weights_gradient += self.lmbd * self.output_weights
+            self.output_weights -= self.eta * self.output_weights_gradient
+            self.output_bias -= self.eta * self.output_bias_gradient
+            for i in range(self.n_hidden_layers):
+                if self.lmbd > 0.0:
+                    self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
+                self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]
+                self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]
+        elif self.solver=="RMSProp":
+            cbeta=self.cbeta
+            self.s[0]=cbeta*self.s[0]+(1-cbeta)*(self.output_weights_gradient*self.output_weights_gradient)
+            self.s[1]=cbeta*self.s[1]+(1-cbeta)*(self.output_bias_gradient*self.output_bias_gradient)
+            self.output_weights -= self.eta * self.output_weights_gradient/np.sqrt(self.s[0]+1e-8)
+            self.output_bias -= self.eta * self.output_bias_gradient/np.sqrt(self.s[1]+1e-8)
+            for i in range(self.n_hidden_layers):
+                if self.lmbd > 0.0:
+                    self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
+                self.s[2+i*2]=cbeta*self.s[2+i*2]+(1-cbeta)*(self.hidden_weights_gradient[i]*self.hidden_weights_gradient[i])
+                self.s[3+i*2]=cbeta*self.s[3+i*2]+(1-cbeta)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
+                self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
+                self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
     def backpropagation(self):
-        error_output = (self.probabilities - self.Y_data)*1/self.batch_size
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h[-1] * (1 - self.a_h[-1])
-        print("Shapes")
-        print(error_output.shape, self.output_weights.T.shape)
-        print(self.a_h[-1].shape)
-        #sys.exit(1)
+        error_output = self.elementwise_error()
         self.output_weights_gradient = np.matmul(self.a_h[-1].T, error_output)
         self.output_bias_gradient = np.sum(error_output, axis=0)
-        print(self.output_bias_gradient)
-        self.hidden_weights_gradient = np.matmul(self.X_data.T, error_hidden)
-        self.hidden_bias_gradient = np.sum(error_hidden, axis=0)
 
-        if self.lmbd > 0.0:
-            self.output_weights_gradient += self.lmbd * self.output_weights[0]
-            self.hidden_weights_gradient += self.lmbd * self.hidden_weights[0]
-        self.output_weights -= self.eta * self.output_weights_gradient
-        self.output_bias -= self.eta * self.output_bias_gradient
-        self.hidden_weights[0] -= self.eta * self.hidden_weights_gradient
-        self.hidden_bias[0] -= self.eta * self.hidden_bias_gradient
+        error_hidden=[0]*self.n_hidden_layers
+        error_hidden[-1] = np.matmul(error_output, self.output_weights.T) *self.derivative(self.a_h[-1],self.z_h[-1],self.activation_function_type)
+        for i in range(self.n_hidden_layers-1,0,-1):
+            error_hidden[i-1]= np.matmul(error_hidden[i], self.hidden_weights[i].T)*self.derivative(self.a_h[i-1],self.z_h[i-1],self.activation_function_type)
+
+        self.hidden_weights_gradient=[0]*self.n_hidden_layers
+        self.hidden_bias_gradient=[0]*self.n_hidden_layers
+        self.hidden_weights_gradient[0] = np.matmul(self.X_data.T, error_hidden[0])
+        self.hidden_bias_gradient[0] = np.sum(error_hidden[0], axis=0)
+        for i in range(1,self.n_hidden_layers,1):
+            self.hidden_bias_gradient[i] = np.sum(error_hidden[i], axis=0)
+            self.hidden_weights_gradient[i] = np.matmul(self.a_h[i-1].T, error_hidden[i])
+        self.solve()
     def train(self):
         data_indices=np.arange(self.n_inputs)
         for i in range(self.epochs):
-            for j in range(self.iterations):
-                chosen_datapoints=np.random.choice(data_indices,size=self.batch_size,replace=False)
-                self.X_data = self.X_data_full[chosen_datapoints]
-                self.Y_data = self.Y_data_full[chosen_datapoints]
-                self.feed_forward()
-                self.backpropagation()
-    def predict(self,X):
-        probabilities=self.predict_probabilities(X)
-        return np.argmax(probabilities,axis=1)
-    def predict_probabilities(self,X):
-        probabilities=self.feed_forward_out(X)
-        return probabilities
-
-class NeuralNetwork2():
-    def __init__(
-            self,
-            X_data,
-            Y_data,
-            errortype="MSE",
-            activation_function_type="sigmoid",
-            activation_function_type_output="linear",
-            gradienttype="RMSProp",
-            n_categories=1,
-            n_hidden_layers=1,
-            n_hidden_neurons=[50]*1,
-            epochs=2,
-            batch_size=32,
-            eta=1e-6,
-            lmbd=0.0):
-
-        self.X_data_full = X_data
-        self.Y_data_full = Y_data
-        self.n_categories=n_categories
-        self.n_inputs = X_data.shape[0]
-        self.n_features = X_data.shape[1]
-        self.n_hidden_layers=n_hidden_layers
-        self.n_hidden_neurons = n_hidden_neurons
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.iterations = self.n_inputs // self.batch_size
-        self.eta = eta
-        self.lmbd = lmbd
-        self.errortype=errortype
-        self.activation_function_type=activation_function_type
-        self.activation_function_type_output=activation_function_type_output
-        self.gradienttype="RMSProp"
-        self.create_biases_and_weights()
-    def create_biases_and_weights(self):
-        self.hidden_weights = np.random.randn(self.n_features, self.n_hidden_neurons[0])
-        self.hidden_bias = np.zeros(self.n_hidden_neurons[0]) + 0.01
-
-        self.output_weights = np.random.randn(self.n_hidden_neurons[0], self.n_categories)
-        self.output_bias = np.zeros(self.n_categories) + 0.01
-    def activation_function(self,z,type=0):
-        if type==0:
-            type=self.activation_function_type
-        if type==("linear"):
-            return z
-        if type==("sigmoid"):
-            return 1/(1+np.exp(-z))
-        if type==("RELO"):
-            return np.max(z,0)
-        if type==("LeakyRELO"):
-            return max(z,0.01*z)
-    def feed_forward(self):
-        # feed-forward for training
-        self.z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
-        self.a_h = self.activation_function(self.z_h,self.activation_function_type)
-
-        self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
-
-        self.probabilities = self.activation_function(self.z_o,self.activation_function_type_output)
-    def feed_forward_out(self, X):
-        # feed-forward for output
-        z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.activation_function(z_h,self.activation_function_type)
-
-        z_o = np.matmul(a_h, self.output_weights) + self.output_bias
-        return self.activation_function(z_o,self.activation_function_type_output)
-    def elementwise_error(self):
-        if self.errortype==("MSE"):
-            return (self.probabilities-self.Y_data)**2
-        if self.errortype==("categorical"):
-            return self.probabilities - self.Y_data
-    def backpropagation(self):
-        error_output = (self.probabilities - self.Y_data)*1/self.batch_size
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
-        print("Shapes")
-        print(error_output.shape, self.output_weights.T.shape)
-        print(self.a_h.shape)
-        sys.exit(1)
-        self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
-        self.output_bias_gradient = np.sum(error_output, axis=0)
-        print(self.output_bias_gradient)
-        self.hidden_weights_gradient = np.matmul(self.X_data.T, error_hidden)
-        self.hidden_bias_gradient = np.sum(error_hidden, axis=0)
-
-        if self.lmbd > 0.0:
-            self.output_weights_gradient += self.lmbd * self.output_weights
-            self.hidden_weights_gradient += self.lmbd * self.hidden_weights
-        self.output_weights -= self.eta * self.output_weights_gradient
-        self.output_bias -= self.eta * self.output_bias_gradient
-        self.hidden_weights -= self.eta * self.hidden_weights_gradient
-        self.hidden_bias -= self.eta * self.hidden_bias_gradient
-    def train(self):
-        data_indices=np.arange(self.n_inputs)
-        for i in range(self.epochs):
+            print(i)
             for j in range(self.iterations):
                 chosen_datapoints=np.random.choice(data_indices,size=self.batch_size,replace=False)
                 self.X_data = self.X_data_full[chosen_datapoints]
