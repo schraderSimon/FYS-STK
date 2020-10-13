@@ -8,8 +8,8 @@ from function_library import *
 """Set up data"""
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 terrain = imread("../data/Korea.tif")
-datapoints=20000
-degree=18
+datapoints=2000
+degree=5
 
 x=np.random.randint(len(terrain),size=datapoints) #random integers
 y=np.random.randint(len(terrain[1]),size=datapoints) #random integers for y
@@ -29,12 +29,12 @@ scaler=StandardScaler()
 scaler.fit(X_train) #Scale
 X_train_scaled=scaler.transform(X_train) #scale train Design matrix
 X_test_scaled=scaler.transform(X_test) #scale test Design matrix
-eta=0.1
-epochs=10
-n_hidden_neurons=1000
+eta=0.001
+epochs=100
+n_hidden_neurons=[10]
 n_categories=1
-batch_size=100
-Lambda=0
+batch_size=5
+Lambda=1e-10
 nn=NeuralNetwork(X_train_scaled,z_train_scaled,n_hidden_neurons=n_hidden_neurons,n_categories=1,epochs=epochs,batch_size=batch_size,eta=eta,lmbd=Lambda)
 nn.train()
 prediction_train=nn.predict_probabilities(X_train_scaled)
