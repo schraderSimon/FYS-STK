@@ -324,7 +324,7 @@ class NeuralNetwork():
         if type==0:
             type=self.activation_function_type
         if type==("linear"):
-            return z
+            return 200*z
         if type==("sigmoid"):
             return 1/(1+np.exp(-z))
         if type==("RELO"):
@@ -333,18 +333,26 @@ class NeuralNetwork():
             return max(z,0.01*z)
     def feed_forward(self):
         # feed-forward for training
-        self.z_h = np.matmul(self.X_data, self.hidden_weights[0]) + self.hidden_bias[0]
-        self.a_h = self.activation_function(self.z_h,self.activation_function_type)
-
-        self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
+        self.z_h=[0]*self.n_hidden_layers
+        self.a_h=[0]*self.n_hidden_layers
+        self.z_h[0] = np.matmul(self.X_data, self.hidden_weights[0]) + self.hidden_bias[0]
+        self.a_h[0] = self.activation_function(self.z_h[0],self.activation_function_type)
+        for i in range(1,self.n_hidden_layers):
+            self.z_h[i]=np.matmul(self.a_h[i-1], self.hidden_weights[i]) + self.hidden_bias[i]
+            self.a_h[i] = self.activation_function(self.z_h[i],self.activation_function_type)
+        self.z_o = np.matmul(self.a_h[-1], self.output_weights) + self.output_bias
 
         self.probabilities = self.activation_function(self.z_o,self.activation_function_type_output)
     def feed_forward_out(self, X):
         # feed-forward for output
-        z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.activation_function(z_h,self.activation_function_type)
-
-        z_o = np.matmul(a_h, self.output_weights) + self.output_bias
+        z_h=[0]*self.n_hidden_layers
+        a_h=[0]*self.n_hidden_layers
+        z_h[0] = np.matmul(X, self.hidden_weights[0]) + self.hidden_bias[0]
+        a_h[0] = self.activation_function(z_h[0],self.activation_function_type)
+        for i in range(1,self.n_hidden_layers):
+            self.z_h[i]=np.matmul(a_h[i-1], self.hidden_weights[i]) + self.hidden_bias[i]
+            self.a_h[i] = self.activation_function(z_h[i],self.activation_function_type)
+        z_o = np.matmul(a_h[-1], self.output_weights) + self.output_bias
         return self.activation_function(z_o,self.activation_function_type_output)
     def elementwise_error(self):
         if self.errortype==("MSE"):
@@ -353,12 +361,12 @@ class NeuralNetwork():
             return self.probabilities - self.Y_data
     def backpropagation(self):
         error_output = (self.probabilities - self.Y_data)*1/self.batch_size
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h[-1] * (1 - self.a_h[-1])
         print("Shapes")
         print(error_output.shape, self.output_weights.T.shape)
-        print(self.a_h.shape)
+        print(self.a_h[-1].shape)
         #sys.exit(1)
-        self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
+        self.output_weights_gradient = np.matmul(self.a_h[-1].T, error_output)
         self.output_bias_gradient = np.sum(error_output, axis=0)
         print(self.output_bias_gradient)
         self.hidden_weights_gradient = np.matmul(self.X_data.T, error_hidden)
