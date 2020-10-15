@@ -156,6 +156,8 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     #print("MSE Ridge")
     #print(MSE_estimate)
     return MSE_estimate
+def accuracy_score(y_data, y_model):
+    return np.sum(y_data==y_model)/len(y_data)
 
 def R2(y_data,y_model):
     """
@@ -313,7 +315,21 @@ class NeuralNetwork():
         self.create_biases_and_weights() #Creates biases and weights based on some paper
         if self.solver=="RMSProp":
             self.setUpRMSProp() #Intialises s for RMSProp
-
+    def change_matrix(self,X,y):
+        self.X_data_full=X
+        self.Y_data_full=y
+        self.n_inputs=X.shape[0]
+        self.n_features=X.shape[1]
+        self.iterations = self.n_inputs // self.batch_size #The number of iterations per epoch
+        self.create_biases_and_weights() #Creates biases and weights based on some paper
+        if self.solver=="RMSProp":
+            self.setUpRMSProp() #Intialises s for RMSProp
+    def update_parameters_reset(self,eta,lmbd ):
+        self.eta=eta
+        self.lmbd=lmbd
+        self.create_biases_and_weights() #In order to avoid "previous" approximation, everything is reset
+        if self.solver=="RMSProp":
+            self.setUpRMSProp() #Reset s
     def create_biases_and_weights(self):
         self.hidden_bias=[0]*self.n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers
@@ -413,6 +429,12 @@ class NeuralNetwork():
             return (self.probabilities-self.Y_data)*1/self.batch_size
         if self.errortype==("categorical"):
             return self.probabilities - self.Y_data
+    def error_function(self,y_data,y_model):
+        if self.errortype==("MSE"):
+            return MSE(y_data,y_model), R2(y_data,y_model)
+        if self.errortype==("categorical"):
+            return accuracy_score(y_data,y_model)
+
     def solve(self):
         if self.solver=="sgd":
             if self.lmbd > 0.0:
@@ -470,3 +492,38 @@ class NeuralNetwork():
     def predict_probabilities(self,X):
         probabilities=self.feed_forward_out(X)
         return probabilities
+def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
+        """Here, the X is the full set"""
+        trainIndx, testIndx = KfoldCross(X,k)
+        Error_test = np.zeros(k); R2_test=np.zeros(k)
+        Error_train=np.zeros(k); R2_train=np.zeros(k)
+        #redef scaler, with_mean = True
+        scaler = StandardScaler()
+        for i in range(k):
+            X_training = X[trainIndx[i],:]
+            X_testing = X[testIndx[i],:]
+            z_trainings = z[trainIndx[i]]
+            z_testings = z[testIndx[i]]
+            z_training=z_trainings-np.mean(z_trainings)
+            z_testing=z_testings-np.mean(z_trainings)
+            #Scale X
+            scaler.fit(X_training)
+            X_training_scaled = scaler.transform(X_training)
+            X_testing_scaled = scaler.transform(X_testing)
+
+            activation_function_type="sigmoid"
+            if nn.errortype=="MSE":
+                z_training=z_training.reshape((X_training_scaled.shape[0],1))
+                z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
+            nn.change_matrix(X_training_scaled,z_training)
+            nn.update_parameters_reset(eta=eta,lmbd=Lambda)
+            nn.train()
+            prediction_train=nn.predict_probabilities(X_training_scaled)
+            prediction_test=nn.predict_probabilities(X_testing_scaled)
+            if nn.errortype=="MSE":
+                Error_train[i],R2_train[i] = nn.error_function(z_training,prediction_train)
+                Error_test[i],R2_test[i]=nn.error_function(z_testing,prediction_test)
+        if nn.errortype=="MSE":
+            error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
+            error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
+            return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
