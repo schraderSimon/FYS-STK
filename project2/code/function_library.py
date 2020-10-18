@@ -263,6 +263,23 @@ class SGD:
                 theta= theta-eta*gradient/np.sqrt(s+error)
         return theta.ravel()
 
+    def ADAM(self,eta=1e-3,beta_1=0.9,beta_2=0.99, error=1e-8):
+    """Returns theta using the ADAM optimizer"""
+    theta=self.theta
+    s=np.zeros_like(theta)
+    m=np.zeros_like(theta)
+    s_hat=np.zeros_like(theta)
+    m_hat=np.zeros_like(theta)
+    for epoch in range(1,self.n_epochs+1):
+        for i in range(self.MB): #For each minibatch
+            gradient=self.calculateGradient(theta)
+            m=beta_1*m+(1-beta_1)*gradient
+            s=beta_2*s+(1-beta_2)*(gradient*gradient)
+            m_hat = m/(1-beta_1**i)
+            s_hat = s/(1-beta_2**i)
+            theta= theta-eta*m_hat/(np.sqrt(s_hat)+error)
+    return theta.ravel()
+
 class SGD_Ridge(SGD): #this is inherited from Ridge
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1, Lambda=0.01):
         super().__init__(X,y,n_epochs,theta,batchsize); #SGD initializer
@@ -288,7 +305,7 @@ class NeuralNetwork():
             errortype="MSE", #The type of error to be reduced
             activation_function_type="sigmoid", #The activation function for the hidden layer
             activation_function_type_output="linear", #The activation function for the output layer
-            solver="sgd", #The solver to be used (sgd or RMSProp)
+            solver="sgd", #The solver to be used (sgd, RMSProp or ADAM)
             n_categories=1, #The number of categories (1 for Regression, more for classification)
             n_hidden_layers=1, #The number of hidden layers
             n_hidden_neurons=[50]*1, #A list containing the number of neurons per layer (0 to n-1)
@@ -318,6 +335,8 @@ class NeuralNetwork():
         self.create_biases_and_weights() #Creates biases and weights based on some paper
         if self.solver=="RMSProp":
             self.setUpRMSProp() #Intialises s for RMSProp
+        if self.solver=="ADAM":
+            self.setUpADAM() #Intialises s,m,beta_1 and beta_2 for ADAM
     def change_matrix(self,X,y):
         """Changes the dataset to X, y and upgrades the relevant parameters"""
         self.X_data_full=X
@@ -328,12 +347,16 @@ class NeuralNetwork():
         self.create_biases_and_weights() #Creates biases and weights based on some paper
         if self.solver=="RMSProp":
             self.setUpRMSProp() #Intialises s for RMSProp
+        if self.solver=="ADAM":
+            self.setUpADAM() #Intialises s,m,beta_1 and beta_2 for ADAM
     def update_parameters_reset(self,eta,lmbd ):
         self.eta=eta
         self.lmbd=lmbd
         self.create_biases_and_weights() #In order to avoid "previous" approximation, everything is reset
         if self.solver=="RMSProp":
             self.setUpRMSProp() #Reset s
+        if self.solver=="ADAM":
+            self.setUpADAM() #Resets s,m,beta_1 and beta_2 for ADAM
     def create_biases_and_weights(self):
         self.hidden_bias=[0]*self.n_hidden_layers #an empty list of length n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers #an empty list of length n_hidden_layers
@@ -358,6 +381,20 @@ class NeuralNetwork():
             self.s.append(np.zeros_like(self.hidden_weights[i]))
             self.s.append(np.zeros_like(self.hidden_bias[i]))
         self.cbeta=0.9
+    
+    def setUpADAM(self):
+        """sets up the arrays for ADAM"""
+        self.iterator = 0
+        self.s=[]; self.s.append(np.zeros_like(self.output_weights)); self.s.append(np.zeros_like(self.output_bias))
+        self.m=[]; self.m.append(np.zeros_like(self.output_weights)); self.m.append(np.zeros_like(self.output_bias))
+        for i in range(self.n_hidden_layers):
+            self.m.append(np.zeros_like(self.hidden_weights[i]))
+            self.m.append(np.zeros_like(self.hidden_bias[i]))
+            self.s.append(np.zeros_like(self.hidden_weights[i]))
+            self.s.append(np.zeros_like(self.hidden_bias[i]))
+        self.beta_1=0.9
+        self.beta_2=0.99
+        
     def activation_function(self,z,type=0):
         """The different activation functions"""
         if type==0:
@@ -470,6 +507,27 @@ class NeuralNetwork():
                 self.s[3+i*2]=cbeta*self.s[3+i*2]+(1-cbeta)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
                 self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
                 self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
+        elif self.solver=="ADAM": #ADAM Optimizer ########## NOT COMPLETE -- check that iterator is working (and correct)
+            #what's up with 2+i*2 .. 3+i*2 etc. ? everything after line "update output layer " is not done
+            beta_1=self.beta_1
+            beta_2=self.beta_2
+            self.m[0]=beta_1*self.m[0]+(1-beta_1)*self.output_weights_gradient #Update m
+            self.m[1]=beta_1*self.m[1]+(1-beta_1)*self.output_bias_gradient#Update m
+            self.s[0]=beta_2*self.s[0]+(1-beta_2)*(self.output_weights_gradient*self.output_weights_gradient) #Update s
+            self.s[1]=beta_2*self.s[1]+(1-beta_2)*(self.output_bias_gradient*self.output_bias_gradient) #Update s
+            #Update output layer
+            self.output_weights -= self.eta * self.output_weights_gradient/np.sqrt(self.s[0]+1e-8)
+            self.output_bias -= self.eta * self.output_bias_gradient/np.sqrt(self.s[1]+1e-8)
+            for i in range(self.n_hidden_layers):
+                #Update hidden layers
+                if self.lmbd > 0.0:
+                    self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
+                self.s[2+i*2]=cbeta*self.s[2+i*2]+(1-cbeta)*(self.hidden_weights_gradient[i]*self.hidden_weights_gradient[i])
+                self.s[3+i*2]=cbeta*self.s[3+i*2]+(1-cbeta)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
+                self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
+                self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
+            self.iterator += 1
+
     def backpropagation(self):
         error_output = self.elementwise_error() #The error to calculating the gradient
         self.output_weights_gradient = np.matmul(self.a_h[-1].T, error_output) #calculate the gradient for the ouptput
@@ -538,7 +596,7 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             X_training_scaled = scaler.transform(X_training)
             X_testing_scaled = scaler.transform(X_testing)
 
-            """For regressin problems"""
+            """For regression problems"""
             if nn.errortype=="MSE":
                 z_training=z_training.reshape((X_training_scaled.shape[0],1))
                 z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
