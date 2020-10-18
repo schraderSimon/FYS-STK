@@ -30,6 +30,8 @@ scaler=StandardScaler()
 scaler.fit(X_train) #Scale
 X_train_scaled=scaler.transform(X_train) #scale train Design matrix
 X_test_scaled=scaler.transform(X_test) #scale test Design matrix
+
+"""Set up parameters"""
 eta=0.01
 epochs=100
 n_hidden_neurons=[100,100]
@@ -49,15 +51,13 @@ nn=NeuralNetwork(X_train_scaled,z_train_scaled,
     n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
     n_categories=n_categories,epochs=epochs,batch_size=batch_size,
     activation_function_type=activation_function_type,
-    errortype="MSE",solver="RMSProp")
-print(X_train_scaled.shape)
-print(z_train_scaled.shape)
+    errortype="MSE",solver="RMSProp") #Create Neural Network
 
 for l, Lambda in enumerate(Lambdas):
     for e, eta in enumerate(etas):
         print("Eta: %.2e"%eta)
         print("Lambda: %.2e"%Lambda)
-        testErr, trainErr, testR2, trainR2= Crossval_Neural_Network(5, nn, eta, Lambda,X,z)
+        testErr, trainErr, testR2, trainR2= Crossval_Neural_Network(5, nn, eta, Lambda,X,z) #Perform Cross Validation with the Neural Network code
         print("Test MSE Neural Network: %f" %testErr)
         print("Train MSE Neutral Network: %f" %trainErr)
 """
@@ -76,7 +76,7 @@ for l, Lambda in enumerate(Lambdas):
 """
 
 
-thetaOLS,unimportant=LinearRegression(X_train_scaled,z_train_scaled)
+thetaOLS,unimportant=LinearRegression(X_train_scaled,z_train_scaled) #Compare with linear regression
 print("Test MSE inversion: %f "%MSE(z_test_scaled,X_test_scaled @ thetaOLS))
 print("Train MSE inversion: %f "%MSE(z_train_scaled,X_train_scaled @ thetaOLS))
 reg = LinReg(fit_intercept=False).fit(X_train_scaled, z_train_scaled)
