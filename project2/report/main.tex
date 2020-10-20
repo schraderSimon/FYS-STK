@@ -1,0 +1,101 @@
+\documentclass[11pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{csvsimple}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=cyan,
+    citecolor=black,
+}
+
+\usepackage{tikz}
+\usetikzlibrary{calc,patterns,angles,quotes,shapes.geometric, arrows}
+\tikzstyle{train} = [rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{test} = [rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm,text centered, draw=black, fill=green!30]
+\tikzstyle{data} = [rectangle, rounded corners, minimum width=11.8cm, minimum height=1cm,text centered, draw=black, fill=gray!30]
+\tikzstyle{MSE} = [rectangle, rounded corners, minimum width=1.4cm, minimum height=1cm,text centered, draw=black, fill=orange!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\usepackage{float}
+%\usepackage{mathtools}
+\usepackage{bm}
+\usepackage[margin=1in]{geometry}
+
+\title{Project 2 in FYS-STK4155}
+\author{Adrian Martinsen Kleven & Simon Elias Schrader }
+\date{Autumn 2020}
+\usepackage{hyperref}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\graphicspath{{../figures/presentable_data/}} %Setting the graphicspath
+
+\begin{document}
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+
+\clearpage
+\section{Abstract}
+Machine learning - is it possible to learn this power? - Anakin\\
+Strong in you The computational power is! - Yoda\\
+It doesn't converge! This is outrageous! This is unfair! How can you call something machine learning but don't learn nothing at all? - Anakin\\
+Meesa computer master now! - Jar Jar Binks\\
+Hello np.where()! - Obi Wan Kenobi\\
+INFINITE CONVERGENCE - The senate
+\section{Introduction}
+As can be seen in \citep{Project1}, both Ordinary Least Square (OLS) regression and  Ridge regression failed to accurately fit a polynomial function to geographic data and did not manage to match the surface properly. In this article, we analyse whether regression with the help of feed forward neural networks (FFNNs) can give better results (in the form of a lower Mean Square Error and a better $R^2$ score) than OLS and Ridge regression. In order to do so, we implemented several stochastic gradient methods to find the approximate minimum of the Mean Square Error (MSE) function in parameter space. In order to evaluate their quality, we first compared their performance to the analytical expressions for OLS and Ridge regression for several parameters. Later, these methods were used in the back propagation of the neural network. For the regression problem, we used the sigmoid function as well as RELU and LeakyRELU as activation functions for the hidden layers and the linear function for the output layer. We did this comparison for several stochastic gradient methods and a flexible number of hidden layers and neutrons per hidden layer. \\
+We also tested the neural network's performance on a categorization problem, namely the MNIST data set \citep{lecun2010mnist}. We compared several activation functions for the hidden layers, while using the Softmax function (or the sigmoid function) for the output layer. Finally, we compared the neural network's performance to the results achieved using logistic regression. 
+\section{Methods}
+\subsection{Logistic Regression}
+\subsection{Gradient Descent Methods}
+One way to find the minima, both local and global, of a (multivariable) function, one can use the method of gradient descent. Simply speaking, this is done by iteratively changing the parameters in order to minimize a cost function \citep{handsOnMachineLearning}. As the gradient of a function always shows towards the point of steepest descent, following the gradient in the opposite direction will lead to a minimum. In both regression and classification problems, the function to be minimized is the cost function. In terms of linear regression, the cost function is the MSE function (possibly with additional regularization). The gradient is simply a vector containing the partial derivatives with respect to each coefficient $\beta_i$.\\
+For OLS and Ridge regression, we have that 
+\begin{equation}
+     \nabla_\beta C(\beta)=\frac{2}{m} \left[X^T \left(X\beta-y\right)+\textcolor{red}{+\lambda\beta} \right]
+\end{equation}
+where C is the cost function, X is the design matrix and m is the number of inputs. The \textcolor{red}{red} part is only added for Ridge Regression. \\
+After having an initial guess for the values $\beta^0$, The values $\beta$ are then be updated iteratively by following the gradient in the opposite direction:
+\begin{equation}\label{Updatescheme}
+\beta^{i+1}=\beta^{i}- \gamma \nabla_\beta C(\beta^{i})
+\end{equation}
+where we introduced the learning rate $\gamma$. The learning rate $\gamma$ needs to be chosen in such a way that it is not too large (which can lead to divergent behaviour), but not too small either (which can lead to an extremely slow convergence). This is done either until convergence is reached, or for a given number of iterations, called \textit{epochs}.
+\subsubsection{Stochastic Gradient Descent Methods}
+Because calculating the gradient of every parameter $\beta$ can be rather costly for large data sets, the gradient can be approximated by the gradient at only one input variable which is chosen randomly. This introduces randomness and erratic behaviour to the way the minimum is found. It is hence likely that the minimum is well approximated, but not exact \citep{handsOnMachineLearning}. However, the advantage is that the stochastic method can "jump out of" local minima and find the global minimum. One closely related method is Mini-batch gradient descent, where the gradient is approximated by the gradient at several, but not all, randomly chosen input variables. This leads to a less erratic behaviour, but is still computationally cheaper than Gradient Descent.
+There are several ways to implement the actual gradient descent. It is useful to adapt the learning rate $\gamma$ as the program proceeds - starting with a comparatively large learning rate, the algorithm can  leave local minima and proceed to the global minimum, while the learning rate is gradually reduced to get better convergence. In the following, three methods of varying complexity will be introduced.
+\paragraph*{"Naive" Stochastic Gradient Descent} has a constant learning rate $\gamma$, and the parameters $\beta$ are just updated by \eqref{Updatescheme} where the gradient is approximated. While this is easy to implement, has only one parameter ($\gamma$) to be fine tuned, and is cheap to calculate, the non-adaptive learning rate $\gamma$ can lead to sub-optimal convergence.
+\paragraph*{Decaying $\gamma$}
+- A simple way to make $\gamma$ get smaller gradually is to implement a gradual decay. Defining
+\begin{equation}
+\gamma_t=\frac{t_0}{t_1+t}
+\end{equation}
+where $t_0$ and $t_1$ are initialization parameters and t is updated as $t=e\cdot m+i$ where $e$ is the actual epoch, $i$ is the actual mini batch and $m$ is the number of mini batches. The update scheme remains the same \eqref{Updatescheme}, just that $\gamma_t$ is used instead of a fixed $\gamma$. While this method has the advantage that $\gamma_t$ gradually gets reduced, eventually $\gamma$ gets so small that the steplength gets so small that no convergence is reached.
+\paragraph*{RMSProp} describes a method where the learning rate is reduced gradually by accumulating the gradients from previous iterations, however, unlike the previous method, the impact of previous iterations decays exponentially. The update scheme is described as 
+\begin{equation}
+\begin{split}
+    &\bm{s}^{i+1}=\alpha \bm{s}^{i}+(1-\alpha) \nabla_\beta C(\bm{\beta^{i}})* \nabla_\beta C(\bm{\beta^{i}}) \\
+   &\bm{\beta}^{i+1}=\bm{\beta}^{i}-\gamma C(\bm{\beta^{i}}) / \sqrt{\bm{s}^{i+1}+e}
+\end{split}
+\end{equation}
+where * and / refer to element-wise multiplication and division, respectively. In this article, we chose the default value $\alpha=0.9$, while $e=10^{-8}$ simply has the purpose of avoiding zero division.
+\subsection{Neural networks}
+\subsubsection{Feed forward?}
+\subsubsection{Back propagation}
+\subsubsection{Activation functions}
+
+\subsection{Data sets}
+Blablabla geographic data blablabla\\
+Blablabla MNIST dataset, resolution, number of pictures, blablabla imported from Scikit learn.
+\section{Computational implementation}
+\subsection{Neural network}
+\subsubsection{Setting up weights and biases for the neural network}
+As there is no clear rule how to set up weights and biases, other than that they should be initialized with a non-zero value, we first tried to set up the weights with a mean zero normal distribution with a small standard deviation $\sigma\approx0.01$. However, we found that this yielded undesirable results, which made that especially ReLU and LeakyReLU gave unpredictable behaviour where the activation function gave very high numbers, eventually leading to numerical instability and overflow. Hence, we decided to follow the approach described in \cite{DelvingDeep}, where the weights are initialized randomly, following a mean zero normal distribution with standard deviation $\sigma=\sqrt{2/n\_inputs}$ where n\_inputs refers to the number of input data points.
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
