@@ -264,21 +264,54 @@ class SGD:
         return theta.ravel()
 
     def ADAM(self,eta=1e-3,beta_1=0.9,beta_2=0.99, error=1e-8):
-    """Returns theta using the ADAM optimizer"""
-    theta=self.theta
-    s=np.zeros_like(theta)
-    m=np.zeros_like(theta)
-    s_hat=np.zeros_like(theta)
-    m_hat=np.zeros_like(theta)
-    for epoch in range(1,self.n_epochs+1):
-        for i in range(self.MB): #For each minibatch
-            gradient=self.calculateGradient(theta)
-            m=beta_1*m+(1-beta_1)*gradient
-            s=beta_2*s+(1-beta_2)*(gradient*gradient)
-            m_hat = m/(1-beta_1**i)
-            s_hat = s/(1-beta_2**i)
-            theta= theta-eta*m_hat/(np.sqrt(s_hat)+error)
-    return theta.ravel()
+        """Returns theta using the ADAM optimizer"""
+        theta=self.theta
+        s=np.zeros_like(theta)
+        m=np.zeros_like(theta)
+        s_hat=np.zeros_like(theta)
+        m_hat=np.zeros_like(theta)
+        for epoch in range(1,self.n_epochs+1):
+            for i in range(self.MB): #For each minibatch
+                gradient=self.calculateGradient(theta)
+                m=beta_1*m+(1-beta_1)*gradient
+                s=beta_2*s+(1-beta_2)*(gradient*gradient)
+                m_hat = m/(1-beta_1**i)
+                s_hat = s/(1-beta_2**i)
+                theta= theta-eta*m_hat/(np.sqrt(s_hat)+error)
+        return theta.ravel()
+
+class LogisticRegression:
+    def __init__(self, n_iterations=5000, batch_size= 1, epochs = 100,l_rate = 0.005):
+        self.theta
+
+    def IndicatorFunction(self,y,k):
+    out = 0
+    if y==k:
+        out = 1
+    return out
+
+    def learning_schedule(self,t,t0,t1):
+        return t0/(t+t1)
+
+    def SoftMax(self,theta, x,k):
+        return np.exp(np.dot(theta[:,k],x))/(np.sum([np.dot(theta[:,i],x ) for i in range(n_classes) ]))
+
+    def CostFunction(self,theta,y,X):
+        cost = 0
+        for i in range(n_inputs):
+            for k in range(n_classes):
+                cost += IndicatorFunction(y[i],k)*np.log(SoftMax(theta,X[i],k))
+        return -cost
+
+    def Gradient_SoftMax(self,X,y,theta,k):
+        out = np.zeros(len(X[0]))
+        for i in range(n_inputs):
+        out  += X[i]*(IndicatorFunction(y[i],k)-SoftMax(theta,X[i],k))
+        return out
+    
+    def predict(self,X):
+        return []
+
 
 class SGD_Ridge(SGD): #this is inherited from Ridge
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1, Lambda=0.01):
@@ -508,7 +541,6 @@ class NeuralNetwork():
                 self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
                 self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
         elif self.solver=="ADAM": #ADAM Optimizer ########## NOT COMPLETE -- check that iterator is working (and correct)
-            #what's up with 2+i*2 .. 3+i*2 etc. ? everything after line "update output layer " is not done
             beta_1=self.beta_1
             beta_2=self.beta_2
             self.m[0]=beta_1*self.m[0]+(1-beta_1)*self.output_weights_gradient #Update m
@@ -516,16 +548,18 @@ class NeuralNetwork():
             self.s[0]=beta_2*self.s[0]+(1-beta_2)*(self.output_weights_gradient*self.output_weights_gradient) #Update s
             self.s[1]=beta_2*self.s[1]+(1-beta_2)*(self.output_bias_gradient*self.output_bias_gradient) #Update s
             #Update output layer
-            self.output_weights -= self.eta * self.output_weights_gradient/np.sqrt(self.s[0]+1e-8)
-            self.output_bias -= self.eta * self.output_bias_gradient/np.sqrt(self.s[1]+1e-8)
+            self.output_weights -= self.eta * (self.m[0]/(1-beta_1**(self.iterator+1)))/(np.sqrt(self.s[0]/(1-beta_2**(self.iterator+1)))+1e-8)
+            self.output_bias -= self.eta * (self.m[1]/(1-beta_1**(self.iterator+1)))/(np.sqrt(self.s[1]/(1-beta_2**(self.iterator+1)))+1e-8)
             for i in range(self.n_hidden_layers):
                 #Update hidden layers
                 if self.lmbd > 0.0:
                     self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
-                self.s[2+i*2]=cbeta*self.s[2+i*2]+(1-cbeta)*(self.hidden_weights_gradient[i]*self.hidden_weights_gradient[i])
-                self.s[3+i*2]=cbeta*self.s[3+i*2]+(1-cbeta)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
-                self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
-                self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
+                self.m[2+i*2]= beta_1*self.m[2+i*2]+(1- beta_1)* self.hidden_weights_gradient[i]
+                self.m[3+i*2]= beta_1*self.m[3+i*2]+(1- beta_1)* self.hidden_bias_gradient[i]
+                self.s[2+i*2]= beta_2*self.s[2+i*2]+(1- beta_2)*(self.hidden_weights_gradient[i]*self.hidden_weights_gradient[i])
+                self.s[3+i*2]= beta_2*self.s[3+i*2]+(1- beta_2)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
+                self.hidden_weights[i] -= self.eta * (self.m[2+i*2]/(1-beta_1**(self.iterator+1)))/(np.sqrt(self.s[2+i*2]/(1-beta_2**(self.iterator+1)))+1e-8)
+                self.hidden_bias[i] -= self.eta * (self.m[3+i*2]/(1-beta_1**(self.iterator+1)))/(np.sqrt(self.s[3+i*2]/(1-beta_2**(self.iterator+1)))+1e-8)
             self.iterator += 1
 
     def backpropagation(self):
