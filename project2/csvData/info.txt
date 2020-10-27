@@ -1,5 +1,0 @@
-a)
-- The files with 5001 data points have an eta_RMSprop <= 0.1 in order to compare. Otherwise its completely identical to the 5000 one.
-- It is worth mentioning that it's important to run Ridge with a batch size of 1 because it's SO BAD.
-- It's interesting to see what happens with different t0-values (as a function of t1). That might be included. Other than that,
-a) is finished.

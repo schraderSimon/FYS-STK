@@ -224,6 +224,8 @@ class SGD:
             self.theta=np.random.randn(self.p,1).ravel() #Create start guess for theta if theta is not given as parameter
         else:
             self.theta=theta.ravel()
+    def reset(self):
+        self.theta=np.random.randn(self.p,1).ravel()
     def learning_schedule(self,t,t0,t1): #The learning schedule for the decay fit
         return t0/(t+t1)
     def calculateGradient(self,theta, index=-1):
@@ -271,24 +273,26 @@ class SGD:
         s_hat=np.zeros_like(theta)
         m_hat=np.zeros_like(theta)
         for epoch in range(1,self.n_epochs+1):
-            for i in range(self.MB): #For each minibatch
+            for i in range(1,self.MB+1): #For each minibatch
                 gradient=self.calculateGradient(theta)
                 m=beta_1*m+(1-beta_1)*gradient
                 s=beta_2*s+(1-beta_2)*(gradient*gradient)
                 m_hat = m/(1-beta_1**i)
                 s_hat = s/(1-beta_2**i)
-                theta= theta-eta*m_hat/(np.sqrt(s_hat)+error)
+                theta= theta-eta*m_hat/(np.sqrt(s_hat))
+                if (np.any(np.isnan(theta))):
+                    sys.exit(1)
         return theta.ravel()
-
+"""
 class LogisticRegression:
     def __init__(self, n_iterations=5000, batch_size= 1, epochs = 100,l_rate = 0.005):
         self.theta
 
     def IndicatorFunction(self,y,k):
-    out = 0
-    if y==k:
-        out = 1
-    return out
+        out = 0
+        if y==k:
+            out = 1
+        return out
 
     def learning_schedule(self,t,t0,t1):
         return t0/(t+t1)
@@ -306,12 +310,12 @@ class LogisticRegression:
     def Gradient_SoftMax(self,X,y,theta,k):
         out = np.zeros(len(X[0]))
         for i in range(n_inputs):
-        out  += X[i]*(IndicatorFunction(y[i],k)-SoftMax(theta,X[i],k))
+            out  += X[i]*(IndicatorFunction(y[i],k)-SoftMax(theta,X[i],k))
         return out
-    
+
     def predict(self,X):
         return []
-
+"""
 
 class SGD_Ridge(SGD): #this is inherited from Ridge
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1, Lambda=0.01):
@@ -414,7 +418,7 @@ class NeuralNetwork():
             self.s.append(np.zeros_like(self.hidden_weights[i]))
             self.s.append(np.zeros_like(self.hidden_bias[i]))
         self.cbeta=0.9
-    
+
     def setUpADAM(self):
         """sets up the arrays for ADAM"""
         self.iterator = 0
@@ -427,7 +431,7 @@ class NeuralNetwork():
             self.s.append(np.zeros_like(self.hidden_bias[i]))
         self.beta_1=0.9
         self.beta_2=0.99
-        
+
     def activation_function(self,z,type=0):
         """The different activation functions"""
         if type==0:
