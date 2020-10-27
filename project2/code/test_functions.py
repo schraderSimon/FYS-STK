@@ -15,10 +15,10 @@ def test_optimizers():
     tol=1e-1
     for batchsize in [1, 5]:
         sgd=SGD(X,y,1000,batchsize=batchsize)
-        theta_RMSprop=sgd.RMSprop(eta=0.005)
-        theta_normal=sgd.simple_fit(eta=0.01) #simple SGD
-        theta_decay=sgd.decay_fit(t0=50,t1=5000) #SGD
-        theta_adam=sgd.ADAM(eta=0.01)
+        theta_RMSprop=sgd.RMSprop(eta=0.005); sgd.reset()
+        theta_normal=sgd.simple_fit(eta=0.01); sgd.reset() #simple SGD
+        theta_decay=sgd.decay_fit(t0=50,t1=5000); sgd.reset() #SGD
+        theta_adam=sgd.ADAM(eta=0.01); sgd.reset()
         error=[sum(abs(theta_RMSprop-theta)),sum(abs(theta_normal-theta))]
         error.append(sum(abs(theta_decay-theta)))
         error.append(sum(abs(theta_adam-theta)))
@@ -34,11 +34,11 @@ def test_optimizers_ridge():
     Lambda=0.1
     theta, unimportant=RidgeRegression(X,y,Lambda,False)
     for batchsize in [32,16]: #This fails HORRIBLY for 1
-        sgd=SGD_Ridge(X,y,1000,batchsize=batchsize,Lambda=Lambda)
-        theta_RMSprop=sgd.RMSprop(eta=0.005)
-        theta_normal=sgd.simple_fit(eta=0.01) #simple SGD
-        theta_decay=sgd.decay_fit(t0=50,t1=5000) #SGD
-        theta_adam=sgd.ADAM(eta=0.01)
+        sgd=SGD_Ridge(X,y,1000,batchsize=batchsize,Lambda=Lambda); sgd.reset()
+        theta_RMSprop=sgd.RMSprop(eta=0.005); sgd.reset()
+        theta_normal=sgd.simple_fit(eta=0.01); sgd.reset() #simple SGD
+        theta_decay=sgd.decay_fit(t0=50,t1=5000); sgd.reset() #SGD
+        theta_adam=sgd.ADAM(eta=0.01); sgd.reset()
         error=[sum(abs(theta_RMSprop-theta)),sum(abs(theta_normal-theta))]
         error.append(sum(abs(theta_decay-theta)))
         error.append(sum(abs(theta_adam-theta)))

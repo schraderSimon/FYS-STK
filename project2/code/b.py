@@ -6,11 +6,14 @@ from imageio import imread
 from sklearn import datasets
 from function_library import *
 from sklearn.linear_model import LinearRegression as LinReg
+from sklearn.neural_network import MLPRegressor
+from sklearn.datasets import make_regression
+from sklearn.model_selection import train_test_split
 """Set up data"""
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 terrain = imread("../data/Korea.tif")
 datapoints=2000
-degree=8
+degree=10
 
 x=np.random.randint(len(terrain),size=datapoints) #random integers
 y=np.random.randint(len(terrain[1]),size=datapoints) #random integers for y
@@ -33,8 +36,8 @@ X_test_scaled=scaler.transform(X_test) #scale test Design matrix
 
 """Set up parameters"""
 eta=0.01
-epochs=100
-n_hidden_neurons=[100,100]
+epochs=500
+n_hidden_neurons=[100,50]
 n_hidden_layers=len(n_hidden_neurons)
 n_categories=1
 batch_size=50
@@ -45,13 +48,13 @@ etas=np.logspace(-3,-2,amount_etas)
 Lambda_eta_error_train=np.zeros((amount_lambdas,amount_etas))
 Lambda_eta_error_test=np.zeros((amount_lambdas,amount_etas))
 
-activation_function_type="sigmoid"
-
+activation_function_type="RELU"
+solver="ADAM"
 nn=NeuralNetwork(X_train_scaled,z_train_scaled,
     n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
     n_categories=n_categories,epochs=epochs,batch_size=batch_size,
     activation_function_type=activation_function_type,
-    errortype="MSE",solver="RMSProp") #Create Neural Network
+    errortype="MSE",solver=solver) #Create Neural Network
 
 for l, Lambda in enumerate(Lambdas):
     for e, eta in enumerate(etas):
@@ -60,6 +63,11 @@ for l, Lambda in enumerate(Lambdas):
         testErr, trainErr, testR2, trainR2= Crossval_Neural_Network(5, nn, eta, Lambda,X,z) #Perform Cross Validation with the Neural Network code
         print("Test MSE Neural Network: %f" %testErr)
         print("Train MSE Neutral Network: %f" %trainErr)
+        Lambda_eta_error_test[l,e]=testErr
+        Lambda_eta_error_train[l,e]=trainErr
+        testErr, trainErr, testR2, trainR2= CrossVal_Regression(5,eta,Lambda,X,z,activation_function_type.lower(),solver.lower(),n_hidden_neurons) #Perform Cross Validation with the Neural Network code
+        print("Test MSE Scikit Learn: %f"%testErr)
+        print("Train MSE Scikit Learn: %f"%trainErr)
 """
 for l, Lambda in enumerate(Lambdas):
     for e, eta in enumerate(etas):

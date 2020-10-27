@@ -398,15 +398,15 @@ class NeuralNetwork():
         self.hidden_bias=[0]*self.n_hidden_layers #an empty list of length n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers #an empty list of length n_hidden_layers
         #Set up the weights for the first hidden layer with gaussian distributed numbers with sigma=2/self.n_inputs
-        self.hidden_weights[0] = np.random.randn(self.n_features, self.n_hidden_neurons[0])*np.sqrt(2/self.n_inputs)
+        self.hidden_weights[0] = np.random.randn(self.n_features, self.n_hidden_neurons[0])*np.sqrt(2/self.batch_size)
         #Set up the biases for the first hidden layer as 0.001
         self.hidden_bias[0] = np.zeros(self.n_hidden_neurons[0]) + 0.001
         for i in range(1,self.n_hidden_layers):
             #Set up the biases and weights for all hidden layers the same way as for the first layer
-            self.hidden_weights[i]=np.random.randn(self.n_hidden_neurons[i-1], self.n_hidden_neurons[i])*np.sqrt(2/self.n_inputs)
+            self.hidden_weights[i]=np.random.randn(self.n_hidden_neurons[i-1], self.n_hidden_neurons[i])*np.sqrt(2/self.batch_size)
             self.hidden_bias[i] = np.zeros(self.n_hidden_neurons[i]) + 0.001
         #Set up the biases and weights for all the output layer the same way as for the first layer
-        self.output_weights = np.random.randn(self.n_hidden_neurons[-1], self.n_categories)*np.sqrt(2/self.n_inputs)
+        self.output_weights = np.random.randn(self.n_hidden_neurons[-1], self.n_categories)*np.sqrt(2/self.batch_size)
         self.output_bias = np.zeros(self.n_categories) + 0.001
 
     def setUpRMSProp(self):
@@ -645,6 +645,10 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             """Calculate train and test error"""
             prediction_train=nn.predict_probabilities(X_training_scaled)
             prediction_test=nn.predict_probabilities(X_testing_scaled)
+            if i==1:
+                #print(prediction_test)
+                #break;
+                pass
             if nn.errortype=="MSE":
                 Error_train[i],R2_train[i] = nn.error_function(z_training,prediction_train)
                 Error_test[i],R2_test[i]=nn.error_function(z_testing,prediction_test)
@@ -657,3 +661,38 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
             error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
             return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
+from sklearn.model_selection import KFold as SKFold
+from sklearn.neural_network import MLPRegressor
+def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons):
+    kf=SKFold(n_splits=k,shuffle=True)
+    Error_test = np.zeros(k); R2_test=np.zeros(k)
+    Error_train=np.zeros(k); R2_train=np.zeros(k)
+    scaler = StandardScaler()
+    trainIndx, testIndx = KfoldCross(X,k) #Get random indices
+    for i in range(k): #For the munber of cross validations
+        """Seperate in training and testing sets, scale"""
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+        z_trainings = z[trainIndx[i]]
+        z_testings = z[testIndx[i]]
+        z_training=z_trainings-np.mean(z_trainings)
+        z_testing=z_testings-np.mean(z_trainings)
+        #Scale X
+        scaler.fit(X_training)
+        X_training_scaled = scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+        z_training=z_training.reshape((X_training_scaled.shape[0],1))
+        z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
+        regr=MLPRegressor(learning_rate_init=eta,max_iter=1000,solver=solver,alpha=Lambda,
+            hidden_layer_sizes=n_hidden_neurons,activation=activation_function_type).fit(X_training_scaled,z_training.ravel())
+
+        prediction_train=regr.predict(X_training_scaled)
+        prediction_test=regr.predict(X_testing_scaled)
+
+        Error_train[i],R2_train[i] =MSE(z_training.ravel(),prediction_train), R2(z_training.ravel(),prediction_train)
+        Error_test[i],R2_test[i]=MSE(z_testing.ravel(),prediction_test), R2(z_testing.ravel(),prediction_test)
+    print(Error_train)
+    print(Error_test)
+    error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
+    error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
+    return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate

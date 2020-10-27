@@ -20,8 +20,8 @@ try:
     epochs=int(sys.argv[5])
     max_learning_rate=float(sys.argv[6])
 except:
-    datapoints=200
-    degree=5
+    datapoints=2000
+    degree=10
     batchsize=16
     num_etas=10#array length for etas & t1_values
     epochs=1000
