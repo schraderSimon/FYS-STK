@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from imageio import imread
 from sklearn import datasets
 from function_library import *
+import pandas as pd
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.neural_network import MLPRegressor
 from sklearn.datasets import make_regression
@@ -35,20 +36,23 @@ X_train_scaled=scaler.transform(X_train) #scale train Design matrix
 X_test_scaled=scaler.transform(X_test) #scale test Design matrix
 
 """Set up parameters"""
+runscikit=False
 eta=0.01
-epochs=500
-n_hidden_neurons=[100,50]
+epochs=100
+n_hidden_neurons=[100,100]
 n_hidden_layers=len(n_hidden_neurons)
 n_categories=1
-batch_size=50
-amount_lambdas=2
-amount_etas=2
-Lambdas=np.logspace(-16,0,amount_lambdas)
-etas=np.logspace(-3,-2,amount_etas)
+batch_size=200
+amount_lambdas=10
+amount_etas=8
+Lambdas=np.logspace(-16,3,amount_lambdas)
+etas=np.logspace(-6,1,amount_etas)
 Lambda_eta_error_train=np.zeros((amount_lambdas,amount_etas))
 Lambda_eta_error_test=np.zeros((amount_lambdas,amount_etas))
+Scikit_Lambda_eta_error_train=np.zeros((amount_lambdas,amount_etas))
+Scikit_Lambda_eta_error_test=np.zeros((amount_lambdas,amount_etas))
 
-activation_function_type="RELU"
+activation_function_type="tanh"
 solver="ADAM"
 nn=NeuralNetwork(X_train_scaled,z_train_scaled,
     n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
@@ -65,35 +69,46 @@ for l, Lambda in enumerate(Lambdas):
         print("Train MSE Neutral Network: %f" %trainErr)
         Lambda_eta_error_test[l,e]=testErr
         Lambda_eta_error_train[l,e]=trainErr
-        testErr, trainErr, testR2, trainR2= CrossVal_Regression(5,eta,Lambda,X,z,activation_function_type.lower(),solver.lower(),n_hidden_neurons) #Perform Cross Validation with the Neural Network code
-        print("Test MSE Scikit Learn: %f"%testErr)
-        print("Train MSE Scikit Learn: %f"%trainErr)
-"""
-for l, Lambda in enumerate(Lambdas):
-    for e, eta in enumerate(etas):
-        print("Eta: %.2e"%eta)
-        print("Lambda: %.2e"%Lambda)
-        nn.update_parameters_reset(eta=eta,lmbd=Lambda)
-        nn.train()
-        prediction_train=nn.predict_probabilities(X_train_scaled)
-        prediction_test=nn.predict_probabilities(X_test_scaled)
-        Lambda_eta_error_test[l,e]=MSE_test=MSE(prediction_test,z_test_scaled)
-        Lambda_eta_error_train[l,e]=MSE_train=MSE(prediction_train,z_train_scaled)
-        print("Test MSE Neural Network: %f" %MSE_test)
-        print("Train MSE Neutral Network: %f" %MSE_train)
-"""
+        if activation_function_type=="sigmoid":
+            activation_function_type="logistic" #it is called differently in scikit learn.
+        if runscikit:
+            testErr, trainErr, testR2, trainR2= CrossVal_Regression(5,eta,Lambda,X,z,activation_function_type.lower(),solver.lower(),n_hidden_neurons,epochs) #Perform Cross Validation with the Neural Network code
+            Scikit_Lambda_eta_error_test[l,e]=testErr
+            Scikit_Lambda_eta_error_train[l,e]=trainErr
+            print("Test MSE Scikit Learn: %f"%testErr)
+            print("Train MSE Scikit Learn: %f"%trainErr)
 
 
-thetaOLS,unimportant=LinearRegression(X_train_scaled,z_train_scaled) #Compare with linear regression
-print("Test MSE inversion: %f "%MSE(z_test_scaled,X_test_scaled @ thetaOLS))
-print("Train MSE inversion: %f "%MSE(z_train_scaled,X_train_scaled @ thetaOLS))
-reg = LinReg(fit_intercept=False).fit(X_train_scaled, z_train_scaled)
+"""write to file"""
+import os
+mapname="../csvData/%db1_%s%s%d%d_epoch100"%(len(n_hidden_neurons),activation_function_type,solver,datapoints,degree)
+try:
+    os.mkdir(mapname)
+except:
+    pass
+outfile=open("%s/info.txt"%mapname,"w")
+outfile.write("lambda,")
+for Lambda in Lambdas:
+    outfile.write("%e,"%Lambda)
+outfile.write("\neta,")
+for eta in etas:
+    outfile.write("%e,"%eta)
+outfile.write("\nhidden_neuron,")
+for neuron in n_hidden_neurons:
+    outfile.write("%d,"%neuron)
+outfile.write("\ndatapoints,%d,\ndegree,%d,\nepoch, %d,\nbatch_size,%d\nactivation_function, %s,\nsolver,%s,\n"%(datapoints,degree,epochs,batch_size,activation_function_type,solver))
+pd.DataFrame(Scikit_Lambda_eta_error_train).to_csv("%s/Scikit_train.csv"%mapname)
+pd.DataFrame(Scikit_Lambda_eta_error_test).to_csv("%s/Scikit_test.csv"%mapname)
+pd.DataFrame(Lambda_eta_error_train).to_csv("%s/train.csv"%mapname)
+pd.DataFrame(Lambda_eta_error_test).to_csv("%s/test.csv"%mapname)
+min_test_error=np.inf
+min_train_error=np.inf
 
-print("Test MSE inversion Scikit: %f "%MSE(z_test_scaled,reg.predict(X_test_scaled)))
-print("Train MSE inversion Scikit: %f "%MSE(z_train_scaled,reg.predict(X_train_scaled)))
-#Note: Using [100,100], eta=[10^-3 to 10^-1], lambda=0, 1000 epochs, batchsize 100, 20.000 datapoints
-#degree 18 and no regularization, I got the error below 10,000 (sigmoid, RMSProp)
-print("Minimal Test error:")
-print(np.nanmin(Lambda_eta_error_test))
-print("Minimal Train error")
-print(np.nanmin(Lambda_eta_error_train))
+for Lambda in np.logspace(-30,-10,20):
+    test_error_inversion,train_error_inversion=KCrossValRidgeMSE(X,z,5,Lambda)
+    if test_error_inversion<min_test_error:
+        min_test_error=test_error_inversion
+        min_train_error=train_error_inversion
+outfile.write("train_error_inversion,%d,\n"%min_train_error)
+outfile.write("test_error_inversion,%d,\n"%min_test_error)
+outfile.close()

@@ -27,7 +27,7 @@
 \usepackage[margin=1in]{geometry}
 
 \title{Project 2 in FYS-STK4155}
-\author{Adrian Martinsen Kleven & Simon Elias Schrader }
+\author{Adrian Martinsen Kleven \& Simon Elias Schrader }
 \date{Autumn 2020}
 \usepackage{hyperref}
 
@@ -91,14 +91,16 @@ where * and / refer to element-wise multiplication and division, respectively. I
 
 \subsection{Data sets}
 Blablabla geographic data blablabla\\
-Blablabla MNIST dataset, resolution, number of pictures, blablabla imported from Scikit learn.
+Blablabla MNIST dataset, resolution, number of pictures, blablabla imported from Scikit-learn .
 \section{Computational implementation}
 \subsection{Neural network}
 \subsubsection{Setting up weights and biases for the neural network}
 As there is no clear rule how to set up weights and biases, other than that they should be initialized with a non-zero value, we first tried to set up the weights with a mean zero normal distribution with a small standard deviation $\sigma\approx0.01$. However, we found that this yielded undesirable results, which made that especially ReLU and LeakyReLU gave unpredictable behaviour where the activation function gave very high numbers, eventually leading to numerical instability and overflow. Hence, we decided to follow the approach described in \cite{DelvingDeep}, where the weights are initialized randomly, following a mean zero normal distribution with standard deviation $\sigma=\sqrt{2/n\_inputs}$ where n\_inputs refers to the number of input data points.
+\subsubsection{Functionality of the Neural Network}
+We designed a flexible Neural Network that works with any amount of hidden layers and any amount of neurons per hidden layer. It works with both classification and regression, using the softmax function as activation function for the output layer for classification, and simply the linear function $f(x)=x$ for the regression case. 
 \section{Results}
 \subsection{Comparison of SGD methods for OLS}
-Figure \ref{fig:DifferentSGD} shows, for a given OLS problem, the test MSE as a function of the learning rate $\eta$ for a fixed number of epochs & a fixed batch size; the test MSE as a function of the number of epochs for a fixed learning rate & a fixed batch size; and the test MSE as a function of batch size for a fixed number of epochs and a fixed learning rate. 
+Figure \ref{fig:DifferentSGD} shows, for a given OLS problem, the test MSE as a function of the learning rate $\eta$ for a fixed number of epochs \& a fixed batch size; the test MSE as a function of the number of epochs for a fixed learning rate \& a fixed batch size; and the test MSE as a function of batch size for a fixed number of epochs and a fixed learning rate. 
 
 \begin{figure}[H]
 \centering
@@ -117,11 +119,47 @@ Figure \ref{fig:DifferentSGD_fixedEta} contains the same plots as figure \ref{fi
 \end{figure}
 \subsection{Comparison of SGD methods for Ridge regression}
 We repeated the same analysis as above with Ridge regression, only varying the learning rate and the regularisation parameter, keeping the batchsize fixed (16), as well as the number of epochs (1000). We chose a high polynomial degree where OLS is inferior to Ridge regression. The results can be seen in figure \ref{fig:DifferentSGDRIDE} in the appendix. The difference between the methods is baffling. We see that simple SGD gives NaN-values for too high learning rates, as before. RMSProp and ADAM, too, give worse results as the learning rate increases, but to a much lesser degree than simple SGD. As we did not perform Cross Validation, these numbers are only qualitatively correct, but we see that all methods, given the ideal parameters are chosen, can get very close to the analytical result. ADAM performs best and manages to come close to the analytical solution, however, both RMSProp and the simple SGD method get quite close, too. We see that regularization gives improved values for Stochastic Gradient Descent methods, to, as very small regularization parameters $\lambda$ yield worse test errors than the optimal parameters. We see however that the error is always larger than the ideal test error, implying that Stochastic Gradient Descent methods can get quite close, but not exactly equal to the ideal analytical parameters, at least not with the chosen parameters. 
+\subsection{FFNN for Regression}
+We used randomly selected points from the geographic data \citep{Project1} to create a fit using both OLS and Ridge Regression, as well as the Neural Network.
+\subsubsection{Comparing the FFNN to Scikit-learn}
+We tested the quality of our Neural Network with N=2000 randomly selected datapoints and a polynomial degree of 10. We chose 200 as batch size and 1000 epochs. We used one hidden layer with 100 neurons. The sigmoid function was used as activation function for the hidden layer, and simple gradient descent was used. Figure \ref{fig:ScikitLearn_1} plots the test and train error as function of the regularization parameter $\lambda$ and the error learning rate $\eta$. Using OLS, we found 28272 for the train MSE and 24758 for the test MSE, for comparison. We also compared this to Scikit-learn 's MLPRegressor function \citep{scikit-learn}, which are included in figure \ref{fig:ScikitLearn_1}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.05\textwidth]{figures/presentable_data/scikit_own_1b1_logisticsgd200010.pdf}
+\caption[Scikit-learn  and own FNN with 1 layer]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network and Scikit-learn 's MLPRegressor function. We used 2000 datapoints (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, one hidden layer with 100 neurons, simple SGD as gradient descent method and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ScikitLearn_1}
+\end{figure}
+First of all, we see that both Scikit-learn and our own Neural Network outperform OLS (and Ridge regression, which gives identical values here). Values like that were not possible to obtain only using Linear Regression for that amount of data points \citep{Project1}, indicating that Neural Networks can give superior results to Linear Regression methods. This comes however at the cost of not obtaining a nice function expression (it is up to the reader to decide if a multivariate polynomial of degree 10 is a nice function expression - but the number of parameters is bearable) with a meaning behind it. \\
+We see that our algorithm gave superior values to Scikit-learn. This is supposedly due to a different implementation of the SGD-algorithm, as is clear as the ideal parameters for the learning rate differ by one magnitude. Finally, we see that choosing wrong parameters ends up giving completely horrendous results, meaning that tweaking both the regularization parameter and the learning rate is necessary.
+\subsubsection{Impact of number of hidden layers}
+Exactly the same analysis as before (compare figure \ref{fig:ScikitLearn_1}) was done, this time using two hidden layers with 100 neurons each. The results can be seen in figure \ref{fig:ScikitLearn_2}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.05\textwidth]{figures/presentable_data/scikit_own_2b1_logisticsgd200010.pdf}
+\caption[Scikit-learn  and own FFNN with 2 layers]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network and Scikit-learn 's MLPRegressor function. We used 2000 datapoints (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each, simple SGD as gradient descent method and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ScikitLearn_2}
+\end{figure}
+We see that adding the second layer gives even better results than just using one hidden layer. This indicates that using more layers can further reduce the error. Again, our Neural Network outperforms Scikit learn, but the difference is smaller than with just one single layer. \\Figure XXX in the appendix (don't know if I bother LOL) shows the same analysis, this time with 4 layers, and confirms that more layers can reduce the error further.\\We also run the same analysis with a polynomial degree of 20. Here, OLS fails due to a too high variance. Ridge regression can be used though and gives an error of XXX and XXX. Our Neural Network gave an error of XXX, which is far superior to Ridge Regression. 
+\subsubsection{Comparison between ADAM, RMSProp \& simple SGD}
+Figure \ref{fig:ADAMvsRMSProp} contains the train and the test MSE using ADAM \& RMSProp as stochastic gradient descent methods using our own FFNN. The parameters are identical to the ones in figure \ref{fig:ScikitLearn_2}, that is, two hidden layers with 100 neurons each. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.05\textwidth]{figures/presentable_data/ADAM_RMSProp_2b1_logisticRMSProp200010.pdf}
+\caption[ADAM \& RMSProp with 2 layers]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM and RMSProp. We used 2000 datapoints (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ADAMvsRMSProp}
+\end{figure}
+We see that the methods are generally similar and give similar test and train errors for similar parameters. However, ADAM copes better with too high learning rates and the results at high learning rates, albeit much worse than with good parameters, do not explode. ADAM also surpasses simple SGD in the sense that the lowest obtained test MSE is slightly lower, while RMSProp is on pair. 
+\subsubsection{Impact of activation function}
+As ADAM has given the best test results, we used ADAM as SGD and compared the impact of the four different activation functions ReLU, tanh, sigmoid \& LeakyReLU. This can be seen in figure \ref{fig:ADAMdifferentActivationFunctions}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.05\textwidth]{figures/presentable_data/ADAM_RMSProp_2b1_logisticRMSProp200010.pdf}
+\caption[Different activation functions]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM. We used 2000 datapoints (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each and the activation function stated in the title between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ADAMdifferentActivationFunctions}
+\end{figure}
+\subsubsection{Speed of convergence for different activation functions}
+In order to compare the methods ADAM, RMSProp and the simple SGD in another way, we looked at the train and test MSE using only 100 epochs. This is an indication for how long the network has to train before the test error gets optimal.
 \section{Appendix}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{figures/presentable_data/Ridge_error_SGD.pdf}
-\caption[Relative Test MSE with different SGD methods for Ridge]{Relative Test MSE  ($\frac{MSE_{SGD}}{MSE_{analytical}})$ for the simple SGD method (titled SGD), RMSProp and ADAM and as functions of the learning rate $\eta$ and the regularization parameter $\lambda$. $N=2000$, the polynomial degree used is $deg=20$, where OLS fails. The batch size is 16, the number of epochs is 1000. Values exceeding 10 were removed, explaning the grey parts. No bootstrapping or cross-validation was performed.} \label{fig:DifferentSGDRIDE}
+\caption[Relative Test MSE with different SGD methods for Ridge]{Relative Test MSE  ($\frac{MSE_{SGD}}{MSE_{analytical}})$ for the simple SGD method, RMSProp and ADAM and as functions of the learning rate $\eta$ and the regularization parameter $\lambda$. $N=2000$, the polynomial degree used is $deg=20$, where OLS fails. The batch size is 16, the number of epochs is 1000. Values exceeding 10 were removed, explaning the grey parts. No bootstrapping or cross-validation was performed.} \label{fig:DifferentSGDRIDE}
 \end{figure}
 
 \subsection{Figures}

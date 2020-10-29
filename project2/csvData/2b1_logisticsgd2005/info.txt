@@ -1,0 +1,9 @@
+lambda,1.000000e-16,1.000000e+00,
+eta,1.000000e-05,1.000000e+05,
+hidden_neuron,100,50,
+datapoints,200,
+degree,5,
+epoch, 100,
+batch_size,50
+activation_function, logistic,
+solver,sgd,

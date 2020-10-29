@@ -1,0 +1,11 @@
+lambda,1.000000e-16,1.291550e-14,1.668101e-12,2.154435e-10,2.782559e-08,3.593814e-06,4.641589e-04,5.994843e-02,7.742637e+00,1.000000e+03,
+eta,1.000000e-06,1.000000e-05,1.000000e-04,1.000000e-03,1.000000e-02,1.000000e-01,1.000000e+00,1.000000e+01,
+hidden_neuron,100,100,
+datapoints,2000,
+degree,10,
+epoch, 1000,
+batch_size,200
+activation_function, tanh,
+solver,ADAM,
+train_error_inversion,24805,
+test_error_inversion,27687,

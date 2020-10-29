@@ -130,6 +130,7 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     trainIndx, testIndx = KfoldCross(X,k)
     #init empty MSE array
     MSE_crossval = np.zeros(k)
+    MSE_crossval_train=np.zeros(k)
     #redef scaler, with_mean = True
     scaler = StandardScaler()
     for i in range(k):
@@ -151,11 +152,12 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
         z_testing_fit = X_testing_scaled @ beta
         #calculate MSE for each fold
         MSE_crossval[i] = MSE(z_testing,z_testing_fit)
-
+        MSE_crossval_train[i] = MSE(z_training,z_training_fit)
     MSE_estimate = np.mean(MSE_crossval)
+    MSE_train_estimate=np.mean(MSE_crossval_train)
     #print("MSE Ridge")
     #print(MSE_estimate)
-    return MSE_estimate
+    return MSE_estimate, MSE_train_estimate
 def accuracy_score(y_data, y_model):
     return np.sum(y_data==y_model)/len(y_data)
 
@@ -446,7 +448,7 @@ class NeuralNetwork():
             return np.maximum(z,0,z)
         if type==("LeakyRELU"):
             return np.maximum(z,0.01*z,z)
-            #return np.where(z > 0, z, z * 0.01)
+            #if z is larger than zero, we get z, if it's below zero, then 0.01z > z.
         if type=="softmax":
             m=np.max(z)
             exp_term=np.exp(z-m) #This is to avoid problems of too large numbers
@@ -663,7 +665,7 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
 from sklearn.model_selection import KFold as SKFold
 from sklearn.neural_network import MLPRegressor
-def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons):
+def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons,epochs):
     kf=SKFold(n_splits=k,shuffle=True)
     Error_test = np.zeros(k); R2_test=np.zeros(k)
     Error_train=np.zeros(k); R2_train=np.zeros(k)
@@ -683,7 +685,7 @@ def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidde
         X_testing_scaled = scaler.transform(X_testing)
         z_training=z_training.reshape((X_training_scaled.shape[0],1))
         z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
-        regr=MLPRegressor(learning_rate_init=eta,max_iter=1000,solver=solver,alpha=Lambda,
+        regr=MLPRegressor(learning_rate_init=eta,max_iter=epochs,solver=solver,alpha=Lambda,
             hidden_layer_sizes=n_hidden_neurons,activation=activation_function_type).fit(X_training_scaled,z_training.ravel())
 
         prediction_train=regr.predict(X_training_scaled)
