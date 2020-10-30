@@ -39,7 +39,7 @@ X_test_scaled=scaler.transform(X_test) #scale test Design matrix
 runscikit=False
 eta=0.01
 epochs=100
-n_hidden_neurons=[100,100]
+n_hidden_neurons=[100,100,50,50]
 n_hidden_layers=len(n_hidden_neurons)
 n_categories=1
 batch_size=200
@@ -52,7 +52,7 @@ Lambda_eta_error_test=np.zeros((amount_lambdas,amount_etas))
 Scikit_Lambda_eta_error_train=np.zeros((amount_lambdas,amount_etas))
 Scikit_Lambda_eta_error_test=np.zeros((amount_lambdas,amount_etas))
 
-activation_function_type="tanh"
+activation_function_type="LeakyRELU"
 solver="ADAM"
 nn=NeuralNetwork(X_train_scaled,z_train_scaled,
     n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
@@ -81,7 +81,7 @@ for l, Lambda in enumerate(Lambdas):
 
 """write to file"""
 import os
-mapname="../csvData/%db1_%s%s%d%d_epoch100"%(len(n_hidden_neurons),activation_function_type,solver,datapoints,degree)
+mapname="../csvData/%db1_%s%s%d%d_epoch"%(len(n_hidden_neurons),activation_function_type,solver,datapoints,degree)
 try:
     os.mkdir(mapname)
 except:

@@ -15,7 +15,7 @@ try:
     activation=sys.argv[5]
 except:
     datapoints=2000
-    degree=10
+    degree=20
     num_layers=2
     method="sgd"
     activation="logistic"

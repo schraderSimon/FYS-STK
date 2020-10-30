@@ -693,8 +693,6 @@ def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidde
 
         Error_train[i],R2_train[i] =MSE(z_training.ravel(),prediction_train), R2(z_training.ravel(),prediction_train)
         Error_test[i],R2_test[i]=MSE(z_testing.ravel(),prediction_test), R2(z_testing.ravel(),prediction_test)
-    print(Error_train)
-    print(Error_test)
     error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
     error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
     return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
