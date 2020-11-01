@@ -285,39 +285,7 @@ class SGD:
                 if (np.any(np.isnan(theta))):
                     sys.exit(1)
         return theta.ravel()
-"""
-class LogisticRegression:
-    def __init__(self, n_iterations=5000, batch_size= 1, epochs = 100,l_rate = 0.005):
-        self.theta
 
-    def IndicatorFunction(self,y,k):
-        out = 0
-        if y==k:
-            out = 1
-        return out
-
-    def learning_schedule(self,t,t0,t1):
-        return t0/(t+t1)
-
-    def SoftMax(self,theta, x,k):
-        return np.exp(np.dot(theta[:,k],x))/(np.sum([np.dot(theta[:,i],x ) for i in range(n_classes) ]))
-
-    def CostFunction(self,theta,y,X):
-        cost = 0
-        for i in range(n_inputs):
-            for k in range(n_classes):
-                cost += IndicatorFunction(y[i],k)*np.log(SoftMax(theta,X[i],k))
-        return -cost
-
-    def Gradient_SoftMax(self,X,y,theta,k):
-        out = np.zeros(len(X[0]))
-        for i in range(n_inputs):
-            out  += X[i]*(IndicatorFunction(y[i],k)-SoftMax(theta,X[i],k))
-        return out
-
-    def predict(self,X):
-        return []
-"""
 
 class SGD_Ridge(SGD): #this is inherited from Ridge
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1, Lambda=0.01):
@@ -336,6 +304,107 @@ class SGD_Ridge(SGD): #this is inherited from Ridge
 
 
         return gradients
+
+def OneHotMatrix(y,NrClasses):
+    """
+    Input: Vector y containing integers between 0 and y_max
+    Integer: NrClasses indicating the number of classes
+    Output: One- Hot matrix of shape (#datapoints, #classes)
+    """
+    n = len(y)
+    M = np.zeros((n,NrClasses))
+    for i in range(n):
+        M[i,y[i]] = 1
+    return M
+
+def OneHotToDigit(M,NrClasses):
+    """
+    Input: Matrix M containing integers between 0 and y_max
+    Integer: NrClasses indicating the number of classes
+    Output: array of digits corresponding to One- Hot matrix
+    """
+    n = len(M)
+    y = np.zeros(n)
+    for i in range(n):
+        y[i] = np.argmax(M[i,:])
+    return y
+
+class LogRegression:
+    def __init__(self,X,Y,n_epochs=100,batchsize = 1, Lambda = 0):
+        self.n_epochs=n_epochs
+        self.X=X
+        self.Y=Y
+        self.Lambda = Lambda
+        self.NrCategories = len(Y[0])
+        self.n=len(X) #Number of rows
+        self.NrPredictors=len(X[0]) #number of columns
+        self.batchsize=batchsize
+        self.MB=int(self.n/self.batchsize) #number of minibatches
+        
+        self.b = np.random.rand(self.NrCategories,1)
+        self.W = np.random.rand(self.NrCategories, self.NrPredictors)
+    
+    def SoftMax(self,z):
+        return np.exp(z)/np.sum(np.exp(z))
+
+    def CrossEntropyLoss(self,y,a):
+        return -1*np.sum(np.dot(y,np.log(a)))
+
+    def FeedForward(self,x,W,b):
+        z = np.matmul(W,x) + b
+        a = self.SoftMax(z)
+        return z, a
+    def calculateGradient(self,W,b,x,y,a,z):
+        
+        NrCategories = self.NrCategories
+
+        M = np.matmul(a, np.ones((1,NrCategories))) * (np.identity(NrCategories) - np.matmul(np.ones((NrCategories, 1)), a.T))
+        
+        da = - y/a
+        dz = np.matmul(M, da)
+        dW = 2/self.batchsize *(dz * x.T) + 2/self.batchsize *self.Lambda*W
+        db = 2/self.batchsize *(dz.copy())+ 2/self.batchsize *self.Lambda*b
+        return dW, db
+
+    def fit(self,eta=0.01):
+        W = self.W
+        b = self.b
+        X = self.X
+        Y = self.Y
+        for epoch in range(1,self.n_epochs+1): #For each epoch
+            for i in range(self.MB): #For each minibatch
+                index=np.random.randint(self.n,size=self.batchsize)
+                x= X[index].reshape(self.NrPredictors,1)
+                y= Y[index].reshape(self.NrCategories,1)
+
+                z, a = self.FeedForward(x,W,b)
+                dW, db = self.calculateGradient(W,b,x,y,a,z)
+                W = W - eta*dW
+                b = b - eta*db
+        return W, b
+    
+    def predict(self,X_test,W,b):
+        n = len(X_test)
+        P = np.zeros((n,self.NrCategories))
+        for i in range(n):
+            z = np.matmul(W,X_test[i].reshape(self.NrPredictors,1))+b
+            a = self.SoftMax(z)
+            P[i,np.argmax(a)] = 1
+        return P
+    
+    def accuracy(self,P,Y):
+        n = len(Y)
+        Wrong = 0
+        Indx = []
+        for i in range(n):
+            error = np.max(P[i,:]-Y[i,:])
+            Wrong += error
+            if error > 0:
+                Indx.append(i)
+        acc = (1-int(Wrong)/n)*100
+        print("Accuracy is {:.2f} percent".format(acc))
+        return acc, Indx
+
 class NeuralNetwork():
     def __init__(
             self,
