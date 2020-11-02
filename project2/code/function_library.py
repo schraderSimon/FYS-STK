@@ -330,37 +330,68 @@ def OneHotToDigit(M,NrClasses):
     return y
 
 class LogRegression:
-    def __init__(self,X,Y,n_epochs=100,batchsize = 1, Lambda = 0):
+    """
+    Logistic regression for classification using SoftMax and the CrossEntropy loss function 
+
+    Takes as input: X- Design matrix with predictors on the columns and datapoints on the rows
+                    Y- OneHot- matrix labeling the data in X
+                    n_epochs- the number of epochs
+                    batchsize
+                    Lambda- L2 regularization parameter
+    
+    Methods: fit: performs a fit of the data using a fixed learning rate
+                  and SGD with the Cross Entropy loss function
+                  Returns:
+                  Weight- matrix and bias- vector trained on the inputs X and Y
+            
+            predict: Predicts the output as a one- hot matrix using test data X_test
+                    returns:
+                    One- Hot Matrix (#datapoints, #classes) P with predictions
+
+            accuracy: Gives the accuracy of the model on test data as a percentage of correct guesses
+                    returns:
+                    accuracy as a percentage, indices of failed predictions
+    """
+    def __init__(self,X,Y,n_epochs=100,batchsize = 1, Lambda = 0.0):
         self.n_epochs=n_epochs
         self.X=X
         self.Y=Y
         self.Lambda = Lambda
-        self.NrCategories = len(Y[0])
-        self.n=len(X) #Number of rows
-        self.NrPredictors=len(X[0]) #number of columns
+        self.NrCategories = len(Y[0]) # number of categories
+        self.n=len(X) #Number of datapoints in the design matrix
+        self.NrPredictors=len(X[0]) #number of predictors in the design matrix
         self.batchsize=batchsize
         self.MB=int(self.n/self.batchsize) #number of minibatches
         
+        #Initializing random weights and biases
         self.b = np.random.rand(self.NrCategories,1)
         self.W = np.random.rand(self.NrCategories, self.NrPredictors)
     
     def SoftMax(self,z):
-        return np.exp(z)/np.sum(np.exp(z))
+        #More numerically stable SoftMax function
+        z_reduced = z-max(z)
+        #Checks if z_reduced returns NaN and exits if it does
+        if np.isnan(z_reduced[0]):
+            sys.exit[0]
+        return np.exp(z_reduced)/(np.sum(np.exp(z_reduced))+10**(-12))
 
     def CrossEntropyLoss(self,y,a):
+        #Cross entropy cost function
         return -1*np.sum(np.dot(y,np.log(a)))
 
     def FeedForward(self,x,W,b):
+        #calculates the activation function from weights and biases using softmax
         z = np.matmul(W,x) + b
-        a = self.SoftMax(z)
+        a = self.SoftMax(z) 
         return z, a
+
     def calculateGradient(self,W,b,x,y,a,z):
-        
+        #calculates the gradient of the Cross Entropy cost function
         NrCategories = self.NrCategories
 
         M = np.matmul(a, np.ones((1,NrCategories))) * (np.identity(NrCategories) - np.matmul(np.ones((NrCategories, 1)), a.T))
-        
-        da = - y/a
+
+        da = - y/(a+10**(-15))
         dz = np.matmul(M, da)
         dW = 2/self.batchsize *(dz * x.T) + 2/self.batchsize *self.Lambda*W
         db = 2/self.batchsize *(dz.copy())+ 2/self.batchsize *self.Lambda*b
@@ -371,39 +402,63 @@ class LogRegression:
         b = self.b
         X = self.X
         Y = self.Y
+
         for epoch in range(1,self.n_epochs+1): #For each epoch
             for i in range(self.MB): #For each minibatch
-                index=np.random.randint(self.n,size=self.batchsize)
+                index=np.random.randint(self.n,size=self.batchsize) #selecting random index from the minibatch
+               #Reshaping data
                 x= X[index].reshape(self.NrPredictors,1)
                 y= Y[index].reshape(self.NrCategories,1)
 
+                #feed forward
                 z, a = self.FeedForward(x,W,b)
+
+                # getting gradients
                 dW, db = self.calculateGradient(W,b,x,y,a,z)
+
+                # Calculate new weights and biases
                 W = W - eta*dW
                 b = b - eta*db
         return W, b
     
     def predict(self,X_test,W,b):
+        #Makes a prediction using test- design matrix, weights and biases
         n = len(X_test)
+        #initialization of output
         P = np.zeros((n,self.NrCategories))
         for i in range(n):
             z = np.matmul(W,X_test[i].reshape(self.NrPredictors,1))+b
+            #getting the output through the SoftMax activation function
             a = self.SoftMax(z)
+            #inserting a 1 in the zero- matrix to get One- Hot output
             P[i,np.argmax(a)] = 1
         return P
     
-    def accuracy(self,P,Y):
+    def accuracy(self,P,Y,ReturnIndex = False):
+        #gets the accuracy of the model, using the predictions and test- labels
         n = len(Y)
+        #initialization of outputs
         Wrong = 0
         Indx = []
+
         for i in range(n):
+            #If prediction is wrong error will equal 1
+            #if it's right, wrong will equal 0
             error = np.max(P[i,:]-Y[i,:])
+            #Collecting every error in variable 'Wrong'
+            #'Wrong' will finally be the number of wrong predictions
             Wrong += error
+            #If the model has made a wrong prediction, append the index 
             if error > 0:
                 Indx.append(i)
+        #get the accuracy as a percentage
         acc = (1-int(Wrong)/n)*100
         print("Accuracy is {:.2f} percent".format(acc))
-        return acc, Indx
+        #If ReturnIndex is true, this function also returns the indices
+        if ReturnIndex:
+            return acc, Indx
+        else:
+            return acc
 
 class NeuralNetwork():
     def __init__(
