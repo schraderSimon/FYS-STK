@@ -601,6 +601,10 @@ class NeuralNetwork():
             deriv[deriv>0]=1
             deriv[deriv<0]=0.01
             return deriv
+        if type == "softmax":
+            ####################### NOT TESTED ########################
+            f = self.activation_function(z,type="softmax")
+            return np.matmul(f,np.identity(len(f))-f)
 
     def feed_forward(self):
         # feed-forward for training
