@@ -578,7 +578,7 @@ class NeuralNetwork():
             exp_term=np.exp(z-m) #This is to avoid problems of too large numbers
             if np.isnan(z[0,0]):
                 sys.exit(1)
-            returnval= exp_term / np.sum(exp_term, axis=1, keepdims=True)
+            returnval= exp_term / (np.sum(exp_term, axis=1, keepdims=True)+10**(-12))
             return returnval
     def derivative(self,a,z,type=0):
         """The derivative of the activation function"""
@@ -604,6 +604,7 @@ class NeuralNetwork():
         if type == "softmax":
             ####################### NOT TESTED ########################
             f = self.activation_function(z,type="softmax")
+            print(f.shape)
             return np.matmul(f,np.identity(len(f))-f)
 
     def feed_forward(self):
