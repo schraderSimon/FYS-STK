@@ -46,6 +46,23 @@ def test_optimizers_ridge():
         assert error[1] < tol, "%.3f"%error[1]
         assert error[2] < tol, "%.3f"%error[2]
         assert error[3] < tol, "%.3f"%error[3]
-
+def test_NN_reg():
+    """Test whether the Neural Network works for a very basic test function with Regression
+    , but a rather complex neural network (4 layers, LeakyRELU activation function, ADAM solver).
+    """
+    x=np.random.randn(100)
+    y=5*x
+    X=DesignMatrix(x,2) # create a design matrix
+    tol=1e-1
+    Lambda=0.1
+    hidden_neurons=[100,50,30,20]
+    nn=NeuralNetwork(X,y,
+        n_hidden_layers=len(hidden_neurons),n_hidden_neurons=hidden_neurons,
+        n_categories=1,epochs=100,batch_size=10,
+        activation_function_type="LeakyRELU",
+        errortype="MSE",solver="ADAM") #Create Neural Network
+    testErr, trainErr, testR2, trainR2= Crossval_Neural_Network(5, nn, 1e-3, Lambda,X,y)
+    assert trainErr<tol, "%.3f"%trainErr
+test_NN_reg()
 test_optimizers()
 test_optimizers_ridge()

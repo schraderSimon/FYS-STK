@@ -331,19 +331,19 @@ def OneHotToDigit(M,NrClasses):
 
 class LogRegression:
     """
-    Logistic regression for classification using SoftMax and the CrossEntropy loss function 
+    Logistic regression for classification using SoftMax and the CrossEntropy loss function
 
     Takes as input: X- Design matrix with predictors on the columns and datapoints on the rows
                     Y- OneHot- matrix labeling the data in X
                     n_epochs- the number of epochs
                     batchsize
                     Lambda- L2 regularization parameter
-    
+
     Methods: fit: performs a fit of the data using a fixed learning rate
                   and SGD with the Cross Entropy loss function
                   Returns:
                   Weight- matrix and bias- vector trained on the inputs X and Y
-            
+
             predict: Predicts the output as a one- hot matrix using test data X_test
                     returns:
                     One- Hot Matrix (#datapoints, #classes) P with predictions
@@ -362,11 +362,11 @@ class LogRegression:
         self.NrPredictors=len(X[0]) #number of predictors in the design matrix
         self.batchsize=batchsize
         self.MB=int(self.n/self.batchsize) #number of minibatches
-        
+
         #Initializing random weights and biases
         self.b = np.random.rand(self.NrCategories,1)
         self.W = np.random.rand(self.NrCategories, self.NrPredictors)
-    
+
     def SoftMax(self,z):
         #More numerically stable SoftMax function
         z_reduced = z-max(z)
@@ -382,7 +382,7 @@ class LogRegression:
     def FeedForward(self,x,W,b):
         #calculates the activation function from weights and biases using softmax
         z = np.matmul(W,x) + b
-        a = self.SoftMax(z) 
+        a = self.SoftMax(z)
         return z, a
 
     def calculateGradient(self,W,b,x,y,a,z):
@@ -420,7 +420,7 @@ class LogRegression:
                 W = W - eta*dW
                 b = b - eta*db
         return W, b
-    
+
     def predict(self,X_test,W,b):
         #Makes a prediction using test- design matrix, weights and biases
         n = len(X_test)
@@ -433,7 +433,7 @@ class LogRegression:
             #inserting a 1 in the zero- matrix to get One- Hot output
             P[i,np.argmax(a)] = 1
         return P
-    
+
     def accuracy(self,P,Y,ReturnIndex = False):
         #gets the accuracy of the model, using the predictions and test- labels
         n = len(Y)
@@ -448,7 +448,7 @@ class LogRegression:
             #Collecting every error in variable 'Wrong'
             #'Wrong' will finally be the number of wrong predictions
             Wrong += error
-            #If the model has made a wrong prediction, append the index 
+            #If the model has made a wrong prediction, append the index
             if error > 0:
                 Indx.append(i)
         #get the accuracy as a percentage
