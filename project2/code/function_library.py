@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from scipy.special import expit
 from numba import jit, int32, float32
 from sklearn.preprocessing import StandardScaler
 import sys
@@ -155,9 +156,9 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
         MSE_crossval_train[i] = MSE(z_training,z_training_fit)
     MSE_estimate = np.mean(MSE_crossval)
     MSE_train_estimate=np.mean(MSE_crossval_train)
-    #print("MSE Ridge")
-    #print(MSE_estimate)
+
     return MSE_estimate, MSE_train_estimate
+
 def accuracy_score(y_data, y_model):
     return np.sum(y_data==y_model)/len(y_data)
 
@@ -565,7 +566,14 @@ class NeuralNetwork():
         if type==("linear"):
             return self.linear_coeff*z
         if type==("sigmoid"):
-            return 1/(1+np.exp(-z))
+            #if (z.min() < -50):
+              #  sigmoid = 0.0
+            #elif (z.max() > -50)
+            #else:
+              #  sigmoid = 1.0 / (1.0 + np.exp(-z))#1/(1+np.exp(-z_reduced))#
+            sigmoid = expit(z)
+            return sigmoid
+        
         if type==("tanh"):
             return 2*self.activation_function(2*z,type="sigmoid") -1
         if type==("RELU"):
@@ -638,7 +646,7 @@ class NeuralNetwork():
         if self.errortype==("MSE"):
             return (self.probabilities-self.Y_data)*1/self.batch_size #The type of error
         if self.errortype==("categorical"):
-            return self.probabilities - self.Y_data
+            return (self.probabilities - self.Y_data)#/self.batch_size 
     def error_function(self,y_data,y_model):
         """The error function for MSE & categorial  """
         if self.errortype==("MSE"):
@@ -712,7 +720,7 @@ class NeuralNetwork():
             error_hidden[i-1]= np.matmul(error_hidden[i], self.hidden_weights[i].T)*self.derivative(self.a_h[i-1],self.z_h[i-1],self.activation_function_type)
 
         #Calculate the gradients for the hidden layers
-        self.hidden_weights_gradient=[0]*self.n_hidden_layers
+        self.hidden_weights_gradient=[0]*self.n_hidden_layers#creating lists of length n_hidden_layers
         self.hidden_bias_gradient=[0]*self.n_hidden_layers
         self.hidden_weights_gradient[0] = np.matmul(self.X_data.T, error_hidden[0])
         self.hidden_bias_gradient[0] = np.sum(error_hidden[0], axis=0)
@@ -769,29 +777,45 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             if nn.errortype=="MSE":
                 z_training=z_training.reshape((X_training_scaled.shape[0],1))
                 z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
+            
             nn.change_matrix(X_training_scaled,z_training) #Update dataset
             nn.update_parameters_reset(eta=eta,lmbd=Lambda) #Update parameters
             nn.train() #Train the set
 
-            """Calculate train and test error"""
-            prediction_train=nn.predict_probabilities(X_training_scaled)
-            prediction_test=nn.predict_probabilities(X_testing_scaled)
+            
+
+            #print(prediction_test.max())
+            #print(z_testings)
             if i==1:
                 #print(prediction_test)
                 #break;
                 pass
+            
             if nn.errortype=="MSE":
+                """Calculate train and test error"""
+                prediction_train=nn.predict_probabilities(X_training_scaled)
+                prediction_test=nn.predict_probabilities(X_testing_scaled)
+
                 Error_train[i],R2_train[i] = nn.error_function(z_training,prediction_train)
                 Error_test[i],R2_test[i]=nn.error_function(z_testing,prediction_test)
 
             """For classification problems"""
             if nn.errortype=="categorical":
-                "needs to be implemented"
-                pass
+                #Calculate test error
+                prediction_test=nn.predict(X_testing_scaled)
+
+                Error_test[i] = accuracy_score(OneHotToDigit(z_testings,nn.n_categories),prediction_test)
+                #It's called Error_test, but its just the accuracy 
+
         if nn.errortype=="MSE":
             error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
             error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
             return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
+        
+        if nn.errortype=="categorical":
+            error_test_estimate = np.mean(Error_test)
+            return error_test_estimate
+
 from sklearn.model_selection import KFold as SKFold
 from sklearn.neural_network import MLPRegressor
 def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons,epochs):
