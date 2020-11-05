@@ -1,6 +1,6 @@
 import numpy as np
 import sys
-from scipy.special import expit
+from scipy.special import expit, softmax
 from numba import jit, int32, float32
 from sklearn.preprocessing import StandardScaler
 import sys
@@ -501,6 +501,7 @@ class NeuralNetwork():
             self.setUpRMSProp() #Intialises s for RMSProp
         if self.solver=="ADAM":
             self.setUpADAM() #Intialises s,m,beta_1 and beta_2 for ADAM
+    
     def change_matrix(self,X,y):
         """Changes the dataset to X, y and upgrades the relevant parameters"""
         self.X_data_full=X
@@ -513,6 +514,7 @@ class NeuralNetwork():
             self.setUpRMSProp() #Intialises s for RMSProp
         if self.solver=="ADAM":
             self.setUpADAM() #Intialises s,m,beta_1 and beta_2 for ADAM
+    
     def update_parameters_reset(self,eta,lmbd ):
         self.eta=eta
         self.lmbd=lmbd
@@ -521,6 +523,7 @@ class NeuralNetwork():
             self.setUpRMSProp() #Reset s
         if self.solver=="ADAM":
             self.setUpADAM() #Resets s,m,beta_1 and beta_2 for ADAM
+    
     def create_biases_and_weights(self):
         self.hidden_bias=[0]*self.n_hidden_layers #an empty list of length n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers #an empty list of length n_hidden_layers
@@ -571,6 +574,9 @@ class NeuralNetwork():
             #elif (z.max() > -50)
             #else:
               #  sigmoid = 1.0 / (1.0 + np.exp(-z))#1/(1+np.exp(-z_reduced))#
+
+            #Scipy's builtin sigmoid function with impressive numerical stability
+            # The above functions works aswell, but frankly this is just a lot better
             sigmoid = expit(z)
             return sigmoid
         
@@ -582,12 +588,10 @@ class NeuralNetwork():
             return np.maximum(z,0.01*z,z)
             #if z is larger than zero, we get z, if it's below zero, then 0.01z > z.
         if type=="softmax":
-            m=np.max(z)
-            exp_term=np.exp(z-m) #This is to avoid problems of too large numbers
-            if np.isnan(z[0,0]):
-                sys.exit(1)
-            returnval= exp_term / (np.sum(exp_term, axis=1, keepdims=True)+10**(-12))
-            return returnval
+            #Implementation of a more numerically stable softmax function 
+            z_reduced = z-z.max()
+            return np.exp(z_reduced)/(np.sum(np.exp(z_reduced))+10**(-12))
+            #return returnval
     def derivative(self,a,z,type=0):
         """The derivative of the activation function"""
         #takes both a and z as arguments because some things are more efficient with a than z
@@ -612,7 +616,6 @@ class NeuralNetwork():
         if type == "softmax":
             ####################### NOT TESTED ########################
             f = self.activation_function(z,type="softmax")
-            print(f.shape)
             return np.matmul(f,np.identity(len(f))-f)
 
     def feed_forward(self):
@@ -629,6 +632,7 @@ class NeuralNetwork():
         self.z_o = np.matmul(self.a_h[-1], self.output_weights) + self.output_bias #Calculate z for output layer
 
         self.probabilities = self.activation_function(self.z_o,self.activation_function_type_output) #Calculate output
+    
     def feed_forward_out(self, X):
         # feed-forward for output
         z_h=[0]*self.n_hidden_layers
@@ -641,12 +645,14 @@ class NeuralNetwork():
             a_h[i] = self.activation_function(z_h[i],self.activation_function_type)
         z_o = np.matmul(a_h[-1], self.output_weights) + self.output_bias
         return self.activation_function(z_o,self.activation_function_type_output) #Return output
+    
     def elementwise_error(self):
         """The type of gradient for the error measure"""
         if self.errortype==("MSE"):
             return (self.probabilities-self.Y_data)*1/self.batch_size #The type of error
         if self.errortype==("categorical"):
             return (self.probabilities - self.Y_data)#/self.batch_size 
+    
     def error_function(self,y_data,y_model):
         """The error function for MSE & categorial  """
         if self.errortype==("MSE"):
@@ -668,6 +674,7 @@ class NeuralNetwork():
                     self.hidden_weights_gradient[i] += self.lmbd * self.hidden_weights[i]
                 self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]
                 self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]
+        
         elif self.solver=="RMSProp": #RMSProp
             cbeta=self.cbeta
             self.s[0]=cbeta*self.s[0]+(1-cbeta)*(self.output_weights_gradient*self.output_weights_gradient) #Update s
@@ -683,7 +690,8 @@ class NeuralNetwork():
                 self.s[3+i*2]=cbeta*self.s[3+i*2]+(1-cbeta)*(self.hidden_bias_gradient[i]*self.hidden_bias_gradient[i])
                 self.hidden_weights[i] -= self.eta * self.hidden_weights_gradient[i]/np.sqrt(self.s[2+i*2]+1e-8)
                 self.hidden_bias[i] -= self.eta * self.hidden_bias_gradient[i]/np.sqrt(self.s[3+i*2]+1e-8)
-        elif self.solver=="ADAM": #ADAM Optimizer ########## NOT COMPLETE -- check that iterator is working (and correct)
+        
+        elif self.solver=="ADAM": #ADAM Optimizer 
             beta_1=self.beta_1
             beta_2=self.beta_2
             self.m[0]=beta_1*self.m[0]+(1-beta_1)*self.output_weights_gradient #Update m
@@ -747,6 +755,7 @@ class NeuralNetwork():
         #Prediction: Return probabilities
         probabilities=self.feed_forward_out(X)
         return probabilities
+
 def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
         """input: The number of cross validations k,
                     the neural network nn,
@@ -782,10 +791,6 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             nn.update_parameters_reset(eta=eta,lmbd=Lambda) #Update parameters
             nn.train() #Train the set
 
-            
-
-            #print(prediction_test.max())
-            #print(z_testings)
             if i==1:
                 #print(prediction_test)
                 #break;
@@ -801,10 +806,12 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
 
             """For classification problems"""
             if nn.errortype=="categorical":
-                #Calculate test error
+                #Calculate train and test error
                 prediction_test=nn.predict(X_testing_scaled)
+                prediction_train=nn.predict(X_training_scaled)
 
                 Error_test[i] = accuracy_score(OneHotToDigit(z_testings,nn.n_categories),prediction_test)
+                Error_train[i] = accuracy_score(OneHotToDigit(z_trainings,nn.n_categories),prediction_train)
                 #It's called Error_test, but its just the accuracy 
 
         if nn.errortype=="MSE":
@@ -814,7 +821,8 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
         
         if nn.errortype=="categorical":
             error_test_estimate = np.mean(Error_test)
-            return error_test_estimate
+            error_train_estimate = np.mean(Error_train)
+            return error_test_estimate, error_train_estimate
 
 from sklearn.model_selection import KFold as SKFold
 from sklearn.neural_network import MLPRegressor
@@ -849,3 +857,80 @@ def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidde
     error_train_estimate = np.mean(Error_train);R2_train_estimate=np.mean(R2_train)
     error_test_estimate = np.mean(Error_test);R2_test_estimate=np.mean(R2_test)
     return error_test_estimate, error_train_estimate, R2_test_estimate, R2_train_estimate
+
+from sklearn.neural_network import MLPClassifier
+
+""" Kfold Cross validation of a Scikit-Learn implementation of a Feed Forward Neural network Classifier.
+For the purpose of accurately gauging its accuracy """
+def CrossVal_SKLClassifier(X,Y,k,
+        hidden_layer_sizes=(200,100,50,20 ), 
+        activation='tanh',  
+        alpha=0.0001, 
+        batch_size=20, 
+        learning_rate='constant', 
+        learning_rate_init=0.01, 
+        max_iter=5, 
+        shuffle=True, 
+        random_state=None, 
+        tol=0.0001, 
+        momentum=0.9, 
+        nesterovs_momentum=False, 
+        early_stopping=False,  
+        n_iter_no_change=10):
+    
+    """ 
+    Takes as input the complete dataset X and labels Y (as one- hot matrix), and the number of folds k
+    The final input arguments are parameters for initializing the neural network. This excempts parameters
+    related to the solver, which is set to 'sgd' regardless.  
+    """
+
+    #initializing outputs
+    Accuracy_test = np.zeros(k)
+    Accuracy_train = np.zeros(k)
+    #set up scaler
+    scaler = StandardScaler()
+
+    #retrieve training and testing indices 
+    trainIndx, testIndx = KfoldCross(X,k)
+
+    for i in range(k): #For the munber of cross validations
+        
+        #setup data for this fold with the indices gotted above
+        X_training = X[trainIndx[i],:]
+        X_testing = X[testIndx[i],:]
+        Y_training = Y[trainIndx[i]]
+        Y_testing = Y[testIndx[i]]
+
+        #Scaling X ( We don't scale labels in classification )
+        scaler.fit(X_training)
+        X_training_scaled = scaler.transform(X_training)
+        X_testing_scaled = scaler.transform(X_testing)
+
+        # initializing NN with Stochastic gradient descent as solver
+        mlp = MLPClassifier(hidden_layer_sizes=(200,100,50,20 ), 
+        activation=activation, 
+        solver='sgd', 
+        alpha=alpha, 
+        batch_size=batch_size, 
+        learning_rate=learning_rate, 
+        learning_rate_init=learning_rate_init, 
+        max_iter=max_iter, 
+        shuffle=shuffle, 
+        random_state=random_state, 
+        tol=tol, 
+        momentum=momentum, 
+        nesterovs_momentum=nesterovs_momentum, 
+        early_stopping=early_stopping,  
+        n_iter_no_change=n_iter_no_change)
+
+        #Fitting to training data
+        mlp.fit(X_training_scaled,Y_training)
+
+        #Retrieving accuracy scores
+        Accuracy_train[i] = mlp.score(X_training_scaled,Y_training)
+        Accuracy_test[i] = mlp.score(X_testing_scaled,Y_testing)
+    
+    #Taking the mean
+    Accuracy_train_estimate = np.mean(Accuracy_train)
+    Accuracy_test_estimate = np.mean(Accuracy_test)
+    return Accuracy_test_estimate, Accuracy_train_estimate
