@@ -10,9 +10,9 @@ from sklearn.model_selection import train_test_split
 """ What part of the code to run: Only one should be set to True lest there be unforseen consequences! Descriptions below """
 
 BASIC = False
-ACTIVATION_COMPARISON = False
+ACTIVATION_COMPARISON = True#False
 ARCHITECTURE_COMPARISON = False
-SCIKITLEARN = True
+SCIKITLEARN = False#True
 
 """ Data setup """ 
 #Collect the  MNIST dataset
@@ -74,13 +74,13 @@ if BASIC:
 if ACTIVATION_COMPARISON:
 
     #neural network parameters
-    epochs=5
-    n_hidden_neurons=[100,50,20,20]
+    epochs=50
+    n_hidden_neurons=[100]#,80,40,20,20]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
     batch_size=20
     Lambda=0.0001
-    eta=0.001
+    eta=0.0001
     activation_function_type_output="softmax"
     errortype = "categorical"
     solver="sgd"
@@ -122,7 +122,7 @@ if ACTIVATION_COMPARISON:
 
 if ARCHITECTURE_COMPARISON:
     #Initializing network
-    epochs=10 #Number of epochs
+    epochs=100 #Number of epochs
     #Network architectures: Number of neurons in the hidden layers are given from left to right
     #every nested list specifies and additional architecture to be attempted in the loop below
     n_hidden_neurons_list=[[100,100,100,20],[50,50,20,20,20],[200],[100]]
@@ -131,7 +131,7 @@ if ARCHITECTURE_COMPARISON:
     n_categories=10
     batch_size=20
     Lambda=0.0001 #L2 regularization parameter
-    eta=0.001 #Learning rate
+    eta=0.0001 #Learning rate
     activation_function_type_output="softmax"
     errortype = "categorical"
     solver="sgd"

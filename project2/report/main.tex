@@ -15,6 +15,10 @@
 
 \usepackage{tikz}
 \usetikzlibrary{calc,patterns,angles,quotes,shapes.geometric, arrows}
+
+\def\layersep{2.5cm}
+
+
 \tikzstyle{train} = [rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm,text centered, draw=black, fill=red!30]
 \tikzstyle{test} = [rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm,text centered, draw=black, fill=green!30]
 \tikzstyle{data} = [rectangle, rounded corners, minimum width=11.8cm, minimum height=1cm,text centered, draw=black, fill=gray!30]
@@ -36,7 +40,7 @@
 \graphicspath{{../figures/presentable_data/}} %Setting the graphicspath
 
 \begin{document}
-\maketitle
+%\maketitle
 \tableofcontents
 \listoffigures
 \listoftables
@@ -55,6 +59,147 @@ We also tested the neural network's performance on a categorization problem, nam
 In this report, we will first describe the methods used, focusing on stochastic gradient descent methods and the theory of FFNNs. This is done in the method part. The result part cointains 
 \section{Methods}
 \subsection{Logistic Regression}
+Logistic regression is a regression algorithm applied to binary classification problems. A weighted and biased sum of predictors are passed through the logistic activation function and a cost function is applied to the output and the accompanying label to the set of predictors. The problem of finding the weights and biases that predict the correct category then becomes a problem of optimizing the cost function by tweaking the weights and biases.\\ \paragraph{Multinomial logistic regression} is the generalization of logistic regression to multi- class problems and uses the Softmax activation function. We will consider multinomial logistic regression from here on, as the Softmax function reduces to the logistic function in the case where the number of categories is 2 \ref{ProofSoftmaxToLogistic}.\\\\Given a dataset of $L$ datapoints, $N$ predictors and $m$ categories, we structure the dataset thus
+\begin{equation}\label{first}
+\textbf{X} = 
+\begin{pmatrix}
+	x_{1,1} &	x_{1,2}	&	\cdots	&	x_{1,N}	\\
+	x_{2,1}	&	x_{2,2}	&	\cdots	&	x_{2,N}	\\
+	\vdots	&	\vdots	&	\cdots	&	\vdots	\\
+	x_{L,1} &	x_{L,1}	&	\cdots	&	x_{L,N}	
+\end{pmatrix}\,\,\,\,\textbf{Y} = 
+\begin{pmatrix}
+	y_{1,1} &	y_{1,2}	&	\cdots	&	y_{1,m}	\\
+	y_{2,1}	&	y_{2,2}	&	\cdots	&	y_{2,m}	\\
+	\vdots	&	\vdots	&	\cdots	&	\vdots	\\
+	y
+	_{L,1} &	y_{L,1}	&	\cdots	&	y_{L,m}	
+\end{pmatrix}
+\end{equation}
+Where $\textbf{X}$ is a $L\times N$ matrix with the predictors corresponding to a datapoint arranged along the row. $\textbf{Y}$ a $L\times m$ matrix wherein every row of the matrix is a vector in the One- hot representation corresponding to the label describing the datapoint in the corresponding row in $\textbf{X}$.\\ The weights are arranged in a $m \times N$ matrix and the biases in a $m \times 1$ vector
+\begin{equation}
+\textbf{W} = \begin{pmatrix}
+	w_{1,1} &	w_{1,2}	&	\cdots	&	w_{1,N}	\\
+	w_{2,1}	&	w_{2,2}	&	\cdots	&	w_{2,N}	\\
+	\vdots	&	\vdots	&	\cdots	&	\vdots	\\
+	w_{m,1} &	w_{m,1}	&	\cdots	&	w_{m,N}	
+\end{pmatrix}\,\, , \,\, \textbf{b} = 
+\begin{pmatrix}
+	b_1	\\
+	b_2	\\
+	\vdots	\\
+	b_m
+\end{pmatrix}.
+\end{equation}
+The weighted sum for a datapoint $l$ is then given by 
+\begin{equation}
+\textbf{z}^{(l)} = \textbf{W}\textbf{x}^{(l)}+\textbf{b} \textit{ where }\textbf{x}^{(l)}=(\textbf{X}_{[l,:]})^T
+\end{equation}
+and the $i'th$ activation by
+\begin{equation}
+a_i^{(l)} = \frac{e^{z_i^{(l)}}}{\sum_{j=1}^{m} e^{z_j^{(l)}}}.
+\end{equation}
+Given that the labels are structured in the One- hot representation, the cross- entropy cost function for a single datapoint $l$ is given by
+\begin{equation}\label{last}
+C^{(l)} = \sum\limits_{j=1}^{m} -y_j^{(l)}\log(a_i^{(l)}).
+\end{equation}
+The algorithm can be understood as a single layer perceptron with $m$ neurons in the hidden layer. In figure \ref{LogisticRegressionDiagram} below, the functions and variables in the nodes are as given in equations \eqref{first} to \eqref{last}.
+
+\begin{figure}[H]
+\caption[Logistic regression diagram]{•}
+
+\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!60,fill=black!25,minimum size=17pt,inner sep=0pt, very thick]
+    \tikzstyle{missing}=[draw=none, scale=1.5,text height=0.333cm,execute at begin node=\color{black}$\vdots$]
+    \tikzstyle{input neuron}=[neuron, fill=white!50,inner sep=2pt];
+    \tikzstyle{output neuron}=[neuron, fill=red!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=blue!30];
+    \tikzstyle{cost neuron}=[neuron, fill=black!30,inner sep=2.4pt];
+    \tikzstyle{label neuron}=[neuron, fill=yellow!60,inner sep=1.6pt];
+    \tikzstyle{annot} = [text width=4em, text centered]
+
+    % Draw the input layer nodes
+    \foreach \name / \y in {1,2,3}
+    	\path[yshift=0.5cm]
+        	node[input neuron, pin=left:$\y^{(l)}$] (I-\name) at (0,-\y) {$x_\y$};
+    \path[yshift=0.5cm]
+    	node[missing] (I-4) at (0,-4) {};
+    \path[yshift=0.5cm]
+		node[input neuron, pin=left:$(N-1)^{(l)}$] (I-5) at (0,-5) {\tiny $x_{N-1}$};
+	\path[yshift=0.2cm]
+    	node[input neuron, pin=left:$N^{(l)}$] (I-6) at (0,-6) {$x_{N}$};
+    
+    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (\layersep,-\y cm) {$z_\y^{(l)}$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-4) at (\layersep,-4 cm) {};
+    
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-5) at (\layersep,-5 cm) {$z_m^{(l)}$};
+
+    % Draw the output layer
+    
+    \foreach \name / \y in {1,2,3}
+        \path[yshift=0.0cm]
+            node[output neuron] (O-\name) at (2*\layersep,-\y cm) {$a_\y^{(l)}$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (O-4) at (2*\layersep,-4 cm) {};
+    
+    \path[yshift=0.0cm]
+            node[output neuron] (O-5) at (2*\layersep,-5 cm) {$a_m^{(l)}$};
+            
+     % Draw the Cost node
+    
+    \node[cost neuron, right of=O-3] (C) {$C^{(l)}$};
+    
+    % Draw the label layer
+    
+    \foreach \name / \y in {1,2,3}
+        \path[yshift=0.0cm]
+            node[label neuron] (Y-\name) at (4*\layersep,-\y cm) {$y_\y^{(l)}$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (Y-4) at (4*\layersep,-4 cm) {};
+    
+    \path[yshift=0.0cm]
+            node[label neuron] (Y-5) at (4*\layersep,-5 cm) {$y_m^{(l)}$};
+
+
+    % Connect every node in the input layer with every node in the
+    % hidden layer.
+    \foreach \source in {1,2,3,5,6}
+        \foreach \dest in {1,2,3,5}
+            \path (I-\source) edge (H-\dest);
+	
+    
+    % Connect every node in the hidden layer with the output layer
+    \foreach \source in {1,2,3,5}
+        \foreach \dest in {1,2,3,5}
+            \path (H-\source) edge (O-\dest);
+	
+	% Connect every node in the Output layer with the Cost node
+    \foreach \source in {1,2,3,5}
+        \path (O-\source) edge (C);	
+	
+	% Connect every node in the label layer with the Cost node
+    \foreach \source in {1,2,3,5}
+            \path (Y-\source) edge (C);	
+	
+    % Annotate the layers
+    \node[annot,above of=I-1, node distance=1cm] (i1) {Input layer};
+    \node[annot,right of=i1, node distance=\layersep] (hl) {Hidden layer};
+    \node[annot,right of=hl, node distance=\layersep] (o1) {Output layer};
+    \node[annot,right of=o1, node distance=\layersep] (c1) {Cost function};
+    \node[annot,right of=c1, node distance=\layersep] (y1) {Data set label};
+\end{tikzpicture}
+\label{LogisticRegressionDiagram}
+\end{figure}
 \subsection{Gradient Descent Methods}
 One way to find the minima, both local and global, of a (multivariable) function, one can use the method of gradient descent. Simply speaking, this is done by iteratively changing the parameters in order to minimize a cost function \citep{handsOnMachineLearning}. As the gradient of a function always shows towards the point of steepest descent, following the gradient in the opposite direction will lead to a minimum. In both regression and classification problems, the function to be minimized is the cost function. In terms of linear regression, the cost function is the MSE function (possibly with additional regularization). The gradient is simply a vector containing the partial derivatives with respect to each coefficient $\beta_i$.\\
 For OLS and Ridge regression, we have that 
@@ -121,7 +266,7 @@ Figure \ref{fig:DifferentSGD} shows, for a given OLS problem, the test MSE as a 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/OLS_error_SGD_idealLearningRate.pdf}
+\includegraphics[width=0.95\textwidth]{OLS_error_SGD_idealLearningRate.pdf}
 \caption[Test MSE Different SGD methods for OLS]{The simple SGD method (titled SGD), RMSProp, ADAM and decaying $\eta$ as functions of the learning rate $\eta$ (top left), the number $t_1$ (top right), the number of epochs (down left), and different batch sizes (down right). The number of data points is $N=2000$, the polynomial degree used is $deg=10$. For the top two plots, a batch size of 16 and and epoch of 1000 were chosen. The lower to plots use the ideal parameters $\eta$ and $t_1$ which were chosen based on the ideal values from first two plots. No bootstrapping or cross-validation was performed.}\label{fig:DifferentSGD}
 \end{figure}
 As one can see, the number of epochs and the learning rate make a huge difference when it comes to approximating the analytical solution. For the decay-SGD and the simple SGD (titled SGD), the curves are truncated because too big or too small values lead to NaN-values. This shows that the ideal learning rate is dangerously close to a too high learning rate, leading to completely wrong numbers or even NaN-values. Similar observations can be done for both ADAM and RMSProp, but the change is not as drastic for these methods.\\ 
@@ -131,7 +276,7 @@ One can see that the choice of method has a large impact on how fast the error i
 Figure \ref{fig:DifferentSGD_fixedEta} contains the same plots as figure \ref{fig:DifferentSGD}, however, the learning rates $\eta$ were chosen so that they didn't exceed a value of 0.1. This is more difficult to do for the decay method, which we left unchanged. One can see that this leads to a slightly different behaviour. The convergence is, not surprisingly, slower, but the methods behave slightly less erratic. That way, the error keeps reducing as the number of epochs increases, but it takes more epochs to get it to the same level as before. Also, the error now increases for larger batch sizes for all methods, including ADAM. In this implementation, a larger batch size has no computational advantages, however, for the Neural Network later, larger batch sizes give increased run time. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/OLS_error_SGD_fixedLearningRate.pdf}
+\includegraphics[width=0.95\textwidth]{OLS_error_SGD_fixedLearningRate.pdf}
 \caption[Test MSE Different SGD methods for OLS (fixed $\eta$)]{The simple SGD method (titled SGD), RMSProp, ADAM and decaying $\eta$ as functions of the learning rate $\eta$ (top left), the number $t_1$ (top right), the number of epochs (down left), and different batch sizes (down right). The number of data points is $N=2000$, the polynomial degree used is $deg=10$. For the top two plots, a batch size of 16 and and epoch of 1000 were chosen. The lower to plots use the ideal parameters $\eta$ and $t_1$ which were chosen based on the first two plots, however, $\eta$ was chosen so that $\eta \leq 0.1$ as larger numbers lead to instability later on. No bootstrapping or cross-validation was performed.}\label{fig:DifferentSGD_fixedEta}
 \end{figure}
 \subsubsection{Comparison of SGD methods for Ridge regression}
@@ -142,7 +287,7 @@ We used randomly selected points from the geographic data \citep{Project1} to cr
 We tested the quality of our Neural Network with N=2000 randomly selected data points and a polynomial degree of 10. We chose 200 as batch size and 1000 epochs. We used one hidden layer with 100 neurons. The sigmoid function was used as activation function for the hidden layer, and simple gradient descent was used. Figure \ref{fig:ScikitLearn_1} plots the test and train error as function of the regularization parameter $\lambda$ and the error learning rate $\eta$. Using OLS, we found 28272 for the test MSE and 24758 for the train MSE, for comparison. We also compared this to Scikit-learn 's MLPRegressor function \citep{scikit-learn}, which are included in figure \ref{fig:ScikitLearn_1}.
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.05\textwidth]{figures/presentable_data/scikit_own_1b1_logisticsgd200010.pdf}
+\includegraphics[width=1.05\textwidth]{scikit_own_1b1_logisticsgd200010.pdf}
 \caption[Scikit-learn  and own FFNN with 1 layer]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network and Scikit-learn 's MLPRegressor function. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, one hidden layer with 100 neurons, simple SGD as gradient descent method and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ScikitLearn_1}
 \end{figure}
 First of all, we see that both Scikit-learn and our own Neural Network outperform OLS (and Ridge regression, which gives identical values here). Values like that were not possible to obtain only using Linear Regression for that amount of data points \citep{Project1}, indicating that Neural Networks can give superior results to Linear Regression methods. This comes however at the cost of not obtaining a nice function expression (it is up to the reader to decide if a multivariate polynomial of degree 10 is a nice function expression - but the number of parameters is bearable) with a meaning behind it. \\
@@ -151,7 +296,7 @@ We see that our algorithm gave superior values to Scikit-learn. This is supposed
 Exactly the same analysis as before (compare figure \ref{fig:ScikitLearn_1}) was done, this time using two hidden layers with 100 neurons each. The results can be seen in figure \ref{fig:ScikitLearn_2}.
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.05\textwidth]{figures/presentable_data/scikit_own_2b1_logisticsgd200010.pdf}
+\includegraphics[width=1.05\textwidth]{scikit_own_2b1_logisticsgd200010.pdf}
 \caption[Scikit-learn  and own FFNN with 2 layers]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network and Scikit-learn 's MLPRegressor function. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each, simple SGD as gradient descent method and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ScikitLearn_2}
 \end{figure}
 We see that adding the second layer gives even better results than just using one hidden layer. This indicates that using more layers can further reduce the error. Again, our Neural Network outperforms Scikit learn, but the difference is smaller than with just one single layer.\\We also run the same analysis with a polynomial degree of 20. The results can be seen in figure \ref{fig:ScikitLearn_3} in the appendix. Here, OLS fails due to a too high variance. Ridge regression can be used though and gave a test error of 24312, while our own Neural Network with 2 layers gave a test error of 20251 (which is slightly worse than the error produced by Scikit Learn, which is 20043. The test error for the neural network has hence increased - we suppose that the increased amount of parameters leads to a slower convergence rate, it might be possible that increasing the number of iterations might lead to better parameters. 
@@ -159,7 +304,7 @@ We see that adding the second layer gives even better results than just using on
 Figure \ref{fig:ADAMvsRMSProp} contains the train and the test MSE using ADAM \& RMSProp as stochastic gradient descent methods using our own FFNN. The parameters are identical to the ones in figure \ref{fig:ScikitLearn_2}, that is, two hidden layers with 100 neurons each. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.05\textwidth]{figures/presentable_data/ADAM_RMSProp_2b1_logisticRMSProp200010.pdf}
+\includegraphics[width=1.05\textwidth]{ADAM_RMSProp_2b1_logisticRMSProp200010.pdf}
 \caption[ADAM \& RMSProp with 2 layers]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM and RMSProp. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ADAMvsRMSProp}
 \end{figure}
 We see that the methods are generally similar and give similar test and train errors for similar parameters. However, ADAM copes better with too high learning rates and the results at high learning rates, albeit much worse than with good parameters, do not explode. ADAM also surpasses simple SGD in the sense that the lowest obtained test MSE is slightly lower, while RMSProp is on pair. 
@@ -167,7 +312,7 @@ We see that the methods are generally similar and give similar test and train er
 As ADAM has given the best test results, we used ADAM as stochastic gradient method and compared the impact of the four different activation functions ReLU, tanh, sigmoid \& LeakyReLU. This can be seen in figure \ref{fig:ADAMdifferentActivationFunctions}.
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.05\textwidth]{figures/presentable_data/Four_activations2ADAM200010.pdf}
+\includegraphics[width=1.05\textwidth]{Four_activations2ADAM200010.pdf}
 \caption[Different activation functions]{Test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each and the activation function stated in the title between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ADAMdifferentActivationFunctions}
 \end{figure}
 As we see, the tanh function gave by far the best results with a test MSE below $18,000$, followed by the sigmoid function. This does not show that the tanh function is the best activation function, but that the tanh function in this case, with the given amount of layers and chosen parameters as well as the number of epochs, performs best. It is interesting to see that both the ReLU and the LeakyReLU activaton functions seem to be more "forgiving" to different learning rates and regularization parameters, as a larger part of the 2D table appears blue, indicating small values, than with the tanh function \& the sigmoid function.\\
@@ -176,25 +321,55 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \section{Conclusion}
 As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slow as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla
 \section{Appendix}
+\subsection{Proof that Softmax reduces to the Logistic function for m=2}\label{ProofSoftmaxToLogistic}
+
+Consider the Softmax function for $m=2$ categories
+
+\begin{equation}
+\textbf{a} = \frac{1}{ \exp(\textbf{W}_{[1,:]}\cdot \textbf{x}^T)  + \exp( \textbf{W}_{[2,:]} \cdot \textbf{x}^T ) }
+\begin{pmatrix}
+\exp( \textbf{W}_{[1,:]} \cdot \textbf{x}^T) \\
+\exp( \textbf{W}_{[2,:]} \cdot \textbf{x}^T)
+\end{pmatrix}
+\end{equation}
+We can multiply both sides of the fraction by $\exp(- \textbf{W}_{[2,:]} \cdot \textbf{x}^T)$ to get
+\begin{equation}
+\textbf{a} = \frac{1}{ 1  + \exp( (\textbf{W}_{[1,:]} -\textbf{W}_{[2,:]})\cdot \textbf{x}^T) }
+\begin{pmatrix}
+\exp( (\textbf{W}_{[1,:]} -\textbf{W}_{[2,:]})\cdot \textbf{x}^T) \\
+\exp( \vec{0})
+\end{pmatrix}
+\end{equation}
+We can now simply rename this weight parameter as $\textbf{W}_{[1,:]} -\textbf{W}_{[2,:]} = -\textbf{W}$ giving us
+\begin{equation}
+a = \begin{pmatrix}
+\frac{\exp( -\textbf{W}\cdot \textbf{x}^T)}{1+\exp( -\textbf{W}\cdot \textbf{x}^T)} \\
+\frac{1}{1+ \exp( -\textbf{W}\cdot \textbf{x}^T)}
+\end{pmatrix} = \begin{pmatrix}
+1-\frac{1}{1+\exp( -\textbf{W}\cdot \textbf{x}^T)} \\
+\frac{1}{1+ \exp( -\textbf{W}\cdot \textbf{x}^T)}
+\end{pmatrix} 
+\end{equation}
+which is the same as the activation function for logistic regression.
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/presentable_data/Ridge_error_SGD.pdf}
+\includegraphics[width=0.95\textwidth]{Ridge_error_SGD.pdf}
 \caption[Relative Test MSE with different SGD methods for Ridge]{Relative Test MSE  ($\frac{MSE_{SGD}}{MSE_{analytical}})$ for the simple SGD method, RMSProp and ADAM and as functions of the learning rate $\eta$ and the regularization parameter $\lambda$. $N=2000$, the polynomial degree used is $deg=20$, where OLS fails. The batch size is 16, the number of epochs is 1000. Values exceeding 10 were removed, explaning the grey parts. No bootstrapping or cross-validation was performed.} \label{fig:DifferentSGDRIDE}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.05\textwidth]{figures/presentable_data/scikit_own_2b1_logisticsgd200010.pdf}
+\includegraphics[width=1.05\textwidth]{scikit_own_2b1_logisticsgd200010.pdf}
 \caption[Scikit-learn  and own FFNN with 2 layers, degree 20]{Train and test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network and Scikit-learn 's MLPRegressor function. We used 2000 data points (randomly selected), a polynomial degree of 20, a batch size of 200, 1000 epochs, two hidden layers with 100 neurons each, simple SGD as gradient descent method and the sigmoid function as activation function between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:ScikitLearn_3}
 \end{figure}
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{figures/presentable_data/4_layers.pdf}
+\includegraphics[width=1.0\textwidth]{4_layers.pdf}
 \caption[4 hidden layers, 100 epochs]{Test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 1000 epochs, 4 hidden layers with respectively 100, 100, 50 and 50 neurons and the activation function stated in the title between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:4layers}
 \end{figure}
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{figures/presentable_data/2_layers_short.pdf}
+\includegraphics[width=1.0\textwidth]{2_layers_short.pdf}
 \caption[4 hidden layers, 100 epochs]{Test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 100 epochs, two hidden layers with 100 neurons each and the activation function stated in the title between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:2layers}
 \end{figure}
 
