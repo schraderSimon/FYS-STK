@@ -106,7 +106,7 @@ C^{(l)} = \sum\limits_{j=1}^{m} -y_j^{(l)}\log(a_i^{(l)}).
 The algorithm can be understood as a single layer perceptron with $m$ neurons in the hidden layer. In figure \ref{LogisticRegressionDiagram} below, the functions and variables in the nodes are as given in equations \eqref{first} to \eqref{last}.
 
 \begin{figure}[H]
-\caption[Logistic regression diagram]{•}
+
 
 \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
     \tikzstyle{every pin edge}=[<-,shorten <=1pt]
@@ -198,8 +198,29 @@ The algorithm can be understood as a single layer perceptron with $m$ neurons in
     \node[annot,right of=o1, node distance=\layersep] (c1) {Cost function};
     \node[annot,right of=c1, node distance=\layersep] (y1) {Data set label};
 \end{tikzpicture}
+\caption[Logistic regression diagram]{The single layer perceptron model of multinomial logistic regression.}
 \label{LogisticRegressionDiagram}
 \end{figure}
+\subsubsection{Cost function}
+In stochastic gradient descent, the cost function we will end up using in the below calculations are given by 
+\begin{equation}
+C = \sum\limits_{l=1}^{Batch\,size} C^{(l)}
+\end{equation}
+\subsubsection{Back propagation}
+We want to calculate the derivative of the new cost function with respect to the weights and biases. We will use these to calculate the step in the gradient descent:
+$\textbf{W} = \textbf{W} -\eta \frac{d C}{d\textbf{W} }$ and $\textbf{b} = \textbf{b} -\eta \frac{d C}{d\textbf{b} }$. Using the chain rule, we can re-express this problem as
+\begin{equation}
+\frac{dC}{dw_{i,n}} = \sum_{j=1}^m \left (\frac{dC}{da_j} \right) \left (\frac{da_j}{dz_i} \right) \left(\frac{dz_i}{dw_{i,n}} \right )
+\end{equation}
+and
+\begin{equation}
+\frac{dC}{db_i} = \sum_{j=1}^m \left (\frac{dC}{da_j} \right) \left (\frac{da_j}{dz_i} \right) \left(\frac{dz_i}{db_i} \right )
+\end{equation}
+where $i \in [1,2,\cdots,m]$ and $n \in [1,2,\cdots,N]$. We can now proceed to solving each of these derivatives:
+
+
+
+
 \subsection{Gradient Descent Methods}
 One way to find the minima, both local and global, of a (multivariable) function, one can use the method of gradient descent. Simply speaking, this is done by iteratively changing the parameters in order to minimize a cost function \citep{handsOnMachineLearning}. As the gradient of a function always shows towards the point of steepest descent, following the gradient in the opposite direction will lead to a minimum. In both regression and classification problems, the function to be minimized is the cost function. In terms of linear regression, the cost function is the MSE function (possibly with additional regularization). The gradient is simply a vector containing the partial derivatives with respect to each coefficient $\beta_i$.\\
 For OLS and Ridge regression, we have that 
