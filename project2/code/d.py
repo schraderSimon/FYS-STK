@@ -41,7 +41,7 @@ if BASIC:
 
     #neural network parameters
     eta=1e-3
-    epochs=100
+    epochs=500
     n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
@@ -72,7 +72,7 @@ if ACTIVATION_COMPARISON:
 
     #neural network parameters
     eta=1e-3
-    epochs=100
+    epochs=200
     n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10

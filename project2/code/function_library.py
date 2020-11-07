@@ -801,7 +801,6 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
             if nn.errortype=="MSE":
                 z_training=z_training.reshape((X_training_scaled.shape[0],1))
                 z_testing=z_testing.reshape((X_testing_scaled.shape[0],1))
-            print(z_training)
             nn.change_matrix(X_training_scaled,z_training) #Update dataset
             nn.update_parameters_reset(eta=eta,lmbd=Lambda) #Update parameters
             nn.train() #Train the set
