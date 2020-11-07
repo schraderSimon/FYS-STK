@@ -32,7 +32,6 @@ print("X = (n_inputs, n_features) = " + str(inputs.shape))
 
 # choose some random images to display
 indices = np.arange(n_inputs)
-random_indices = np.random.choice(indices, size=5)
 train_size = 0.8
 test_size = 1 - train_size
 X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, train_size=train_size,
@@ -51,15 +50,18 @@ def to_categorical_numpy(integer_vector):
 Y_train_onehot, Y_test_onehot = to_categorical_numpy(Y_train), to_categorical_numpy(Y_test)
 
 
-eta=3e-3
-epochs=1000
-n_hidden_neurons=[100,100]
+eta=3e-4
+epochs=100
+n_hidden_neurons=[100,100,50,50]
 n_hidden_layers=len(n_hidden_neurons)
 n_categories=10
-batch_size=32
-Lambda=0.01
+batch_size=100
+Lambda=0.0001
 activation_function_type="RELU"
 activation_function_type_output="softmax"
+print(Y_train_onehot)
+print(X_train)
+
 dnn=NeuralNetwork(X_train,Y_train_onehot,
     n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
     n_categories=n_categories,epochs=epochs,batch_size=batch_size,eta=eta,lmbd=Lambda,
