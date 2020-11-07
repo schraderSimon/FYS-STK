@@ -59,7 +59,21 @@ We also tested the neural network's performance on a categorization problem, nam
 In this report, we will first describe the methods used, focusing on stochastic gradient descent methods and the theory of FFNNs. This is done in the method part. The result part cointains 
 \section{Methods}
 \subsection{Logistic Regression}
-Logistic regression is a regression algorithm applied to binary classification problems. A weighted and biased sum of predictors are passed through the logistic activation function and a cost function is applied to the output and the accompanying label to the set of predictors. The problem of finding the weights and biases that predict the correct category then becomes a problem of optimizing the cost function by tweaking the weights and biases.\\ \paragraph{Multinomial logistic regression} is the generalization of logistic regression to multi- class problems and uses the Softmax activation function. We will consider multinomial logistic regression from here on, as the Softmax function reduces to the logistic function in the case where the number of categories is 2 \ref{ProofSoftmaxToLogistic}.\\\\Given a dataset of $L$ datapoints, $N$ predictors and $m$ categories, we structure the dataset thus
+Logistic regression is a regression algorithm applied to binary classification problems. A weighted and biased sum of predictors are passed through the logistic activation function and a cost function is applied to the output and the accompanying label to the set of predictors. The problem of finding the weights and biases that predict the correct category then becomes a problem of optimizing the cost function by tweaking the weights and biases. Logistic regression is in many ways comparable to linear regression. The key difference arises in the use of the Logistic or Softmax activation function.
+\begin{figure}[H]
+\begin{center}
+\begin{tikzpicture}
+  \draw[->] (-4, 0) -- (4, 0) node[right] {$x$};
+  \draw[dashed] (-4, 1) -- (4, 1)node[above] {$y=1$} ;
+  \draw[->] (0, -0.5) -- (0, 1.5) node[above] {$y$};
+  \draw[scale=1, domain=-4:4, smooth, variable=\x, blue] plot ({\x}, {1/(1+e^(-\x))});
+\end{tikzpicture}
+\end{center}
+\caption[Logistic function]{The logistic function outputs a number between $0$ and $1$ for every function input.}
+\label{logisticfunc}
+\end{figure}
+The logistic function, seen in figure \ref{logisticfunc} naturally translates a range of inputs into a probability distribution of two outcomes.
+\paragraph{Multinomial logistic regression} is the generalization of logistic regression to multi- class problems and uses the Softmax activation function. We will consider multinomial logistic regression from here on, as the Softmax function reduces to the logistic function in the case where the number of categories is 2 (\ref{ProofSoftmaxToLogistic}).\\\\Given a dataset of $L$ datapoints, $N$ predictors and $m$ categories, we structure the dataset thus
 \begin{equation}\label{first}
 \textbf{X} = 
 \begin{pmatrix}
@@ -96,7 +110,7 @@ The weighted sum for a datapoint $l$ is then given by
 \textbf{z}^{(l)} = \textbf{W}\textbf{x}^{(l)}+\textbf{b} \textit{ where }\textbf{x}^{(l)}=(\textbf{X}_{[l,:]})^T
 \end{equation}
 and the $i'th$ activation by
-\begin{equation}
+\begin{equation}\label{softmax}
 a_i^{(l)} = \frac{e^{z_i^{(l)}}}{\sum_{j=1}^{m} e^{z_j^{(l)}}}.
 \end{equation}
 Given that the labels are structured in the One- hot representation, the cross- entropy cost function for a single datapoint $l$ is given by
@@ -206,21 +220,64 @@ In stochastic gradient descent, the cost function we will end up using in the be
 \begin{equation}
 C = \sum\limits_{l=1}^{Batch\,size} C^{(l)}
 \end{equation}
-\subsubsection{Back propagation}
+\subsubsection{Derivatives of the cost function}
 We want to calculate the derivative of the new cost function with respect to the weights and biases. We will use these to calculate the step in the gradient descent:
 $\textbf{W} = \textbf{W} -\eta \frac{d C}{d\textbf{W} }$ and $\textbf{b} = \textbf{b} -\eta \frac{d C}{d\textbf{b} }$. Using the chain rule, we can re-express this problem as
-\begin{equation}
+\begin{equation}\label{backprop1}
 \frac{dC}{dw_{i,n}} = \sum_{j=1}^m \left (\frac{dC}{da_j} \right) \left (\frac{da_j}{dz_i} \right) \left(\frac{dz_i}{dw_{i,n}} \right )
 \end{equation}
 and
-\begin{equation}
+\begin{equation}\label{backprop2}
 \frac{dC}{db_i} = \sum_{j=1}^m \left (\frac{dC}{da_j} \right) \left (\frac{da_j}{dz_i} \right) \left(\frac{dz_i}{db_i} \right )
 \end{equation}
-where $i \in [1,2,\cdots,m]$ and $n \in [1,2,\cdots,N]$. We can now proceed to solving each of these derivatives:
+where $i \in [1,2,\cdots,m]$ and $n \in [1,2,\cdots,N]$. We can now proceed to solving each of these derivatives in turn:
+\begin{equation}
+\frac{dC^{(l)}}{da_j^{(l)}} = - \frac{y_j^{(l)}}{a_j^{(l)}},\,\,\, \frac{dz_i^{(l)}}{dw_{i,n}^{(l)}} =  x_n^{(l)},\,\,\, \frac{dz_i^{(l)}}{db_i^{(l)}} =  1.
+\end{equation}
+The derivative of the Softmax function $$\frac{da_j^{(l)}}{dz_i^{(l)}}$$ is $$a_j^{(l)}(\delta_{ji}-a^{(l)}_i)$$ but rather than this expression, we want to formulate the derivative as a $m \times m$ matrix:
+\begin{equation}
+\frac{d}{d \textbf{z}^{(l)}} \textbf{a}^{(l)} = (\textbf{a}^{(l)} \otimes \mathbf{1} )\circ (\mathbf{I} - \mathbf{1} \otimes \textbf{a}^{(l)}) = \textbf{M}
+\end{equation}
+where $\mathbf{1}$ is the $m \times 1$ one- vector, $ \mathbf{I} $ is the $m \times m$ unit matrix, $\otimes$ is the outer product and $\circ$ is the Hadamard product. The reason for this seemingly convoluted change in perspective, becomes apparent when we consider our equations \eqref{backprop1} and \eqref{backprop2}, which are now expressible (for a single datapoint) as
+\begin{equation}
+\frac{dC^{(l)}}{d\textbf{W}} =  \textbf{M}\cdot(- \textbf{y}^{(l)}\oslash \textbf{a}^{(l)}) \textbf{x}^{(l)}
+\end{equation}
+and
+\begin{equation}
+\frac{dC^{(l)}}{d\textbf{b}} =  \textbf{M}\cdot(- \textbf{y}^{(l)}\oslash \textbf{a}^{(l)}) 
+\end{equation}
+where $\oslash$ is the Hadamard division. With the gradients in hand, we can now optimize the weights and biases through gradient descent.
 
+\subsubsection{Algorithm}
+The algorithm for Logistic regression goes as follows. We make an initial guess for the weights and biases. Using these and a data point we calculate the activation function. This is then used, together with the same data point in calculating the gradient of the cost function, which is used to calculate the new, optimized parameters $\textbf{W}$ and $\textbf{b}$.
+\begin{figure}[H]
+\begin{center}
+\begin{tikzpicture}[
+roundnode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
+squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=7mm},]
+%Nodes
+\node[squarednode]      (Winit)                              {$\textbf{W}_{init}$};
+\node[roundnode, yshift = -0.9cm]      (FF)  [below of = Winit]{$\textbf{FF}$};
+\node[squarednode, xshift = -0.9cm]      (binit)  [left of = FF]{$\textbf{b}_{init}$};
+\node[squarednode, yshift = -0.5cm]      (XY)  [below of = FF]{$\textbf{X, Y}$};
+\node[roundnode, xshift = 1.9cm]      (grad)  [right of = XY]{$\frac{dC^{(l)}}{d\textbf{W}},\frac{dC^{(l)}}{d\textbf{b}}$};
 
+%Lines
+\draw[->,dashed] (Winit.south) -- (FF.north);
+\draw[->,dashed] (binit.east) -- (FF.west);
+\draw[->] (XY.north) -- (FF.south);
 
+\path[->,draw,thick] (FF) edge node[above] {$\textbf{a}$} (grad.north west);
 
+\draw[->,thick] (XY.south) .. controls +(down:15mm) and +(down:15mm) .. (grad.south);
+
+\path[->,draw,thick] (grad.north) edge [bend right=60] node[above] {$\textbf{W},\textbf{b}$} (FF.north east);
+\end{tikzpicture}
+\end{center}
+\caption[Logistic regression algorithm]{The algorithmic structure of logistic regression. Red squares represent variables that enter the algorithm. Green circles represent computations and dashed arrows means the output is used once.}
+\label{LogisticRegressionDiagram}
+\end{figure}
+This process continues until either a given number of iterations have taken place, or the Softmax function produces an output error within a given tolerance. 
 \subsection{Gradient Descent Methods}
 One way to find the minima, both local and global, of a (multivariable) function, one can use the method of gradient descent. Simply speaking, this is done by iteratively changing the parameters in order to minimize a cost function \citep{handsOnMachineLearning}. As the gradient of a function always shows towards the point of steepest descent, following the gradient in the opposite direction will lead to a minimum. In both regression and classification problems, the function to be minimized is the cost function. In terms of linear regression, the cost function is the MSE function (possibly with additional regularization). The gradient is simply a vector containing the partial derivatives with respect to each coefficient $\beta_i$.\\
 For OLS and Ridge regression, we have that 
@@ -266,7 +323,7 @@ where * and /  again refer to element-wise multiplication and division, respecti
 \subsubsection{Activation functions}
 As described in the previous to subsections, the activation function is one of the core elements in Neural Networks. In this project, we implemented the following four activation functions for activation between the input layer and the first hidden layer as well as between all hidden layers. For the output, we used no activation function (Regression) or the Softmax activation function (Classification). 
 
-\paragraph*{sigmoid function} - The sigmoid function, defined as $\sigma(x)=\frac{e^x}{e^x-1}$, can take functions between 0 and 1. It is inspired by the way Neurons fire in the brain [XXX].
+\paragraph*{sigmoid function} - The sigmoid function, defined as $\sigma(x)=\frac{e^x}{e^x-1}$, outputs function values between 0 and 1 for all inputs. It is inspired by the way Neurons fire in the brain [XXX].
 \paragraph*{tanh} - The tanh function, which can be expressed in terms of the sigmoid function $tanh(x)=2\sigma(2x)-1$, can take functions between -1 and 1. Unlike the sigmoid function, it maps negative inputs to negative function values, while 0 is mapped to 0.
 \paragraph*{ReLU} -The ReLU function (\textit{Rectified Linear Unit}) is defined as $ReLU(x)=x^+$ (x if x is positive, zero otherwise). Unlike the tanh function and the sigmoid function, it does not suffer from vanishing gradients when the input values are large. It has been shown \citep{surpremeRELU} that rectifiers can give better results in Machine learning, especially depper networks, than the sigmoidal functions.
 \paragraph*{LeakyReLU} - The LeakyReLU function is defined as $LeakyReLU(x)=max(x,\alpha x)$ where $\alpha=0.01$ (though other values are possible, too). Positive values are hence mapped to themselves, whereas negative input values are mapped to $\alpha x$. Unlike the ReLU function, it has nonzero output for negative input values too, and the gradient vanishes nowhere, improving the problem of "dying" neurons.
@@ -276,6 +333,17 @@ For the regression analysis, we used the same data as in \citep{Project1} - a bl
 \subsubsection{Classification: MNIST data set}
 For classification, we use the MNIST data set, a data set consisting of 70.000 handwritten digits between 0 and 9, represented as a picture with resolution $28\times28$ pixel \citep{lecun2010mnist}. In this article however we used Scikit Learn's variant of the MNIST data set, which consists of 1797 elements with resolution $8\times8$ pixel. 
 \section{Computational implementation}
+
+\subsection{Multinomial logistic regression}
+
+
+\subsubsection{Numerically stable variants}
+The Softmax function defined in \eqref{softmax}, is inherently prone to overflow. We can resolve this by making a small change:
+\begin{equation}
+a_i= \frac{e^{z_i}}{\sum_{j=1}^{m} e^{z_j}} \cdot \frac{e^{-c}}{e^{-c}}
+\end{equation}
+
+
 \subsection{Neural network}
 \subsubsection{Setting up weights and biases for the neural network}
 As there is no clear rule how to set up weights and biases, other than that they should be initialized with a non-zero value, we first tried to set up the weights with a mean zero normal distribution with a small standard deviation $\sigma\approx0.01$. However, we found that this yielded undesirable results, which made that especially ReLU and LeakyReLU gave unpredictable behaviour where the activation function gave very high numbers, eventually leading to numerical instability and overflow. Hence, we decided to follow the approach described in \cite{DelvingDeep}, where the weights are initialized randomly, following a mean zero normal distribution with standard deviation $\sigma=\sqrt{2/n\_inputs}$ where n\_inputs here refers to the batch size. The biases were simply initialized with a small nonzero number - $0.001$.

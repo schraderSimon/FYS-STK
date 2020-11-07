@@ -384,9 +384,9 @@ class LogRegression:
         #calculates the activation function from weights and biases using softmax
         z = np.matmul(W,x) + b
         a = self.SoftMax(z)
-        return z, a
+        return a
 
-    def calculateGradient(self,W,b,x,y,a,z):
+    def calculateGradient(self,W,b,x,y,a):
         #calculates the gradient of the Cross Entropy cost function
         NrCategories = self.NrCategories
 
@@ -412,10 +412,10 @@ class LogRegression:
                 y= Y[index].reshape(self.NrCategories,1)
 
                 #feed forward
-                z, a = self.FeedForward(x,W,b)
+                a = self.FeedForward(x,W,b)
 
                 # getting gradients
-                dW, db = self.calculateGradient(W,b,x,y,a,z)
+                dW, db = self.calculateGradient(W,b,x,y,a)
 
                 # Calculate new weights and biases
                 W = W - eta*dW

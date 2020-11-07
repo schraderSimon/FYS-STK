@@ -6,9 +6,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 
-WRONG_CLASS_EX = False
+WRONG_CLASS_EX = True#False
 ACC_V_LR = False
-COMPARE_SCIKITLEARN = True
+COMPARE_SCIKITLEARN = False#True
 
 """ Data setup """ 
 #Collect the  MNIST dataset
