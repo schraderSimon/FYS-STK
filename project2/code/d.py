@@ -9,12 +9,12 @@ from sklearn.model_selection import train_test_split
 
 """ What part of the code to run: Only one should be set to True lest there be unforseen consequences! Descriptions below """
 
-BASIC = False
+BASIC = True
 ACTIVATION_COMPARISON = True#False
 ARCHITECTURE_COMPARISON = False
 SCIKITLEARN = False#True
 
-""" Data setup """ 
+""" Data setup """
 #Collect the  MNIST dataset
 digits = datasets.load_digits()
 
@@ -28,39 +28,36 @@ X = X.reshape(n_inputs, -1)
 Y = OneHotMatrix(y,10)
 
 
-
-
 """ Basic demonstration of Classifying neural network """
 if BASIC:
 
     #Splitting into train and test data
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-
     #Scaling the data
-    scaler=StandardScaler()
+    scaler=StandardScaler(with_mean=True,with_std=False)
     scaler.fit(X_train)
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
 
     #neural network parameters
-    epochs=800
-    n_hidden_neurons=[20]
+    eta=1e-3
+    epochs=500
+    n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
-    batch_size=20
-    Lambda=0 #L2 regularization
-    eta=0.1 #Learning rate
+    batch_size=100
+    Lambda=0.0001
     activation_function_type_output="softmax"
     activation_function_type="LeakyRELU"
     errortype = "categorical"
     solver="ADAM"
-
     #Setting up the network
     nn=NeuralNetwork(X_train_scaled,Y_train,
         n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
-        n_categories=n_categories,epochs=epochs,batch_size=batch_size,
-        activation_function_type_output=activation_function_type_output,activation_function_type=activation_function_type,
-        errortype=errortype,solver=solver) #Create Neural Network
+        n_categories=n_categories,epochs=epochs,batch_size=batch_size,eta=eta,lmbd=Lambda,
+        activation_function_type=activation_function_type,
+        activation_function_type_output=activation_function_type_output,
+        errortype="categorical")
 
     #Training the network
     nn.train()
@@ -74,19 +71,20 @@ if BASIC:
 if ACTIVATION_COMPARISON:
 
     #neural network parameters
-    epochs=50
-    n_hidden_neurons=[100]#,80,40,20,20]
+    eta=1e-3
+    epochs=200
+    n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
-    batch_size=20
+    batch_size=100
     Lambda=0.0001
-    eta=0.0001
+
     activation_function_type_output="softmax"
     errortype = "categorical"
-    solver="sgd"
+    solver="ADAM"
 
     # Setting up a list of Different Hidden layer activation functions to be tested
-    activation_function_type= ["tanh","sigmoid"]#"LeakyRELU","RELU",
+    activation_function_type= ["tanh","sigmoid","LeakyRELU","RELU"]
 
     #Number of folds used in kfold- cross validation
     k = 4
@@ -98,7 +96,7 @@ if ACTIVATION_COMPARISON:
     #iterator is used for indexing the output array
     iterator = 0
     for activation in activation_function_type:# For every activation function in the list
-        
+
         #Setup the network, the choice of X and Y doesn't matter as it's overwritten in
         # the Crossval_Neural_Network program
         nn=NeuralNetwork(X,Y,
@@ -109,7 +107,7 @@ if ACTIVATION_COMPARISON:
 
         #Getting accuracy scores from Cross validation
         accuracy_test[iterator], accuracy_train[iterator] = Crossval_Neural_Network(k,nn,eta,Lambda,X,Y)
-        
+
         iterator += 1
     #Printing outputs
 
@@ -171,7 +169,7 @@ if ARCHITECTURE_COMPARISON:
 if SCIKITLEARN:
 
     #Compare methods for the same k- value
-    k = 4 #Making sure that Scikitlearn and our NN has the same size training set 
+    k = 4 #Making sure that Scikitlearn and our NN has the same size training set
 
     # Calls function that implements Scikit Learn's FFNN Classifier: MLPClassifier in Kfold Cross Validation
     #It returns the model accuracy on the testing and training data
