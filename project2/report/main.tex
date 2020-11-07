@@ -239,11 +239,11 @@ The derivative of the Softmax function $$\frac{da_j^{(l)}}{dz_i^{(l)}}$$ is $$a_
 \frac{d}{d \textbf{z}^{(l)}} \textbf{a}^{(l)} = (\textbf{a}^{(l)} \otimes \mathbf{1} )\circ (\mathbf{I} - \mathbf{1} \otimes \textbf{a}^{(l)}) = \textbf{M}
 \end{equation}
 where $\mathbf{1}$ is the $m \times 1$ one- vector, $ \mathbf{I} $ is the $m \times m$ unit matrix, $\otimes$ is the outer product and $\circ$ is the Hadamard product. The reason for this seemingly convoluted change in perspective, becomes apparent when we consider our equations \eqref{backprop1} and \eqref{backprop2}, which are now expressible (for a single datapoint) as
-\begin{equation}
+\begin{equation}\label{gradientW}
 \frac{dC^{(l)}}{d\textbf{W}} =  \textbf{M}\cdot(- \textbf{y}^{(l)}\oslash \textbf{a}^{(l)}) \textbf{x}^{(l)}
 \end{equation}
 and
-\begin{equation}
+\begin{equation}\label{gradientb}
 \frac{dC^{(l)}}{d\textbf{b}} =  \textbf{M}\cdot(- \textbf{y}^{(l)}\oslash \textbf{a}^{(l)}) 
 \end{equation}
 where $\oslash$ is the Hadamard division. With the gradients in hand, we can now optimize the weights and biases through gradient descent.
@@ -275,7 +275,7 @@ squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size
 \end{tikzpicture}
 \end{center}
 \caption[Logistic regression algorithm]{The algorithmic structure of logistic regression. Red squares represent variables that enter the algorithm. Green circles represent computations and dashed arrows means the output is used once.}
-\label{LogisticRegressionDiagram}
+\label{LogisticRegressionFlowchart}
 \end{figure}
 This process continues until either a given number of iterations have taken place, or the Softmax function produces an output error within a given tolerance. 
 \subsection{Gradient Descent Methods}
@@ -321,12 +321,13 @@ where * and /  again refer to element-wise multiplication and division, respecti
 \subsubsection{Feed forward?}
 \subsubsection{Back propagation}
 \subsubsection{Activation functions}
-As described in the previous to subsections, the activation function is one of the core elements in Neural Networks. In this project, we implemented the following four activation functions for activation between the input layer and the first hidden layer as well as between all hidden layers. For the output, we used no activation function (Regression) or the Softmax activation function (Classification). 
-
+As described in the previous to subsections, the activation function is one of the core elements in Neural Networks. In this project, we implemented the following four activation functions for activation between the input layer and the first hidden layer as well as between all hidden layers. 
 \paragraph*{sigmoid function} - The sigmoid function, defined as $\sigma(x)=\frac{e^x}{e^x-1}$, outputs function values between 0 and 1 for all inputs. It is inspired by the way Neurons fire in the brain [XXX].
 \paragraph*{tanh} - The tanh function, which can be expressed in terms of the sigmoid function $tanh(x)=2\sigma(2x)-1$, can take functions between -1 and 1. Unlike the sigmoid function, it maps negative inputs to negative function values, while 0 is mapped to 0.
 \paragraph*{ReLU} -The ReLU function (\textit{Rectified Linear Unit}) is defined as $ReLU(x)=x^+$ (x if x is positive, zero otherwise). Unlike the tanh function and the sigmoid function, it does not suffer from vanishing gradients when the input values are large. It has been shown \citep{surpremeRELU} that rectifiers can give better results in Machine learning, especially depper networks, than the sigmoidal functions.
-\paragraph*{LeakyReLU} - The LeakyReLU function is defined as $LeakyReLU(x)=max(x,\alpha x)$ where $\alpha=0.01$ (though other values are possible, too). Positive values are hence mapped to themselves, whereas negative input values are mapped to $\alpha x$. Unlike the ReLU function, it has nonzero output for negative input values too, and the gradient vanishes nowhere, improving the problem of "dying" neurons.
+\paragraph*{LeakyReLU} - The LeakyReLU function is defined as $LeakyReLU(x)=max(x,\alpha x)$ where $\alpha=0.01$ (though other values are possible, too). Positive values are hence mapped to themselves, whereas negative input values are mapped to $\alpha x$. Unlike the ReLU function, it has nonzero output for negative input values too, and the gradient vanishes nowhere, improving the problem of "dying" neurons.\\\\
+For the output, we used no activation function (Regression) or the Softmax activation function (Classification). 
+\paragraph*{Softmax function} - The Softmax function defined in equation \eqref{softmax} is a generalization of the Logistic function (sigmoid), and is used to classify more than two categories.
 \subsection{Data sets}
 \subsubsection{Regression: Geographic Data}
 For the regression analysis, we used the same data as in \citep{Project1} - a black-and white image with resolution $3601 \times 3601$ pixel which represents an area in the Taebaek Mountains in South Korea with a total surface area of $3601 \times 3601km^2$ , hence each square kilometer is represented as one pixel, where colour intensity represents the height (black equals height at sea level).
@@ -335,14 +336,14 @@ For classification, we use the MNIST data set, a data set consisting of 70.000 h
 \section{Computational implementation}
 
 \subsection{Multinomial logistic regression}
-
+We have chosen classification of handwritten digits in an $8\times 8$ grid of pixels, as the classification problem. To implement this, the $(8\times 8)\times L$ pixel data is flattened into a $(L \times 64)$ matrix with $L$ being the number of datapoints. The image labels, originally a $(L \times 1)$ array of digits $0$ through $9$, is converted into a One- hot matrix representation of shape $(L \times 10)$. The computational implementation of Softmax regression follows from the illustrations in figures \ref{LogisticRegressionDiagram} and \ref{LogisticRegressionFlowchart}. 
 
 \subsubsection{Numerically stable variants}
 The Softmax function defined in \eqref{softmax}, is inherently prone to overflow. We can resolve this by making a small change:
 \begin{equation}
-a_i= \frac{e^{z_i}}{\sum_{j=1}^{m} e^{z_j}} \cdot \frac{e^{-c}}{e^{-c}}
+a_i= \frac{e^{z_i}}{\sum_{j=1}^{m} e^{z_j}} \cdot \frac{e^{-c}}{e^{-c}} = \frac{e^{z_i-c}}{\sum_{j=1}^{m} e^{z_j-c}}
 \end{equation}
-
+where we choose $c = \max \{ z_i : i \in [1,2,\cdots ,m]\} $. In this way we ensure that the function does not overflow, as the exponent is always smaller than zero. Only a unique set of circumstances could cause this expression to be numerically unstable, for example if the sum in the denominator is ever zero.\\Additionally, the Hadamard division used to calculate the gradients in equations \eqref{gradientW} and \eqref{gradientb} receives a tiny addition of $10^{-15}$ in the denominator to avoid division by zero.
 
 \subsection{Neural network}
 \subsubsection{Setting up weights and biases for the neural network}
@@ -407,6 +408,40 @@ As ADAM has given the best test results, we used ADAM as stochastic gradient met
 As we see, the tanh function gave by far the best results with a test MSE below $18,000$, followed by the sigmoid function. This does not show that the tanh function is the best activation function, but that the tanh function in this case, with the given amount of layers and chosen parameters as well as the number of epochs, performs best. It is interesting to see that both the ReLU and the LeakyReLU activaton functions seem to be more "forgiving" to different learning rates and regularization parameters, as a larger part of the 2D table appears blue, indicating small values, than with the tanh function \& the sigmoid function.\\
 
 For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50) (in that order, where the output layer is to the right), but only 100 epochs due to the high time usage. The result can be found in figure \ref{fig:4layers} in the appendix where the test error is portrayed for all 4 methods. From this graph, we see that ReLU \& LeakyReLU perform much better for this deeper neural network. Not only is the smallest test error lower, the methods are much more stable too, in the sense that the both ReLU and LeakyReLU give good results for much more values of the learning rate and the regularization parameter, whereas tanh and especially the sigmoid function are very narrow. Figure \ref{fig:2layers} in the appendix is also run with only 100 epochs, but has only 2 hidden layers. Here, the sigmoid function and the tanh function are superior, however the test error achieved with both the LeakyReLU and ReLU and 4 layers is lower than the test error from the tanh function and two layers (and all sigmoid function values except for one), indicating that the ReLU/LeakyReLU can indeed give better results.
+
+
+\subsection{FFNN for Digit Classification}
+\subsubsection{Comparing the FFNN to Scikit- learn}
+\subsubsection{Impact of Network Architecture}
+\subsubsection{Impact of Hidden Layer Activation Function}
+\subsubsection{Impact of Learning Rates}
+
+\subsection{Multinomial Logistic Regression for Digit Classification}
+\subsubsection{What is wrongly classified?}
+
+
+
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=6cm 5.0cm 12cm 5.0cm, clip=true,scale = 0.5]{Wrong_predictions_LogReg.pdf}
+\caption[Wrongly classified Digits]{Random selection of 4 wrongly classified handwritten digits in the testing set. Classification was made using multinomial logistic regression with stochastic gradient descent. Using 10 epochs and a learning rate of $0.001$. Model accuracy was 95.56\%.}\label{Digits}
+\end{figure}
+
+\subsubsection{Impact of Learning Rates}
+
+
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=1cm 0.4cm 1cm 0.8cm, clip=true,scale = 0.6]{e_test_accuracy_over_learning_rate.pdf}
+\caption[Optimal regularization parameter to noise]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 150 epochs.}\label{Acc_to_LR}
+\end{figure}
+
+\subsubsection{Comparing Implementation to Scikit- learn}
+Using a learning rate $\eta = 0.0001$ and $500$ epochs on $6$ independent runs. Comparing the Scikit- learn implementation with our own implementation of Logistic regression with Stochastic regression
+
+
 \section{Conclusion}
 As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slow as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla
 \section{Appendix}

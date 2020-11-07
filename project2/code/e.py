@@ -6,9 +6,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 
-WRONG_CLASS_EX = True#False
+WRONG_CLASS_EX = False
 ACC_V_LR = False
-COMPARE_SCIKITLEARN = False#True
+COMPARE_SCIKITLEARN = True
 
 """ Data setup """ 
 #Collect the  MNIST dataset
@@ -57,8 +57,8 @@ if ACC_V_LR:
     #Parameters start
     min_eta = -6
     max_eta = 2
-    Nr_etas = 60
-    Nr_epochs = 20
+    Nr_etas = 6
+    Nr_epochs = 10
     #Parameters end
 
     #Scaling the data
@@ -86,6 +86,11 @@ if ACC_V_LR:
     plt.show()
 
 if COMPARE_SCIKITLEARN:
+    NrRuns = 6
+
+    Scipy_results = np.zeros(NrRuns)
+    Own_results = np.zeros(NrRuns)
+
     # define inputs and labels
     X = digits.images
     y = digits.target
@@ -94,16 +99,49 @@ if COMPARE_SCIKITLEARN:
     n_inputs = len(X)
     X = X.reshape(n_inputs, -1)
 
-    #Splitting into train and test data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-    #Scaling the data
-    scaler=StandardScaler()
-    scaler.fit(X_train)
-    X_train=scaler.transform(X_train)
-    X_test=scaler.transform(X_test)
 
-    #Fitting using ScikitLearn
-    clf = LogisticRegression().fit(X_train,y_train)
-    #Getting accuracy score
-    print("Prediction accuracy- SciKitLearn = {:.4f} ".format(clf.score(X_test,y_test)))
+
+    for i in range(NrRuns):
+        #Splitting into train and test data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+        #Scaling the data
+        scaler=StandardScaler()
+        scaler.fit(X_train)
+        X_train=scaler.transform(X_train)
+        X_test=scaler.transform(X_test)
+
+        #Fitting using ScikitLearn
+        clf = LogisticRegression(penalty='none',
+        tol=0.0001, 
+        C=1.0, 
+        fit_intercept=True, 
+        solver='lbfgs', 
+        max_iter=500, 
+        multi_class='auto',
+        n_jobs=None, 
+        l1_ratio=None).fit(X_train,y_train)
+
+        #Structuring the data for analysis
+        y_train_HM = OneHotMatrix(y_train,10)
+        y_test_HM = OneHotMatrix(y_test,10)
+
+        #Performing Logistic regression and finding the weights and biases W and b
+        Regressor = LogRegression(X_train, y_train_HM,n_epochs=500)
+        W,b = Regressor.fit(eta = 0.0001)
+
+        #Getting the prediction and test accuracy of the model
+        #by calling the predict method
+        P = Regressor.predict(X_test,W,b)
+        Own_temp, Indx = Regressor.accuracy(P,y_test_HM, True)
+
+        Sci_temp = clf.score(X_test,y_test)*100
+
+        Scipy_results[i] = Sci_temp
+        Own_results[i] = Own_temp
+
+    print("Results:")
+    print("Prediction accuracy- SciKitLearn = {} percent".format(Scipy_results))
+    print("Prediction accuracy-         Own = {} percent".format(Own_results))
+        

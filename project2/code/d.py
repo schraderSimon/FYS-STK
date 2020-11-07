@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 """ What part of the code to run: Only one should be set to True lest there be unforseen consequences! Descriptions below """
 
-BASIC = True
+BASIC = False#True
 ACTIVATION_COMPARISON = True#False
 ARCHITECTURE_COMPARISON = False
 SCIKITLEARN = False#True
@@ -72,7 +72,7 @@ if ACTIVATION_COMPARISON:
 
     #neural network parameters
     eta=1e-3
-    epochs=200
+    epochs=10
     n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
