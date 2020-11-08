@@ -18,4 +18,4 @@
 - **plot_b3.py** plots the fit using our own NN in the same plot for test data comparing the sigmoid, the tanh, the ReLU and the LeakyReLU activation functions. 
 - **test_functions.py** contain test functions to check wether our implementations give expected solutions to simple problems.
 
-[^1]Each file in the code folder contains a "running example" in the bottom of the file explaining how it is executed.  
+[^1]: Each file in the code folder contains a "running example" in the bottom of the file explaining how it is executed.  
