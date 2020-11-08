@@ -77,3 +77,7 @@ ax4.set_xscale("log")
 plt.tight_layout()
 plt.savefig("../figures/OLS_error_SGD.pdf")
 plt.show()
+
+"""
+python3 plot_a.py
+"""

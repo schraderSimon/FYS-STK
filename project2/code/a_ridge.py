@@ -10,10 +10,7 @@ import pandas as pd
 import sys
 import seaborn as sns
 sns.set()
-"""
-Here, we compare the analytical result for a 5-dimensional problem (Franke Function)
-with the results achieved using RMSprop, standard SGD and reduction SGD.
-"""
+
 try:
     datapoints=int(sys.argv[1])
     degree=int(sys.argv[2])
@@ -26,6 +23,7 @@ except:
     batchsize=16
     num_etas=11#array length for etas & t1_values
     epochs=1000
+
 """Set up data"""
 np.random.seed(sum([ord(c) for c in "CORONA"]))
 terrain = imread("../data/Korea.tif")
@@ -48,21 +46,24 @@ X_test_scaled=scaler.transform(X_test) #scale test Design matrix
 lambda_val = np.logspace(-30,0,11) # lambda values
 MSE_test_kfoldRidge_lambda = np.zeros(len(lambda_val))
 for i in range(len(lambda_val)):
+    """Find the optimal analytical Ridge Regression error"""
     MSE_test_kfoldRidge_lambda[i] = KCrossValRidgeMSE(X,z,5,lambda_val[i])
 optimal_lambda=lambda_val[np.argmin(MSE_test_kfoldRidge_lambda)] #find ideal lambda value (analytically)
 print("Ideal lambda is: %e" %optimal_lambda)
 
 
-theta_exact_Ridge,unimportant=RidgeRegression(X_train_scaled,z_train_scaled,optimal_lambda,False) #the beta values
+theta_exact_Ridge,unimportant=RidgeRegression(X_train_scaled,z_train_scaled,optimal_lambda,False) #calculate Ridge Regression theta
 z_fit=X_test_scaled @ theta_exact_Ridge
-MSE_Ridge=MSE(z_test_scaled,z_fit)
+MSE_Ridge=MSE(z_test_scaled,z_fit) #Calculate Ridge Regression MSE
 MSE_Ridge_lambda_eta_simple=np.zeros((num_etas,len(lambda_val)))
 MSE_Ridge_lambda_eta_RMSprop=np.zeros((num_etas,len(lambda_val)))
 MSE_Ridge_lambda_eta_ADAM=np.zeros((num_etas,len(lambda_val)))
 eta_simple=np.logspace(-7,3,num_etas)
 sgd=SGD_Ridge(X_train_scaled,z_train_scaled,n_epochs=epochs,batchsize=batchsize,Lambda=1)
-for i in range(num_etas):
-    for j in range(len(lambda_val)):
+for i in range(num_etas):"""For each learing rate"""
+
+    for j in range(len(lambda_val)):"""For each lambda rate"""
+        """Calculate MSE using ADAM, RMSpropand simple MSE"""
         sgd.Lambda=lambda_val[j] #Update Lambda paramter
         theta_simple=sgd.simple_fit(eta=eta_simple[i]); sgd.reset()
         theta_RMSprop=sgd.RMSprop(eta=eta_simple[i]); sgd.reset()
@@ -74,7 +75,7 @@ MSE_Ridge_lambda_eta_ADAM/=MSE_Ridge
 MSE_Ridge_lambda_eta_simple/=MSE_Ridge
 MSE_Ridge_lambda_eta_RMSprop/=MSE_Ridge
 
-"""In order for the plot to be properly scaled, all horrendous values are replaced by nan. This does not affect the good values we're looking for"""
+"""In order for the plot to be properly scaled, all "horrendous" values are replaced by nan. This does not affect the good values we're looking for"""
 for i in range(num_etas):
     for j in range(len(lambda_val)):
         if MSE_Ridge_lambda_eta_ADAM[i,j]>10:
@@ -104,5 +105,5 @@ plt.savefig("../figures/Ridge_error_SGD.pdf")
 plt.show()
 
 """
-python3 a_ridge.py
+python3 a_ridge.py 2000 20 16 11 1000
 """

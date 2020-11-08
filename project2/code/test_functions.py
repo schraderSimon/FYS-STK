@@ -1,12 +1,14 @@
 import numpy as np
 from function_library import *
-from sklearn.linear_model import SGDRegressor, Ridge
+from sklearn.linear_model import Ridge
 def test_optimizers():
     """
+    Tests Stochastic Gradient Descent methods using OLS Regression.
+
     This function tests wether all implemented Gradient Descent methods
     give the same result as the expected analytical result within a given tolerance
     (we choose 1e--1 as tolerance, given that these methods are not accurate)
-    We test for batchsize 1 and batchsize 5
+    We test for batchsizes 5 and batchsize 1
     """
     x=np.random.randn(100)
     y=5*x+3
@@ -27,6 +29,15 @@ def test_optimizers():
         assert error[2] < tol, "%.3f"%error[2]
         assert error[3] < tol, "%.3f"%error[3]
 def test_optimizers_ridge():
+    """
+    Tests Stochastic Gradient Descent methods using Ridge Regression.
+
+    This function tests wether all implemented Gradient Descent methods
+    give the same result as the expected analytical result within a given tolerance
+    (we choose 1e--1 as tolerance, given that these methods are not accurate)
+    We test for batchsizes 32 and batchsize 16
+    """
+
     x=np.random.randn(100)
     y=5*x+3
     X=DesignMatrix(x,2) # create a design matrix
@@ -37,7 +48,7 @@ def test_optimizers_ridge():
         sgd=SGD_Ridge(X,y,1000,batchsize=batchsize,Lambda=Lambda); sgd.reset()
         theta_RMSprop=sgd.RMSprop(eta=0.005); sgd.reset()
         theta_normal=sgd.simple_fit(eta=0.01); sgd.reset() #simple SGD
-        theta_decay=sgd.decay_fit(t0=50,t1=5000); sgd.reset() #SGD
+        theta_decay=sgd.decay_fit(t0=50,t1=5000); sgd.reset() #SGD decay
         theta_adam=sgd.ADAM(eta=0.01); sgd.reset()
         error=[sum(abs(theta_RMSprop-theta)),sum(abs(theta_normal-theta))]
         error.append(sum(abs(theta_decay-theta)))
@@ -47,9 +58,7 @@ def test_optimizers_ridge():
         assert error[2] < tol, "%.3f"%error[2]
         assert error[3] < tol, "%.3f"%error[3]
 def test_NN_reg():
-    """Test whether the Neural Network works for a very basic test function with Regression
-    , but a rather complex neural network (4 layers, LeakyRELU activation function, ADAM solver).
-    """
+    """Tests Neural Network for a regression problem."""
     x=np.random.randn(100)
     y=5*x
     X=DesignMatrix(x,2) # create a design matrix
@@ -63,6 +72,7 @@ def test_NN_reg():
         errortype="MSE",solver="ADAM") #Create Neural Network
     testErr, trainErr, testR2, trainR2= Crossval_Neural_Network(5, nn, 1e-3, Lambda,X,y)
     assert trainErr<tol, "%.3f"%trainErr
+
 test_NN_reg()
 test_optimizers()
 test_optimizers_ridge()
