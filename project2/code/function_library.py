@@ -1017,7 +1017,15 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
 from sklearn.model_selection import KFold as SKFold
 from sklearn.neural_network import MLPRegressor
 def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons,epochs):
-    """Cross Validation using Scikit Learn's MLPRegressor"""
+    """Cross Validation using Scikit Learn's MLPRegressor
+
+    Parameters:
+    Everything that is needed to create an MLPObject
+
+    Returns:
+        error estimates and R2 estimates for train and test error
+    """
+
     kf=SKFold(n_splits=k,shuffle=True)
     Error_test = np.zeros(k); R2_test=np.zeros(k)
     Error_train=np.zeros(k); R2_train=np.zeros(k)
