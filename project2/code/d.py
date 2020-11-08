@@ -15,8 +15,8 @@ sns.set()
 
 BASIC = False#True
 ACTIVATION_COMPARISON = False
-ARCHITECTURE_COMPARISON = False
-SCIKITLEARN = True
+ARCHITECTURE_COMPARISON = True#False
+SCIKITLEARN = False#True
 
 """ Data setup """
 #Collect the  MNIST dataset
@@ -156,7 +156,7 @@ if ARCHITECTURE_COMPARISON:
     epochs=150 #Number of epochs
     #Network architectures: Number of neurons in the hidden layers are given from left to right
     #every nested list specifies and additional architecture to be attempted in the loop below
-    n_hidden_neurons_list=[[100,100,100,20],[50,50,20,20,20],[200],[100]]
+    n_hidden_neurons_list=[[100,100,100]]#,[50,50,20,20,20],[200],[100]]
     #Creates a list with the number of hidden layers for each architecture
     n_hidden_layers=[len(n_hidden_neurons_list[i]) for i in range(len(n_hidden_neurons_list))]
     n_categories=10

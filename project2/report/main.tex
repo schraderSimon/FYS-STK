@@ -322,6 +322,7 @@ where * and /  again refer to element-wise multiplication and division, respecti
 \subsection{Neural networks}
 \subsubsection{Feed forward?}
 \subsubsection{Back propagation}
+A neural network is parametrized by a set of Weight's and biases. When the cost function is being optimized, the weights and biases belonging to every neuron in the network have to be updated. The cost function only "sees" the activation from the output layer of the network. We therefore need to determine how the cost function changes with respect to the weights in all the hidden layers. Fortunately, we can accomplish this through the chain rule.\\\\ !!!!!!!!!!!!!!!!!!!!!!LECTURES WEEK 40!!!!!!!!!!!!!!!!!!!!!!!!!
 \subsubsection{Activation functions}
 As described in the previous to subsections, the activation function is one of the core elements in Neural Networks. In this project, we implemented the following four activation functions for activation between the input layer and the first hidden layer as well as between all hidden layers. 
 \paragraph*{sigmoid function} - The sigmoid function, defined as $\sigma(x)=\frac{e^x}{e^x-1}$, outputs function values between 0 and 1 for all inputs. It is inspired by the way Neurons fire in the brain [XXX].
@@ -352,6 +353,8 @@ where we choose $c = \max \{ z_i : i \in [1,2,\cdots ,m]\} $. In this way we ens
 As there is no clear rule how to set up weights and biases, other than that they should be initialized with a non-zero value, we first tried to set up the weights with a mean zero normal distribution with a small standard deviation $\sigma\approx0.01$. However, we found that this yielded undesirable results, which made that especially ReLU and LeakyReLU gave unpredictable behaviour where the activation function gave very high numbers, eventually leading to numerical instability and overflow. Hence, we decided to follow the approach described in \cite{DelvingDeep}, where the weights are initialized randomly, following a mean zero normal distribution with standard deviation $\sigma=\sqrt{2/n\_inputs}$ where n\_inputs here refers to the batch size. The biases were simply initialized with a small nonzero number - $0.001$.
 \subsubsection{Functionality of the Neural Network}
 We designed a flexible Neural Network that works with any amount of hidden layers and any amount of neurons per hidden layer. It works with both classification and regression, using the softmax function as activation function for the output layer for classification, and simply the linear function $f(x)=x$ for the regression case. 
+\subsubsection{Adapting the Neural Network for Classification}
+FILL ME!
 \section{Results}
 \subsection{Comparison of SGD methods for OLS}
 Figure \ref{fig:DifferentSGD} shows, for a given OLS problem, the test MSE as a function of the learning rate $\eta$ for a fixed number of epochs \& a fixed batch size; the test MSE as a function of the number of epochs for a fixed learning rate \& a fixed batch size; and the test MSE as a function of batch size for a fixed number of epochs and a fixed learning rate. 
@@ -419,6 +422,8 @@ For comparison, we chose the Scikit Learn MLPClassifier. Parametrized with the A
 
 
 \subsubsection{Impact of Network Architecture}
+To examine the impact that the choice of network architecture makes, we decided on four archetypes. Two variations on the single layer perceptron model, to see the impact of increasing the number of neurons. Additionally, a more square architecture and what I'll decide to call a thin and deep architecture. All of which are shown in figure \ref{NNarchitectures} below.
+
 \begin{figure}[H]
 
 
@@ -583,31 +588,31 @@ For comparison, we chose the Scikit Learn MLPClassifier. Parametrized with the A
 
 	    % Draw the hidden layer nodes
     
-    \foreach \name / \y in {1,2}
-        \path[yshift=-0.8cm]
-            node[hidden neuron] (H-\name) at (4*\layersepSmall,-\y cm) {$h_\y$};
+  %  \foreach \name / \y in {1,2}
+   %     \path[yshift=-0.8cm]
+    %        node[hidden neuron] (H-\name) at (4*\layersepSmall,-\y cm) {$h_\y$};
     
-    \path[yshift=-0.8cm]
-            node[missing] (H-3) at (4*\layersepSmall,-3 cm) {};
+%    \path[yshift=-0.8cm]
+ %           node[missing] (H-3) at (4*\layersepSmall,-3 cm) {};
 
-    \path[yshift=-0.8cm]
-            node[hidden neuron] (H-4) at (4*\layersepSmall,-4 cm) {$h_{20}$};
+ %   \path[yshift=-0.8cm]
+  %          node[hidden neuron] (H-4) at (4*\layersepSmall,-4 cm) {$h_{20}$};
             
             
     % Draw the output layer
     
     \foreach \name / \y in {0,1,2}
         \path[yshift=-1.5cm]
-            node[output neuron] (O-\name) at (5*\layersepSmall,-\y cm) {$\y$};
+            node[output neuron] (O-\name) at (4*\layersepSmall,-\y cm) {$\y$};
     
     \path[yshift=-0.3cm]
-            node[missing] (O-4) at (5*\layersepSmall,-4 cm) {};
+            node[missing] (O-4) at (4*\layersepSmall,-4 cm) {};
     
     \path[yshift=-0.1cm]
-            node[output neuron] (O-5) at (5*\layersepSmall,-5 cm) {$9$};
+            node[output neuron] (O-5) at (4*\layersepSmall,-5 cm) {$9$};
     %Draw empty neuron for x- seperation   
     \path[yshift=-0.1cm]
-            node[dead] (D-5) at (6*\layersepSmall,-5 cm) {};
+            node[dead] (D-5) at (5*\layersepSmall,-5 cm) {};
             
 \end{tikzpicture}
 \begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}][shorten >=1pt,->,draw=black!50, node distance=\layersep]
@@ -708,8 +713,9 @@ For comparison, we chose the Scikit Learn MLPClassifier. Parametrized with the A
             
 \end{tikzpicture}
 \caption[NN architectures]{Four different NN- architectures. From left to right, we'll call them \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}. White nodes indicate the 64 input neurons. Blue nodes indicate hidden layer- neurons. Red nodes indicate the 10 output neurons.}
-\label{LogisticRegressionDiagram}
+\label{NNarchitectures}
 \end{figure}
+Each of these were trained using the same parameters and their accuracy on test data measured using 4- fold Cross Validation. The results are shown in table \ref{TinyTableArchitect} below.
 
 \begin{table}[H]
 \centering
@@ -717,19 +723,24 @@ For comparison, we chose the Scikit Learn MLPClassifier. Parametrized with the A
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textit{Shallow1} & \textit{Shallow2} & \textit{Deep1} & \textit{Deep2} \\ \hline
-98.50\%                            & 98.61                              & 97.10\%                         & 93.71\%                         \\ \hline
+98.50\%                            & 98.61\%                             & 97.78\%                         & 93.71\%                         \\ \hline
 \end{tabular}
+\label{TinyTableArchitect}
 \end{table}
 
+We see that doubling the number of neurons in the single layer perceptron hardly makes a difference. This indicates that 200 neurons is not allowing for structures that were not permitted with 100 neurons. Adding to this theme, adding two more hidden layers seems to have reduced the accuracy of the model.\\It's first in the thin and deep network that we see considerable change. Despite having more neurons than the 100 neuron single layer perceptron, it makes substantially worse predictions. In this case at least, it's clear that little improvement is made in making the single layer perceptron more complicated.
+
 \subsubsection{Impact of Hidden Layer Activation Function}
+Every neuron in the hidden layers of our neural network is equipped with the same activation function. The choice we make ought to influence the numerical stability and convergence of the model. To examine this, we plot the accuracy of the models on test data from 4- fold Cross Validation. Varying over a range of learning rates and number of epochs. The result is shown below in figure \ref{NN_activation}.
+
 \begin{figure}[H]
 \centering
 
 \includegraphics[trim=0cm 12.0cm 0cm 0.0cm, clip=true,scale = 0.6]{Activation_function_d.pdf}
-\caption[NN Hidden layer Activation]{Four different hidden layer activation functions. Number of epochs on the y- axis, learning rate $\eta$ on the x- axis. Accuracy in proportion of correctly classified digits in test set of each model over 4 folds. Batch size 100, L2 regularization parameter 0.0001, solver = ADAM.}\label{NN_activation}
+\caption[NN Hidden layer Activation]{Four different hidden layer activation functions. Number of epochs on the y- axis, learning rate $\eta$ on the x- axis. Accuracy in proportion of correctly classified digits in test set of each model over 4 folds. Batch size 100, L2 regularization parameter 0.0001, solver = ADAM and architecture [100, 100, 50, 50].}\label{NN_activation}
 \end{figure}
 
-
+A score close to 0.1 is indicative of a random guess with the most likely candidate for failure being numerical instability or extremely slow convergence. Slow convergence seems to be the case for the sigmoid function which has very poor results for the smallest learning rate. For the next smallest learning rate we see an improvement with a ten fold increase in the number of epochs followed by little improvement with a doubling and quadrupling.\\ RELU and LeakyRELU seems to suffer from numerical instability at the largest learning rate with a much more aggressive difference from the next largest learning rate compared to the tanh activation function.\\ LeakyRELU for this particular configuration of solver, architecture and regularization parameter, gives the best score of 98\% for learning rates on the order of $10^{-3}$ and 200 epochs.
 
 \subsection{Multinomial Logistic Regression for Digit Classification}
 
