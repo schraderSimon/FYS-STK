@@ -15,8 +15,8 @@ sns.set()
 
 BASIC = False#True
 ACTIVATION_COMPARISON = False
-ARCHITECTURE_COMPARISON = True#False
-SCIKITLEARN = False#True
+ARCHITECTURE_COMPARISON = False
+SCIKITLEARN = True
 
 """ Data setup """
 #Collect the  MNIST dataset
@@ -175,8 +175,8 @@ if ARCHITECTURE_COMPARISON:
     k = 4
 
     #initializing outputs
-    accuracy_test = np.zeros(len(activation_function_type))
-    accuracy_train = np.zeros(len(activation_function_type))
+    accuracy_test = np.zeros(len(n_hidden_neurons_list))
+    accuracy_train = np.zeros(len(n_hidden_neurons_list))
 
     #For every network architecture
     for i in range(len(n_hidden_neurons_list)):
@@ -208,4 +208,4 @@ if SCIKITLEARN:
     #It returns the model accuracy on the testing and training data
 
     print(CrossVal_SKLClassifier(X,Y,k))
-    print(" score: training,     score: testing")
+    print(" score: testing,     score: training")

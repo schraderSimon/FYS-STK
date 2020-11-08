@@ -1062,18 +1062,16 @@ from sklearn.neural_network import MLPClassifier
 """ Kfold Cross validation of a Scikit-Learn implementation of a Feed Forward Neural network Classifier.
 For the purpose of accurately gauging its accuracy """
 def CrossVal_SKLClassifier(X,Y,k,
-        hidden_layer_sizes=(200,100,50,20 ),
-        activation='tanh',
+        hidden_layer_sizes=(100,100,50,50 ),
+        activation='relu',
         alpha=0.0001,
-        batch_size=20,
+        batch_size=100,
         learning_rate='constant',
-        learning_rate_init=0.01,
-        max_iter=5,
+        learning_rate_init=0.001,
+        max_iter=100,
         shuffle=True,
         random_state=None,
         tol=0.0001,
-        momentum=0.9,
-        nesterovs_momentum=False,
         early_stopping=False,
         n_iter_no_change=10):
 
@@ -1108,7 +1106,7 @@ def CrossVal_SKLClassifier(X,Y,k,
         # initializing NN with Stochastic gradient descent as solver
         mlp = MLPClassifier(hidden_layer_sizes=(200,100,50,20 ),
         activation=activation,
-        solver='sgd',
+        solver='adam',
         alpha=alpha,
         batch_size=batch_size,
         learning_rate=learning_rate,
@@ -1117,8 +1115,8 @@ def CrossVal_SKLClassifier(X,Y,k,
         shuffle=shuffle,
         random_state=random_state,
         tol=tol,
-        momentum=momentum,
-        nesterovs_momentum=nesterovs_momentum,
+        beta_1 = 0.9,
+        beta_2 =0.99,
         early_stopping=early_stopping,
         n_iter_no_change=n_iter_no_change)
 

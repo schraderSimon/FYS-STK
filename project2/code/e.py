@@ -7,8 +7,8 @@ from sklearn.model_selection import train_test_split
 
 
 WRONG_CLASS_EX = False
-ACC_V_LR = False
-COMPARE_SCIKITLEARN = True
+ACC_V_LR = True#False
+COMPARE_SCIKITLEARN = False#True
 
 """ Data setup """ 
 #Collect the  MNIST dataset
@@ -57,8 +57,8 @@ if ACC_V_LR:
     #Parameters start
     min_eta = -6
     max_eta = 2
-    Nr_etas = 6
-    Nr_epochs = 10
+    Nr_etas = 40
+    Nr_epochs = 400
     #Parameters end
 
     #Scaling the data
@@ -83,6 +83,7 @@ if ACC_V_LR:
     plt.plot(np.log10(eta),acc)
     plt.xlabel(r"Learning rate $\log_{10}(\eta)$")
     plt.ylabel(r"Test accuracy in $\%$ of correct predictions")
+    plt.savefig("../figures/presentable_data/e_test_accuracy_over_learning_rate2.pdf")
     plt.show()
 
 if COMPARE_SCIKITLEARN:

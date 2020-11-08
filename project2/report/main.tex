@@ -414,6 +414,10 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 
 \subsection{FFNN for Digit Classification}
 \subsubsection{Comparing the FFNN to Scikit- learn}
+For comparison, we chose the Scikit Learn MLPClassifier. Parametrized with the ADAM solver using $\beta_1 = 0.9$ and $\beta_2 = 0.99$, an architecture of [100, 100, 50, 50], 100 epochs, a batch size of 100, learning rate of 0.001 and L2 regularization parameter of 0.0001. This is as close as possible to our own implementation using the RELU solver. Both results we found using 4-fold cross validation. The results of our implementation can be found in figure \ref{NN_activation}. Using the parameters above, this model accomplishes a testing accuracy of 97\%. The equivalent MLPClassifier function accomplishes a testing accuracy of 96\%. Within the scope of random deviation, these results are essentially the same. This is a good indication that we have correctly implemented the Neural network and applied it to classification.
+
+
+
 \subsubsection{Impact of Network Architecture}
 \begin{figure}[H]
 
@@ -708,6 +712,8 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \end{figure}
 
 \begin{table}[H]
+\centering
+\caption[NN architectures Accuracy]{Accuracy on test set for Four different NN- architectures: \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}. 150 epochs, 100 batch size, 0.001 learning rate, solver ADAM, Activation function LeakyRELU, L2- regularization 0.0001, 4 folds in K- fold Cross validation.}
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textit{Shallow1} & \textit{Shallow2} & \textit{Deep1} & \textit{Deep2} \\ \hline
@@ -720,15 +726,15 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \centering
 
 \includegraphics[trim=0cm 12.0cm 0cm 0.0cm, clip=true,scale = 0.6]{Activation_function_d.pdf}
-\caption[NN Hidden layer Activation]{}\label{NN_activation}
+\caption[NN Hidden layer Activation]{Four different hidden layer activation functions. Number of epochs on the y- axis, learning rate $\eta$ on the x- axis. Accuracy in proportion of correctly classified digits in test set of each model over 4 folds. Batch size 100, L2 regularization parameter 0.0001, solver = ADAM.}\label{NN_activation}
 \end{figure}
 
 
 
 \subsection{Multinomial Logistic Regression for Digit Classification}
+
 \subsubsection{What is wrongly classified?}
-
-
+Our model does make wrong predictions. It's worthwhile to examine what images it classifies wrongly in order to understand where the problem arises. Figure \ref{Digits} below shows a random sample of four digits that were wrongly classified with their attached labels and the prediction of the model.
 
 \begin{figure}[H]
 \centering
@@ -737,20 +743,43 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \caption[Wrongly classified Digits]{Random selection of 4 wrongly classified handwritten digits in the testing set. Classification was made using multinomial logistic regression with stochastic gradient descent. Using 10 epochs and a learning rate of $0.001$. Model accuracy was 95.56\%.}\label{Digits}
 \end{figure}
 
-\subsubsection{Impact of Learning Rates}
+Arguably, one of the benchmarks by which we should measure the success of our algorithm, is human judgement. Recruiting the aid of an impartial judge, who had not seen either the labels or predictions. They determined from left to right in figure \ref{Digits}, that the digits looked like 9, 1, 5 and 1 respectively. The first and last of which are wrong according to their labels. With this in mind we can conclude that a not insignificant portion of the wrongly classified images lack the pixel resolution needed to meaningfully distinguish them from another digit.
 
+\subsubsection{Impact of Learning Rates}
+We want to examine the role that the learning rate plays in the testing accuracy of our models. Using 150 epochs and a batch size of 1, we get figure \ref{Acc_to_LR} below.
 
 \begin{figure}[H]
 \centering
 
-\includegraphics[trim=1cm 0.4cm 1cm 0.8cm, clip=true,scale = 0.6]{e_test_accuracy_over_learning_rate.pdf}
-\caption[Classification accuracy to learning rate (Softmax Regression)]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 150 epochs.}\label{Acc_to_LR}
+\begin{tikzpicture}
+    \node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[trim=0cm 0.2cm 0.5cm 0.8cm, clip=true,scale = 0.65]{e_test_accuracy_over_learning_rate.pdf}};
+    \draw[red,dashed] (1.9,7.14) -- (13.7,7.14);
+    \draw[blue,dashed] (4.55,0.9) -- (4.55,7.14);
+\end{tikzpicture}
+
+%\includegraphics[trim=1cm 0.4cm 1cm 0.8cm, clip=true,scale = 0.6]{e_test_accuracy_over_learning_rate.pdf}
+\caption[Classification accuracy to learning rate (Softmax Regression)]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 150 epochs and a bach size of 1.}\label{Acc_to_LR}
 \end{figure}
+We see that there's a stable region between $\eta = 10^{-4}$ and $\eta = 1$ that results in relatively high accuracies. We expect that too large learning rates should prevent the algorithm from converging on an optimum, instead oscillating around it. Too small learning rates may not converge by the time 150 epochs have elapsed. With this in mind, we should expect to see the graph peak at lower learning rates if the algorithm is given more epochs for convergence. We can see this effect in figure \ref{Acc_to_LR_2} below.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+    \node[anchor=south west,inner sep=0] at (0,0) {\includegraphics[trim=0cm 0.2cm 0.5cm 0.8cm, clip=true,scale = 0.65]{e_test_accuracy_over_learning_rate2.pdf}};
+    \draw[red,dashed] (1.4,6.03) -- (9.5,6.03);
+    \draw[blue,dashed] (2.78,0.8) -- (2.78,6.03);
+\end{tikzpicture}
+%\includegraphics[trim=0cm 0.2cm 0.5cm 0.8cm, clip=true,scale = 0.65]{e_test_accuracy_over_learning_rate2.pdf}
+\caption[Classification accuracy to learning rate (Softmax Regression)]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 400 epochs and a bach size of 1.}\label{Acc_to_LR_2}
+\end{figure}
+Here, the threshold for an accuracy above 90\% has shifted towards the smaller learning rate with an increase in the number of epochs.
+
 
 \subsubsection{Comparing Implementation to Scikit- learn}
-Using a learning rate $\eta = 0.0001$ and $500$ epochs on $6$ independent runs. Comparing the Scikit- learn implementation with our own implementation of Logistic regression with Stochastic regression we get 
-\begin{table}[]
-\caption[Classification accuracy comparison to Scikit- Learn]{Own implementation of Softmax regression with stochastic gradient descent compared to a Scikit- Learn implementation using the LBFGS. Classification accuracy on a test set randomized between each run. Using 500 epochs for both methods and a learning rate of 0.0001 for the SGD solver.}
+Using a learning rate $\eta = 0.0001$ and $500$ epochs on $6$ independent runs. Comparing the Scikit- learn implementation with our own implementation of Logistic regression with Stochastic regression we get the results in table \ref{Softmax_sci_v_us}.
+\begin{table}[H]
+\caption[Classification accuracy comparison to Scikit- Learn]{Own implementation of Softmax regression with stochastic gradient descent compared to a Scikit- Learn implementation using the LBFGS. Classification accuracy on a test set randomized between each run. Using 500 epochs for both methods and a learning rate of 0.0001 and batch size of 1 for the SGD solver.}
+\centering
 \begin{tabular}{|l|l|l|}
 \hline
 Run & Softmax Regression with SGD & Scikit Logistic Regressor with LBFGS \\ \hline
@@ -760,8 +789,9 @@ Run & Softmax Regression with SGD & Scikit Logistic Regressor with LBFGS \\ \hli
 4   & 96.67\%                     & 95.56\%                              \\ \hline
 5   & 94.44\%                     & 95.56\%                              \\ \hline
 6   & 96.11\%                     & 96.67\%                              \\ \hline
-\end{tabular}
+\end{tabular}\label{Softmax_sci_v_us}
 \end{table}
+The key difference between these two different implementations is the use of LBFGS solver utilized by the LogisticRegression function (default setting) in Scikit- learn. We can see that their accuracy is roughly the same across runs. This seems to indicate that we have correctly implemented a Softmax regressor using SGD.
 
 \section{Conclusion}
 As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slow as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla
