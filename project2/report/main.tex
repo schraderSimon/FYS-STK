@@ -17,6 +17,8 @@
 \usetikzlibrary{calc,patterns,angles,quotes,shapes.geometric, arrows}
 
 \def\layersep{2.5cm}
+\def\layersepSmall{1.2cm}
+
 
 
 \tikzstyle{train} = [rectangle, rounded corners, minimum width=2.2cm, minimum height=1cm,text centered, draw=black, fill=red!30]
@@ -413,8 +415,315 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \subsection{FFNN for Digit Classification}
 \subsubsection{Comparing the FFNN to Scikit- learn}
 \subsubsection{Impact of Network Architecture}
+\begin{figure}[H]
+
+
+\begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}][shorten >=1pt,->,draw=black!50, node distance=\layersep]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!60,fill=black!25,minimum size=17pt,inner sep=0pt, very thick]
+    \tikzstyle{missing}=[draw=none, scale=1.5,text height=0.333cm,execute at begin node=\color{black}$\vdots$]
+    \tikzstyle{dead}=[draw=none, scale=1.5,text height=0.333cm]
+    \tikzstyle{input neuron}=[neuron, fill=white!50,inner sep=2pt];
+    \tikzstyle{output neuron}=[neuron, fill=red!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=blue!30];
+    \tikzstyle{cost neuron}=[neuron, fill=black!30,inner sep=2.4pt];
+    \tikzstyle{label neuron}=[neuron, fill=yellow!60,inner sep=1.6pt];
+    \tikzstyle{annot} = [text width=4em, text centered]
+
+    % Draw the input layer nodes
+    \foreach \name / \y in {1,2}
+    	\path[yshift=-1.0cm]
+        	node[input neuron] (I-\name) at (0,-\y) {$x_\y$};
+    \path[yshift=-1.0cm]
+    	node[missing] (I-3) at (0,-3) {};
+    \path[yshift=-1.0cm]
+		node[input neuron] (I-4) at (0,-4) {\tiny $x_{64}$};
+    
+    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3,4}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-5) at (\layersepSmall,-5 cm) {};
+    
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-6) at (\layersepSmall,-6 cm) {$h_{100}$};
+
+    % Draw the output layer
+    
+    \foreach \name / \y in {0,1,2}
+        \path[yshift=-1.5cm]
+            node[output neuron] (O-\name) at (2*\layersepSmall,-\y cm) {$\y$};
+    
+    \path[yshift=-0.3cm]
+            node[missing] (O-4) at (2*\layersepSmall,-4 cm) {};
+    
+    \path[yshift=-0.1cm]
+            node[output neuron] (O-5) at (2*\layersepSmall,-5 cm) {$9$};
+         
+    %Draw empty neuron for x- seperation   
+    \path[yshift=-0.1cm]
+            node[dead] (D-5) at (3*\layersepSmall,-5 cm) {};
+            
+\end{tikzpicture}
+\begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}][shorten >=1pt,->,draw=black!50, node distance=\layersep]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!60,fill=black!25,minimum size=17pt,inner sep=0pt, very thick]
+    \tikzstyle{missing}=[draw=none, scale=1.5,text height=0.333cm,execute at begin node=\color{black}$\vdots$]
+    \tikzstyle{input neuron}=[neuron, fill=white!50,inner sep=2pt];
+    \tikzstyle{output neuron}=[neuron, fill=red!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=blue!30];
+    \tikzstyle{dead}=[draw=none, scale=1.5,text height=0.333cm]
+    \tikzstyle{cost neuron}=[neuron, fill=black!30,inner sep=2.4pt];
+    \tikzstyle{label neuron}=[neuron, fill=yellow!60,inner sep=1.6pt];
+    \tikzstyle{annot} = [text width=4em, text centered]
+
+    % Draw the input layer nodes
+    \foreach \name / \y in {1,2}
+    	\path[yshift=-1.0cm]
+        	node[input neuron] (I-\name) at (0,-\y) {$x_\y$};
+    \path[yshift=-1.0cm]
+    	node[missing] (I-3) at (0,-3) {};
+    \path[yshift=-1.0cm]
+		node[input neuron] (I-4) at (0,-4) {\tiny $x_{64}$};
+    
+    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3,4}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-5) at (\layersepSmall,-5 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-6) at (\layersepSmall,-6 cm) {$h_{200}$};
+
+    % Draw the output layer
+    
+    \foreach \name / \y in {0,1,2}
+        \path[yshift=-1.5cm]
+            node[output neuron] (O-\name) at (2*\layersepSmall,-\y cm) {$\y$};
+    
+    \path[yshift=-0.3cm]
+            node[missing] (O-4) at (2*\layersepSmall,-4 cm) {};
+    
+    \path[yshift=-0.1cm]
+            node[output neuron] (O-5) at (2*\layersepSmall,-5 cm) {$9$};
+    
+    %Draw empty neuron for x- seperation   
+    \path[yshift=-0.1cm]
+            node[dead] (D-5) at (3*\layersepSmall,-5 cm) {};
+            
+\end{tikzpicture}
+\begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}][shorten >=1pt,->,draw=black!50, node distance=\layersep]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!60,fill=black!25,minimum size=17pt,inner sep=0pt, very thick]
+    \tikzstyle{missing}=[draw=none, scale=1.5,text height=0.333cm,execute at begin node=\color{black}$\vdots$]
+    \tikzstyle{input neuron}=[neuron, fill=white!50,inner sep=2pt];
+    \tikzstyle{output neuron}=[neuron, fill=red!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=blue!30];
+    \tikzstyle{dead}=[draw=none, scale=1.5,text height=0.333cm]
+    \tikzstyle{cost neuron}=[neuron, fill=black!30,inner sep=2.4pt];
+    \tikzstyle{label neuron}=[neuron, fill=yellow!60,inner sep=1.6pt];
+    \tikzstyle{annot} = [text width=4em, text centered]
+
+    % Draw the input layer nodes
+    \foreach \name / \y in {1,2}
+    	\path[yshift=-1.0cm]
+        	node[input neuron] (I-\name) at (0,-\y) {$x_\y$};
+    \path[yshift=-1.0cm]
+    	node[missing] (I-3) at (0,-3) {};
+    \path[yshift=-1.0cm]
+		node[input neuron] (I-4) at (0,-4) {\tiny $x_{64}$};
+    
+    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3,4}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-5) at (\layersepSmall,-5 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-6) at (\layersepSmall,-6 cm) {$h_{100}$};
+            
+        % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3,4}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (2*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-5) at (2*\layersepSmall,-5 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-6) at (2*\layersepSmall,-6 cm) {$h_{100}$};
+            
+            
+        % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3,4}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (3*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-5) at (3*\layersepSmall,-5 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-6) at (3*\layersepSmall,-6 cm) {$h_{100}$};
+
+
+	    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2}
+        \path[yshift=-0.8cm]
+            node[hidden neuron] (H-\name) at (4*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=-0.8cm]
+            node[missing] (H-3) at (4*\layersepSmall,-3 cm) {};
+
+    \path[yshift=-0.8cm]
+            node[hidden neuron] (H-4) at (4*\layersepSmall,-4 cm) {$h_{20}$};
+            
+            
+    % Draw the output layer
+    
+    \foreach \name / \y in {0,1,2}
+        \path[yshift=-1.5cm]
+            node[output neuron] (O-\name) at (5*\layersepSmall,-\y cm) {$\y$};
+    
+    \path[yshift=-0.3cm]
+            node[missing] (O-4) at (5*\layersepSmall,-4 cm) {};
+    
+    \path[yshift=-0.1cm]
+            node[output neuron] (O-5) at (5*\layersepSmall,-5 cm) {$9$};
+    %Draw empty neuron for x- seperation   
+    \path[yshift=-0.1cm]
+            node[dead] (D-5) at (6*\layersepSmall,-5 cm) {};
+            
+\end{tikzpicture}
+\begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}][shorten >=1pt,->,draw=black!50, node distance=\layersep]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!60,fill=black!25,minimum size=17pt,inner sep=0pt, very thick]
+    \tikzstyle{missing}=[draw=none, scale=1.5,text height=0.333cm,execute at begin node=\color{black}$\vdots$]
+    \tikzstyle{input neuron}=[neuron, fill=white!50,inner sep=2pt];
+    \tikzstyle{output neuron}=[neuron, fill=red!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=blue!30];
+    \tikzstyle{dead}=[draw=none, scale=1.5,text height=0.333cm]
+    \tikzstyle{cost neuron}=[neuron, fill=black!30,inner sep=2.4pt];
+    \tikzstyle{label neuron}=[neuron, fill=yellow!60,inner sep=1.6pt];
+    \tikzstyle{annot} = [text width=4em, text centered]
+
+    % Draw the input layer nodes
+    \foreach \name / \y in {1,2}
+    	\path[yshift=-0.6cm]
+        	node[input neuron] (I-\name) at (0,-\y) {$x_\y$};
+    \path[yshift=-0.6cm]
+    	node[missing] (I-3) at (0,-3) {};
+    \path[yshift=-0.6cm]
+		node[input neuron] (I-4) at (0,-4) {\tiny $x_{64}$};
+    
+    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-4) at (\layersepSmall,-4 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-5) at (\layersepSmall,-5 cm) {$h_{50}$};
+            
+        % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2,3}
+        \path[yshift=0.0cm]
+            node[hidden neuron] (H-\name) at (2*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=0.0cm]
+            node[missing] (H-4) at (2*\layersepSmall,-4 cm) {};
+
+    \path[yshift=0.0cm]
+            node[hidden neuron] (H-5) at (2*\layersepSmall,-5 cm) {$h_{50}$};
+            
+            
+	    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2}
+        \path[yshift=-0.5cm]
+            node[hidden neuron] (H-\name) at (3*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=-0.5cm]
+            node[missing] (H-3) at (3*\layersepSmall,-3 cm) {};
+
+    \path[yshift=-0.5cm]
+            node[hidden neuron] (H-4) at (3*\layersepSmall,-4 cm) {$h_{20}$};
+
+
+	    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2}
+        \path[yshift=-0.5cm]
+            node[hidden neuron] (H-\name) at (4*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=-0.5cm]
+            node[missing] (H-3) at (4*\layersepSmall,-3 cm) {};
+
+    \path[yshift=-0.5cm]
+            node[hidden neuron] (H-4) at (4*\layersepSmall,-4 cm) {$h_{20}$};
+            
+     	    % Draw the hidden layer nodes
+    
+    \foreach \name / \y in {1,2}
+        \path[yshift=-0.5cm]
+            node[hidden neuron] (H-\name) at (5*\layersepSmall,-\y cm) {$h_\y$};
+    
+    \path[yshift=-0.5cm]
+            node[missing] (H-3) at (5*\layersepSmall,-3 cm) {};
+
+    \path[yshift=-0.5cm]
+            node[hidden neuron] (H-4) at (5*\layersepSmall,-4 cm) {$h_{20}$};
+            
+                
+    % Draw the output layer
+    
+    \foreach \name / \y in {0,1,2}
+        \path[yshift=-1.3cm]
+            node[output neuron] (O-\name) at (6*\layersepSmall,-\y cm) {$\y$};
+    
+    \path[yshift=-1cm]
+            node[missing] (O-4) at (6*\layersepSmall,-3 cm) {};
+    
+    \path[yshift=-0.7cm]
+            node[output neuron] (O-5) at (6*\layersepSmall,-4 cm) {$9$};
+            
+\end{tikzpicture}
+\caption[NN architectures]{Four different NN- architectures. From left to right, we'll call them \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}. White nodes indicate the 64 input neurons. Blue nodes indicate hidden layer- neurons. Red nodes indicate the 10 output neurons.}
+\label{LogisticRegressionDiagram}
+\end{figure}
+
+\begin{table}[H]
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textit{Shallow1} & \textit{Shallow2} & \textit{Deep1} & \textit{Deep2} \\ \hline
+98.50\%                            & 98.61                              & 97.10\%                         & 93.71\%                         \\ \hline
+\end{tabular}
+\end{table}
+
 \subsubsection{Impact of Hidden Layer Activation Function}
-\subsubsection{Impact of Learning Rates}
+\begin{figure}[H]
+\centering
+
+\includegraphics[trim=0cm 12.0cm 0cm 0.0cm, clip=true,scale = 0.6]{Activation_function_d.pdf}
+\caption[NN Hidden layer Activation]{}\label{NN_activation}
+\end{figure}
+
+
 
 \subsection{Multinomial Logistic Regression for Digit Classification}
 \subsubsection{What is wrongly classified?}
@@ -435,12 +744,24 @@ For comparison, we run a small test with 4 hidden layers of sizes (100,100,50,50
 \centering
 
 \includegraphics[trim=1cm 0.4cm 1cm 0.8cm, clip=true,scale = 0.6]{e_test_accuracy_over_learning_rate.pdf}
-\caption[Optimal regularization parameter to noise]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 150 epochs.}\label{Acc_to_LR}
+\caption[Classification accuracy to learning rate (Softmax Regression)]{Multinomial logistic regression with stochastic gradient descent. Classification accuracy on the test set as a function of learning rate. Using 150 epochs.}\label{Acc_to_LR}
 \end{figure}
 
 \subsubsection{Comparing Implementation to Scikit- learn}
-Using a learning rate $\eta = 0.0001$ and $500$ epochs on $6$ independent runs. Comparing the Scikit- learn implementation with our own implementation of Logistic regression with Stochastic regression
-
+Using a learning rate $\eta = 0.0001$ and $500$ epochs on $6$ independent runs. Comparing the Scikit- learn implementation with our own implementation of Logistic regression with Stochastic regression we get 
+\begin{table}[]
+\caption[Classification accuracy comparison to Scikit- Learn]{Own implementation of Softmax regression with stochastic gradient descent compared to a Scikit- Learn implementation using the LBFGS. Classification accuracy on a test set randomized between each run. Using 500 epochs for both methods and a learning rate of 0.0001 for the SGD solver.}
+\begin{tabular}{|l|l|l|}
+\hline
+Run & Softmax Regression with SGD & Scikit Logistic Regressor with LBFGS \\ \hline
+1   & 97.22\%                     & 95.83\%                              \\ \hline
+2   & 95.83\%                     & 94.17\%                              \\ \hline
+3   & 97.22\%                     & 96.94\%                              \\ \hline
+4   & 96.67\%                     & 95.56\%                              \\ \hline
+5   & 94.44\%                     & 95.56\%                              \\ \hline
+6   & 96.11\%                     & 96.67\%                              \\ \hline
+\end{tabular}
+\end{table}
 
 \section{Conclusion}
 As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slow as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla

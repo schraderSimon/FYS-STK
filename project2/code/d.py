@@ -7,11 +7,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
+import pandas as pd
+import seaborn as sns
+sns.set()
+
 """ What part of the code to run: Only one should be set to True lest there be unforseen consequences! Descriptions below """
 
 BASIC = False#True
-ACTIVATION_COMPARISON = True#False
-ARCHITECTURE_COMPARISON = False
+ACTIVATION_COMPARISON = False
+ARCHITECTURE_COMPARISON = True#False
 SCIKITLEARN = False#True
 
 """ Data setup """
@@ -71,8 +75,8 @@ if BASIC:
 if ACTIVATION_COMPARISON:
 
     #neural network parameters
-    eta=1e-3
-    epochs=10
+    etas=[0.00001,0.0001,0.001,0.01,0.1]
+    epochs=[5,50,100,200]
     n_hidden_neurons=[100,100,50,50]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
@@ -90,25 +94,54 @@ if ACTIVATION_COMPARISON:
     k = 4
 
     #Initializing outputs
-    accuracy_test = np.zeros(len(activation_function_type))
-    accuracy_train = np.zeros(len(activation_function_type))
+    accuracy_test = np.zeros((len(activation_function_type),len(epochs),len(etas)))
+    accuracy_train = np.zeros((len(activation_function_type),len(epochs),len(etas)))
 
     #iterator is used for indexing the output array
     iterator = 0
     for activation in activation_function_type:# For every activation function in the list
+        for i in range(len(epochs)):
+            for j in range(len(etas)):
 
-        #Setup the network, the choice of X and Y doesn't matter as it's overwritten in
-        # the Crossval_Neural_Network program
-        nn=NeuralNetwork(X,Y,
-            n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
-            n_categories=n_categories,epochs=epochs,batch_size=batch_size,
-            activation_function_type_output=activation_function_type_output,activation_function_type=activation,
-            errortype=errortype,solver=solver) #Create Neural Network
+                #Setup the network, the choice of X and Y doesn't matter as it's overwritten in
+                # the Crossval_Neural_Network program
+                nn=NeuralNetwork(X,Y,
+                    n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
+                    n_categories=n_categories,epochs=epochs[i],batch_size=batch_size,
+                    activation_function_type_output=activation_function_type_output,activation_function_type=activation,
+                    errortype=errortype,solver=solver) #Create Neural Network
 
-        #Getting accuracy scores from Cross validation
-        accuracy_test[iterator], accuracy_train[iterator] = Crossval_Neural_Network(k,nn,eta,Lambda,X,Y)
+                #Getting accuracy scores from Cross validation
+                accuracy_test[iterator,i,j], accuracy_train[iterator,i,j] = Crossval_Neural_Network(k,nn,etas[j],Lambda,X,Y)
 
         iterator += 1
+    
+    plt.figure(figsize=(10,10))
+    ax1=plt.subplot(421)
+    ax2=plt.subplot(422)
+    ax3=plt.subplot(423)
+    ax4=plt.subplot(424)
+    ax1.set_title(r"tanh")
+    ax2.set_title(r"sigmoid")
+    ax3.set_title(r"LeakyRELU")
+    ax4.set_title(r"RELU")
+    ax1.ticklabel_format(useOffset=False)
+    ax2.ticklabel_format(useOffset=False)
+    ax3.ticklabel_format(useOffset=False)
+    ax4.ticklabel_format(useOffset=False)
+
+    sns.heatmap(accuracy_test[0,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax1, cmap="viridis")
+    sns.heatmap(accuracy_test[1,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax2, cmap="viridis")
+    sns.heatmap(accuracy_test[2,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax3, cmap="viridis")
+    sns.heatmap(accuracy_test[3,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax4, cmap="viridis")
+
+    ax1.set_ylabel(r"#epochs");ax2.set_ylabel(r"#epochs");ax3.set_ylabel(r"#epochs");ax4.set_ylabel(r"#epochs")
+    ax1.set_xlabel(r"$\eta$"); ax2.set_xlabel(r"$\eta$"); ax3.set_xlabel(r"$\eta$");ax4.set_xlabel(r"$\eta$")
+    plt.tight_layout()
+    plt.savefig("../figures/Activation_function_d.pdf")
+    plt.show()
+    
+    
     #Printing outputs
 
     print("number of epochs = {}".format(epochs))
@@ -120,23 +153,23 @@ if ACTIVATION_COMPARISON:
 
 if ARCHITECTURE_COMPARISON:
     #Initializing network
-    epochs=100 #Number of epochs
+    epochs=150 #Number of epochs
     #Network architectures: Number of neurons in the hidden layers are given from left to right
     #every nested list specifies and additional architecture to be attempted in the loop below
     n_hidden_neurons_list=[[100,100,100,20],[50,50,20,20,20],[200],[100]]
     #Creates a list with the number of hidden layers for each architecture
     n_hidden_layers=[len(n_hidden_neurons_list[i]) for i in range(len(n_hidden_neurons_list))]
     n_categories=10
-    batch_size=20
+    batch_size=100
     Lambda=0.0001 #L2 regularization parameter
-    eta=0.0001 #Learning rate
+    eta=0.001 #Learning rate
     activation_function_type_output="softmax"
     errortype = "categorical"
-    solver="sgd"
+    solver="ADAM"
 
-    #For the hidden layers, tanh is the preferred activation function
-    # as it is more numerically stable (for classification) than all others in our implementation
-    activation_function_type= "tanh"
+    #For the hidden layers we use LeakyRELU as the activation function as this performed best 
+    # given a network with 4 hidden layers
+    activation_function_type= "LeakyRELU"
 
     #Number of folds used in kfold cross validation
     k = 4
