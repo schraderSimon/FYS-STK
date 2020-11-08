@@ -57,3 +57,7 @@ for i in range(2):
 plt.tight_layout()
 plt.savefig("../figures/Four_activations%d%s%d%d_100.pdf"%(num_layers,method,datapoints,degree))
 plt.show()
+
+"""
+python3 plot_b3.py
+"""

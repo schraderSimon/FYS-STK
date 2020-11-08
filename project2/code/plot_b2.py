@@ -72,3 +72,7 @@ print("Minimal Test error with RMSProp: %d at lambda=%.2e, eta=%.2e"%(minimum_RM
 plt.tight_layout()
 plt.savefig("../figures/ADAM_RMSProp_%db1_%s%s%d%d.pdf"%(num_layers,activation,method,datapoints,degree))
 plt.show()
+
+"""
+python3 plot_b2.py
+"""

@@ -7,8 +7,13 @@ import sys
 from numba.experimental import jitclass
 def DesignMatrix(x,polydgree):
     """
-    Input: Data x (array), the desired maximum degree (int)
-    Output: The reular design matrix (exponent increases by one) for a polynomial of degree polydgree
+    Creates a design matrix of given degree based upon given input data.
+
+    Parameters:
+    x (array), the data
+    polydegree (int), max. polynomial degree
+    Returns:
+    X (2D array), The regular design matrix (exponent increases by one) for a polynomial of degree polydgree
     """
     X = np.zeros((len(x),polydgree+1))
     for i in range(polydgree+1):
@@ -17,11 +22,16 @@ def DesignMatrix(x,polydgree):
 @jit
 def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
     """
-    Input: x,y (created as meshgrids), the maximal polynomial degree, if the intercept should be included or not.
-
     The function creates a design matrix X for a 2D-polynomial.
 
-    Returns: The design matrix X
+    Parameters:
+    x (array), meshgrid with x data,
+    y (array), meshgrid with y data,
+    polydegree (int), max. polynomial degree
+    include_intercept (bool), if the intercept should be included or not.
+
+    Returns:
+    X (2D array), The design matrix X
     """
     adder=0 #The matrix dimension is increased by one if include_intercept is True
     p=round((polydegree+1)*(polydegree+2)/2)-1 #The total amount of coefficients
@@ -47,9 +57,13 @@ def DesignMatrix_deg2(x,y,polydegree,include_intercept=False):
     return X
 def ShuffleRows(X_matrix):
     """
-    Input: A matrix X_matrix
-    Output: The same matrix X with randomly shuffled rows
-    much more computationally intensive than shuffling its indices..
+    Shuffle Rows in a matrix. Much more computationally intensive than shuffling its indices..
+
+    Parameters:
+    X_matrix (2D array)
+
+    Returns:
+    X_matrix (2D array), with randomly shuffled rows
     """
     length = len(X_matrix)
     for i in range(length):
@@ -61,8 +75,14 @@ def ShuffleRows(X_matrix):
 #Returns a list of randomly shuffled indices for a matrix/array
 def ShuffleIndex(X_matrix):
     """
-    Input: A matrix X_matrix
-    Output: An array containing the indeces of random shuffleing of the design matrix' row.
+    Create n array containing the indeces of random shuffleing of the design matrix' row.
+
+    Parameters:
+    X_matrix (2D array)
+
+    Returns:
+    shuffled_indexs (array)
+
     """
     length = len(X_matrix)
     shuffled_indexs = list(range(0,length))
@@ -77,10 +97,15 @@ def ShuffleIndex(X_matrix):
 #K-fold crossvalidation, given a design matrix & k-value
 def KfoldCross(X_matrix,k):
     """
-    Input: A design matrix X, the degree of k-fold Cross Validation k
-    Output: A set of randomly chosen training and testing indeces
-    which are, of course, distinct. Used in K-Fold Cross validation.
-    2 2D arrays of length k containing the relevant data.
+    Return training and testing indeces based upon a design matrix and a degree k for k-fold Cross validation.
+
+    Parameters:
+    X_matrix (2D array), the design matrx
+    k (int),  the degree of k-fold Cross Validation
+
+    Returns:
+    training_indexes (2D array), distinct training indeces
+    testing_indexes (2D array), distinct testing indeces
 
     """
     #Creating an array of shuffled indices
@@ -120,12 +145,23 @@ def KfoldCross(X_matrix,k):
     return training_indexes, testing_indexes
 def KCrossValRidgeMSE(X,z,k,Lambda):
     """
+    Perform K-Fold Cross validation for Ridge regression.
+
+
     For a given design matrix X and an outputs z,
     This function performs k-fold Cross Validation
     and calculates the RIDGE fit for a given Lambda for each k.
     The output is the estimate (average over k performs) for the mean square error.
-    Input: X (matrix), z (vector), k (integer), lambda (double)
-    Output: test error estimate (double)
+
+    Parameters:
+    X (matrix), the design matrix (non-scaled)
+    z (array), the target data (non-scaled)
+    k (int), the number of Cross Valdations (k-Fold)
+    lambda (double), the regularization parameter
+
+    Returns:
+    MSE_estimate (double), test error
+    MSE_train_estimate (double), train error
     """
     #getting indices from Kfoldcross
     trainIndx, testIndx = KfoldCross(X,k)
@@ -160,29 +196,32 @@ def KCrossValRidgeMSE(X,z,k,Lambda):
     return MSE_estimate, MSE_train_estimate
 
 def accuracy_score(y_data, y_model):
+    """The accuracy score"""
     return np.sum(y_data==y_model)/len(y_data)
 
 def R2(y_data,y_model):
-    """
-    Input: The original target data, the fitted data
-    Output: The R2 value.
-    """
+    """The R2 value of a fit"""
     return 1- np.sum((y_data - y_model)**2)/np.sum((y_data-np.mean(y_data))**2)
 
 def MSE(y_data,y_model):
-    """
-    Input: Two arrays of equal length
-    Output: The MSE between the two vectors
-    """
+    """The Mean Square Error (MSE) of a fit."""
     n = np.size(y_model)
     return np.sum((y_data-y_model)**2)/n
 
 def RidgeRegression(X_training,y_training,Lambda, include_beta_variance=True):
 
     """
-    Input: The design matrix X, and the targets Y and a value for LAMBDA, and whether the variance should be included too.
-    Output: The Ridge Regression beta and the variance (zero if include_beta_variance is zero)
-    This was implemented as SVD.
+    Performs Ridge Regression. Implemented as SVD
+
+    Parameters:
+    X_training (2D array), The design matrix X,
+    y_training (array), the targets Y
+    Lambda (double), regularization parameter,
+    include_beta_variance (bool), whether the variance should be included too.
+
+    Returns:
+    beta (array), the Ridge regression beta
+    beta_variance (2D array),The R.R. var (0 if include_beta_variance is False)
 
     """
     I = np.eye(len(X_training[0,:]))
@@ -197,12 +236,20 @@ def RidgeRegression(X_training,y_training,Lambda, include_beta_variance=True):
         smat[i][i]=s[i]
     beta= vh.T @ (np.linalg.inv(smat.T@smat+(I*Lambda)) @ smat.T) @ u.T @ y_training
     return beta, beta_variance
-#Implements Ridge Regression using Design matrix (X_training) training data of y (y_training)
-#Returns the beta coeffs. and their variance
 
 def LinearRegression(X_training,y_training,include_beta_variance=True):
-    """Input: The design matrix X, and the targets Y
-        Output: The OLS beta and the variance (zero if include_beta_variance is zero)
+    """
+    Performs OLS. Implemented as SVD
+
+    Parameters:
+    X_training (2D array), The design matrix X,
+    y_training (array), the targets Y
+    include_beta_variance (bool), whether the variance should be included too.
+
+    Returns:
+    beta (array), the OLS beta
+    beta_variance (2D array),The OLS var (0 if include_beta_variance is False)
+
     """
     if include_beta_variance:
         inverse_matrix = np.linalg.inv(X_training.T @ X_training)
@@ -214,7 +261,40 @@ def LinearRegression(X_training,y_training,include_beta_variance=True):
     return beta, beta_variance
 
 class SGD:
+    """
+    Stochastic Gradient Descent without Regularization
+
+    Parameters:
+    X (2D array), the design matrix
+    y (1D array), the target data
+    n_epochs (int), the number of epochs
+    theta (array), the initial guess for theta
+    batchsize (int), the batch size
+    n (int), number of rows in the design matrix
+    p (int), number of columns in the design matrix
+    MB (int), number of minibatches
+    Methods:
+    reset, resets theta to some random number
+    learning_schedule(t(double),t0(double), t1(double)),
+        calculates the learning schadule
+    calculateGradient(theta (array),index (1D array)),
+        calculates the gradient based on a given index
+    simple_fit(eta (double)), calculate theta using simple SGD
+    decay_fit(t0 (double), t1(double)), calculate eta using decay SGD
+    RMSprop(eta (double),cbeta (double), error (double)),
+        calculate theta using RMSProp
+    ADAM(eta (double),beta_1 (double), beta_2( double), error (double)),
+        calculate theta using ADAM
+    """
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1):
+        """
+        Parameters:
+        X (2D array), the design matrix
+        y (1D array), the target data
+        n_epochs (int), the number of epochs
+        theta (array), the initial guess for theta
+        batchsize (int), the batch size
+        """
         self.n_epochs=n_epochs;
         self.X=X;
         self.y=y;
@@ -288,7 +368,17 @@ class SGD:
         return theta.ravel()
 
 
-class SGD_Ridge(SGD): #this is inherited from Ridge
+class SGD_Ridge(SGD):
+    """
+    Stochastic Gradient Descent with Regularization. Inherits from SGD class.
+
+    Additional Parameters:
+        Lambda (double), regularization parameter
+
+    Updated methods:
+        calculateGradient(theta (array),index (1D array)),
+            calculates the gradient based on a given index
+    """
     def __init__(self,X,y,n_epochs=100,theta=0,batchsize = 1, Lambda=0.01):
         super().__init__(X,y,n_epochs,theta,batchsize); #SGD initializer
         self.Lambda=Lambda; #set lambda
@@ -462,6 +552,98 @@ class LogRegression:
             return acc
 
 class NeuralNetwork():
+    """A simple FFNN for Regression and Classification, using MSE for Regression
+    and CrossEntropy for Classification.
+
+    Parameters:
+    X_data_full (2D array), the design matrix
+    Y_data_full (1D or 2D array), the target data (2D for onehot)
+    errortype (string), The tye of error to be reduced (MSE or categorical)
+    activation_function_type (string), the activation function for hidden layers
+    activation_function_type_output (string), the act. func. for outp. layer
+    solver (string), the solver to be used (sgd, RMSProp or ADAM)
+    n_categories (int), the number of categories (1 for Regression)
+    n_hidden_layers (int), the number of hidden layers
+    n_hidden_neurons (list), the number of neurons per hidden layer
+    epochs (int), the number of epochs
+    batch_size (int), the batch size
+    eta (double), the learning rate eta
+    lmbd (double), the regularization parameter lambda
+    linear_coeff (double), the slope for the linear output function (1 default)
+    n_inputs (int), The number of inputs
+    n_features (int), the number of features
+    iterations (int), the number of iterations per epoch
+    hidden_bias (list of arrays), bias for the hidden layers
+    hidden_weights (list of 2D arrays), weights for the hidden layers
+    output_bias (array), bias for the output layer
+    output_weights (2D array), weights for the output layer
+
+    z_h (list of 2D arrays), the z for the hidden layers
+    z_o (2D array), the z for the output layer
+    a_h (list), the activation for the hidden layers
+    probabilities (array), the output data
+    output_weights_gradient (2D array), the gradient for the output weights
+    output_bias_gradient (array), the gradient for the output bias
+    hidden_weights_gradient (list of 2D arrays), the gradient of the hidden weights
+    hidden_bias_gradient (list of 1D arrays), the gradient for the hidden bias
+
+    X_data (2D array), the datapoints to base a train step in
+    Y_data (1D array), the datapoints to base a train step in
+
+    iterator (int), the number of iterations (for ADAM)
+    s (list of 1D & 2D arrays), the s for ADAM & RMSProp
+    cbeta (double), the beta in RMSProp
+    beta_1 (double), the beta1 in ADAM
+    beta_2 (double), the beta2 in ADAM
+    Methods:
+    change_matrix(X (2D array), y (1D array)):
+        updates X_data_full and y_data full,
+        resets weights, biases, relevant sizes, RMSProp & ADAM
+    update_parameters_reset(eta (float), lambda(float)):
+        updates eta and lambda
+        resets weights, biases, relevant sizes, RMSProp & ADAM
+    create_biases_and_weights():
+        set up initial weights and biases
+    setUpRMSProp():
+        sets up arrays for RMSProp
+    setUpADAM():
+        sets up arrays for ADAM
+    activation_function(z (array), type(string or 0):
+        returns the activation of an input z,
+        depending on the chosen type of activation function
+    derivative (a (array), z(array), type(string or 0)):
+        returns the derivative of a given activation function,
+        depending on the chosen type of activation function
+        may depend on a or z
+    feed_forward():
+        Feeds forward the NN
+    feed_forward_out():
+        Feeds forward the (pretrained) neural network, creates output based on input
+        Parameters:
+            X (2D array), The design matrix
+        Returns:
+            y (1D/2D array), the prediction
+    elementwise_error():
+        Returns the error in the output (derivative of error function)
+    error_function(y_data (array), y_model (array)):
+        Parameters:
+        y_data (1D arrray), the target
+        y_model (1D arrray), the fitted data
+        Returns:
+        The quality of the fit (MSE and R2 for Regression, acc. score for class.)
+    backpropagation():
+        Calculates the gradients for the biases and weights and updates them (calls solve)
+    solve():
+        Updates biases and weights
+    train():
+        Runs one feed forward and one back propagation
+    predict_probabilities(X (2D array)):
+        Calculates the output based on the input design matrix (Regression)
+    predict(X (2D array)):
+        Calculates the most likely element based on prediction
+    backpropagation():
+        Calculates
+    """
     def __init__(
             self,
             X_data,
@@ -515,7 +697,8 @@ class NeuralNetwork():
         if self.solver=="ADAM":
             self.setUpADAM() #Intialises s,m,beta_1 and beta_2 for ADAM
 
-    def update_parameters_reset(self,eta,lmbd ):
+    def update_parameters_reset(self,eta,lmbd):
+        """Update eta and lambda and reset weights and biases"""
         self.eta=eta
         self.lmbd=lmbd
         self.create_biases_and_weights() #In order to avoid "previous" approximation, everything is reset
@@ -525,6 +708,7 @@ class NeuralNetwork():
             self.setUpADAM() #Resets s,m,beta_1 and beta_2 for ADAM
 
     def create_biases_and_weights(self):
+        """Sets biases and weights to random (weights) or small (bias) numbers"""
         self.hidden_bias=[0]*self.n_hidden_layers #an empty list of length n_hidden_layers
         self.hidden_weights=[1]*self.n_hidden_layers #an empty list of length n_hidden_layers
         #Set up the weights for the first hidden layer with gaussian distributed numbers with sigma=2/self.n_inputs self.batchsize
@@ -569,14 +753,6 @@ class NeuralNetwork():
         if type==("linear"):
             return self.linear_coeff*z
         if type==("sigmoid"):
-            #if (z.min() < -50):
-              #  sigmoid = 0.0
-            #elif (z.max() > -50)
-            #else:
-              #  sigmoid = 1.0 / (1.0 + np.exp(-z))#1/(1+np.exp(-z_reduced))#
-
-            #Scipy's builtin sigmoid function with impressive numerical stability
-            # The above functions works aswell, but frankly this is just a lot better
             sigmoid = expit(z)
             return sigmoid
 
@@ -658,7 +834,7 @@ class NeuralNetwork():
         """The type of gradient for the error measure"""
         if self.errortype==("MSE"):
             return (self.probabilities-self.Y_data)*1/self.batch_size #The type of error
-        if self.errortype==("categorical"):
+        if self.errortype==("categorical"): #CrossEntropy
             return (self.probabilities - self.Y_data)#/self.batch_size
 
     def error_function(self,y_data,y_model):
@@ -841,6 +1017,15 @@ def Crossval_Neural_Network(k, nn, eta, Lambda,X,z):
 from sklearn.model_selection import KFold as SKFold
 from sklearn.neural_network import MLPRegressor
 def CrossVal_Regression(k,eta,Lambda,X,z,activation_function_type,solver,n_hidden_neurons,epochs):
+    """Cross Validation using Scikit Learn's MLPRegressor
+
+    Parameters:
+    Everything that is needed to create an MLPObject
+
+    Returns:
+        error estimates and R2 estimates for train and test error
+    """
+
     kf=SKFold(n_splits=k,shuffle=True)
     Error_test = np.zeros(k); R2_test=np.zeros(k)
     Error_train=np.zeros(k); R2_train=np.zeros(k)

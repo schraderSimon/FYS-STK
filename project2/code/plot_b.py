@@ -77,3 +77,7 @@ print("Minimal Test error with own NN: %d at lambda=%.2e, eta=%.2e"%(minimum_tes
 plt.tight_layout()
 plt.savefig("../figures/scikit_own_%db1_%s%s%d%d.pdf"%(num_layers,activation,method,datapoints,degree))
 plt.show()
+
+"""
+python3 plot_b.py
+"""

@@ -14,6 +14,7 @@ __Each file in the code folder contains a "running example" in the bottom of the
 - **a.py** creates data that compares different stochastic gradient methods with each other as well as with the OLS fit, as a function of learning rate, number of epochs and batch size. Creates data
 - **a_ridge.py** compares the optimal Ridge Regression fit with the fit for different Stochastic Gradient methods as a function of the learning rate and the regularization parameter. The function plots (but doesn't create data).
 - **b.py** creates data (from the Korean geographic data) for our own NN and Scikit learn: The test MSE and the train MSE as a function of the learning rate and the regularization parameter are written to a file. 
+- **function_library.py** contains the fundament of this article, namely, the Neural Network class, the SGD class and the Logistic Regression class, as well as  other useful and relevant functions.
 - **plot_a.py** plots the data created in **a.py**
 - **plot_b.py** plots the Scikit-Learn fit and the fit using our own NN in the same plot for both test and train data using SGD and the sigmoid activation function.
 - **plot_b2.py** plots the fit using our own NN in the same plot for both test and train data comparing ADAM & RMSProp using the sigmoid activation function.
