@@ -49,16 +49,16 @@
 
 \clearpage
 \section{Abstract}
-Machine learning - is it possible to learn this power? - Anakin\\
-Strong in you The computational power is! - Yoda\\
-It doesn't converge! This is outrageous! This is unfair! How can you call something machine learning but don't learn nothing at all? - Anakin\\
-Meesa computer master now! - Jar Jar Binks\\
-Hello np.where()! - Obi Wan Kenobi\\
-INFINITE CONVERGENCE - The senate
+%Machine learning - is it possible to learn this power? - Anakin\\
+%Strong in you The computational power is! - Yoda\\
+%It doesn't converge! This is outrageous! This is unfair! How can you call something machine learning but don't learn nothing at all? - Anakin\\
+%Meesa computer master now! - Jar Jar Binks\\
+%Hello np.where()! - Obi Wan Kenobi\\
+%INFINITE CONVERGENCE - The senate
+Feed Forward neural networks are among the most simplistic models for neural networks, but they have been implemented with incredible success in the past decades. They are also well documented, which makes them a safe playground for exploring their vast parameter space. ...........................................
+
 \section{Introduction}
-As can be seen in \citep{Project1}, both Ordinary Least Square (OLS) regression and  Ridge regression failed to accurately fit a polynomial function to geographic data and did not manage to match the surface properly. In this article, we analyse whether regression with the help of feed forward neural networks (FFNNs) can give better results (in the form of a lower Mean Square Error) than OLS and Ridge regression. In order to do so, we implemented several stochastic gradient methods to find the approximate minimum of the Mean Square Error (MSE) function in parameter space. In order to evaluate their quality, we first compared their performance to the analytical expressions for OLS and Ridge regression for several parameters. Later, these methods were used in the back propagation of the neural network. For the regression problem, we used the sigmoid function as well as RELU and LeakyRELU as activation functions for the hidden layers and the linear function for the output layer. We did this comparison for several stochastic gradient methods and a flexible number of hidden layers and neutrons per hidden layer. \\
-We also tested the neural network's performance on a categorization problem, namely the MNIST data set \citep{lecun2010mnist}. We compared several activation functions for the hidden layers, while using the Softmax function (or the sigmoid function) for the output layer. Finally, we compared the neural network's performance to the results achieved using logistic regression. \\
-In this report, we will first describe the methods used, focusing on stochastic gradient descent methods and the theory of FFNNs. This is done in the method part. The result part cointains 
+As can be seen in \citep{Project1}, both Ordinary Least Square (OLS) regression and  Ridge regression failed to accurately fit a polynomial function to geographic data and did not manage to match the surface properly. In this article, we analyse whether regression with the help of feed forward neural networks (FFNNs) can give better results (in the form of a lower Mean Square Error) than OLS and Ridge regression. In order to do so, we implemented several stochastic gradient methods to find the approximate minimum of the Mean Square Error (MSE) function in parameter space. In order to evaluate their quality, we first compared their performance to the analytical expressions for OLS and Ridge regression for several parameters. Later, these methods were used in the back propagation of the neural network. For the regression problem, we used the sigmoid function as well as RELU and LeakyRELU as activation functions for the hidden layers and the linear function for the output layer. We did this comparison for several stochastic gradient methods and a flexible number of hidden layers and neurons per hidden layer. \\\\We test and compare the performance of the neural network (equipped with the Softmax function on the output layer) on the classification of hand written digits using the MNIST data set \citep{lecun2010mnist}. We assess the effect of network architecture as well as the choice of hidden layer activation function.\\ Multinomial logistic regression is used to classify the same data set. We examine the effect of learning rate and the interplay between learning rate and the number of epochs.\\Both the neural network and multinomial logistic regression is compared with the corresponding Scikit- Learn implementation in order to assess the success of our implementations. Finally we compare the use of our neural network and the multinomial logistic regressor applied to the classification of digits.\\\\This report is structured so as to first introduce the relevant methods on a theoretical and conceptual level. After that, we cover some of the choices made in implementing these methods in code. In the Results section, we present the results of the code we implemented and comment on their implications. Finally, we share our conclusions about the results we've found.\\\\All methods are implemented using the Python programming language. The programs are available at the \href{https://github.com/schraderSimon/FYS-STK/tree/master/project2}{Github address}.
 \section{Methods}
 \subsection{Logistic Regression}
 Logistic regression is a regression algorithm applied to binary classification problems. A weighted and biased sum of predictors are passed through the logistic activation function and a cost function is applied to the output and the accompanying label to the set of predictors. The problem of finding the weights and biases that predict the correct category then becomes a problem of optimizing the cost function by tweaking the weights and biases. Logistic regression is in many ways comparable to linear regression. The key difference arises in the use of the Logistic or Softmax activation function.
@@ -320,9 +320,24 @@ where * and / refer to element-wise multiplication and division, respectively. I
 \end{equation}
 where * and /  again refer to element-wise multiplication and division, respectively; and T stands for the number of iterations (starting at 1). In this article, we chose the default values $\alpha_1=0.9$ and $\alpha_2=0.99$, while $e=10^{-8}$ simply has the purpose of avoiding zero division.
 \subsection{Neural networks}
-\subsubsection{Feed forward?}
 \subsubsection{Back propagation}
-A neural network is parametrized by a set of Weight's and biases. When the cost function is being optimized, the weights and biases belonging to every neuron in the network have to be updated. The cost function only "sees" the activation from the output layer of the network. We therefore need to determine how the cost function changes with respect to the weights in all the hidden layers. Fortunately, we can accomplish this through the chain rule.\\\\ !!!!!!!!!!!!!!!!!!!!!!LECTURES WEEK 40!!!!!!!!!!!!!!!!!!!!!!!!!
+A neural network is parametrized by a set of Weight's and biases. When the cost function is being optimized, the weights and biases belonging to every neuron in the network have to be updated. The cost function only "sees" the activation from the output layer of the network. We therefore need to determine how the cost function changes with respect to the weights in all the hidden layers. Fortunately, we can accomplish this through the chain rule.\\\\ We have for the output layer of the network that through the chain rule we can write
+\begin{equation}\label{BreakerOfChains}
+\frac{\partial C}{\partial \textbf{W}^{(L)}} = \frac{\partial \textbf{z}^{(L)}}{\partial \textbf{W}^{(L)}}\frac{\partial \textbf{a}^{(L)}}{\partial \textbf{z}^{(L)}}\circ \frac{\partial C}{\partial \textbf{a}^{(L)}}
+\end{equation}
+
+It's quick to check that $\frac{\partial \textbf{z}^{(L)}}{\partial \textbf{W}^{(L)}} = \textbf{a}^{(L-1)}$. The remaining derivatives in the expression depend on the choice of activation function and cost function but are generally easy to calculate. We can also introduce the new variable $\delta^{(L)} = \frac{\partial \textbf{a}^{(L)}}{\partial \textbf{z}^{(L)}}\circ
+\frac{\partial C}{\partial \textbf{a}^{(L)}}$. Equation \eqref{BreakerOfChains} becomes 
+\begin{equation}
+\frac{\partial C}{\partial \textbf{W}^{(L)}} = \textbf{a}^{(L-1)}\delta^{(L)}.
+\end{equation}
+This is all well and good, but it doesn't tell us how we ought to change the weights in all the preceding layers. We'll introduce another expression, returning partially to equation \eqref{BreakerOfChains}, we see that can also, simply treat $\delta^{(l)} = \frac{\partial C}{\partial \textbf{z}^{(l)}}$ rather than the Hadamard product. We'll use the chain rule again, but now to see how the cost function changes with respect to the succeeding layer:
+\begin{equation}
+\delta^{(l)} =\sum_k \frac{\partial C}{\partial z_k^{(l+1)}}\frac{\partial z_k^{(l+1)}}{\partial \textbf{z}^{(l)}}
+\end{equation}
+This gives an equation that can be iterated all the way from the last to the first hidden layer, and we can use it to update the weights and biases (the bias follows similarly). 
+\subsubsection{Feed Forward}
+After every new weight and bias in the network has been calculated, it's simply a matter of calculating the activations belonging to each layer from the first to the last layer in the network (since the activation of one layer depends on the activations in the preceding layer). After this process the network has a slightly altered cost function to optimize and the process repeats. 
 \subsubsection{Activation functions}
 As described in the previous to subsections, the activation function is one of the core elements in Neural Networks. In this project, we implemented the following four activation functions for activation between the input layer and the first hidden layer as well as between all hidden layers. 
 \paragraph*{sigmoid function} - The sigmoid function, defined as $\sigma(x)=\frac{e^x}{e^x-1}$, outputs function values between 0 and 1 for all inputs. It is inspired by the way Neurons fire in the brain [XXX].
@@ -354,7 +369,7 @@ As there is no clear rule how to set up weights and biases, other than that they
 \subsubsection{Functionality of the Neural Network}
 We designed a flexible Neural Network that works with any amount of hidden layers and any amount of neurons per hidden layer. It works with both classification and regression, using the softmax function as activation function for the output layer for classification, and simply the linear function $f(x)=x$ for the regression case. 
 \subsubsection{Adapting the Neural Network for Classification}
-FILL ME!
+Very little is needed to apply the neural network in classification problems. The dataset needs to be flattened (For this type of neural network, other types may exploit patterns that are destroyed in this process) such that each datapoint can enter the network as a vector. The labels should be converted (if not already) to the corresponding One- Hot representation.\\Beyond this, the output layer of the network needs to be equipped with either the Sigmoid- or Softmax activation function. There is always the choice of cost function which, invariably for our purposes should be the Cross- Entropy cost function.
 \section{Results}
 \subsection{Comparison of SGD methods for OLS}
 Figure \ref{fig:DifferentSGD} shows, for a given OLS problem, the test MSE as a function of the learning rate $\eta$ for a fixed number of epochs \& a fixed batch size; the test MSE as a function of the number of epochs for a fixed learning rate \& a fixed batch size; and the test MSE as a function of batch size for a fixed number of epochs and a fixed learning rate. 
@@ -715,20 +730,17 @@ To examine the impact that the choice of network architecture makes, we decided 
 \caption[NN architectures]{Four different NN- architectures. From left to right, we'll call them \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}. White nodes indicate the 64 input neurons. Blue nodes indicate hidden layer- neurons. Red nodes indicate the 10 output neurons.}
 \label{NNarchitectures}
 \end{figure}
-Each of these were trained using the same parameters and their accuracy on test data measured using 4- fold Cross Validation. The results are shown in table \ref{TinyTableArchitect} below.
+Each of these were trained using the same parameters and their accuracy on test data measured using 4- fold Cross Validation. The results are shown in figure \ref{TinyTableArchitect} below.
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
-\caption[NN architectures Accuracy]{Accuracy on test set for Four different NN- architectures: \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}. 150 epochs, 100 batch size, 0.001 learning rate, solver ADAM, Activation function LeakyRELU, L2- regularization 0.0001, 4 folds in K- fold Cross validation.}
-\begin{tabular}{|l|l|l|l|}
-\hline
-\textit{Shallow1} & \textit{Shallow2} & \textit{Deep1} & \textit{Deep2} \\ \hline
-98.50\%                            & 98.61\%                             & 97.78\%                         & 93.71\%                         \\ \hline
-\end{tabular}
-\label{TinyTableArchitect}
-\end{table}
 
-We see that doubling the number of neurons in the single layer perceptron hardly makes a difference. This indicates that 200 neurons is not allowing for structures that were not permitted with 100 neurons. Adding to this theme, adding two more hidden layers seems to have reduced the accuracy of the model.\\It's first in the thin and deep network that we see considerable change. Despite having more neurons than the 100 neuron single layer perceptron, it makes substantially worse predictions. In this case at least, it's clear that little improvement is made in making the single layer perceptron more complicated.
+\includegraphics[trim=0cm 12.0cm 0cm 0.0cm, clip=true,scale = 0.6]{Architecture_d.pdf}
+\caption[NN architectures Accuracy]{Accuracy on test set for Four different NN- architectures: \textit{Shallow1}, \textit{Shallow2}, \textit{Deep1} and \textit{Deep2}.100 batch size, solver ADAM, Activation function LeakyRELU, L2- regularization 0.0001, 4 folds in K- fold Cross validation.}\label{TinyTableArchitect}
+\end{figure}
+
+
+We see that doubling the number of neurons in the single layer perceptron makes some difference, namely increasing the accuracy overall, and in two instances, bringing it all the way up to 99\%. Looking at \textit{Deep1}, we see that adding two more layers of equal thickness to \textit{Shallow1} actually makes the model worse.\\It's first in the thin and deep network architecture \textit{Deep2} that we see considerable change. Despite having more neurons than the 100 neuron single layer perceptron, it makes substantially worse predictions. In this case at least, it's clear that little improvement is made in making the single layer perceptron more complicated.
 
 \subsubsection{Impact of Hidden Layer Activation Function}
 Every neuron in the hidden layers of our neural network is equipped with the same activation function. The choice we make ought to influence the numerical stability and convergence of the model. To examine this, we plot the accuracy of the models on test data from 4- fold Cross Validation. Varying over a range of learning rates and number of epochs. The result is shown below in figure \ref{NN_activation}.
@@ -805,7 +817,7 @@ Run & Softmax Regression with SGD & Scikit Logistic Regressor with LBFGS \\ \hli
 The key difference between these two different implementations is the use of LBFGS solver utilized by the LogisticRegression function (default setting) in Scikit- learn. We can see that their accuracy is roughly the same across runs. This seems to indicate that we have correctly implemented a Softmax regressor using SGD.
 
 \section{Conclusion}
-As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slow as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla
+As can be see in the preceding section on regression, getting results that surpass Ridge Regression and OLS is not difficult, which shows that neural networks are well suited for regression problems. However, finding the ideal parameters is no easy task, as there are a lot of activation functions, gradient methods and parameters to choose. There is also the aspect of time - higher epochs lead to superior results, but the error reduces extremely slowly as the number of epochs grows exponentially \citep{handsOnMachineLearning}. For the regression problem, we found, with help of the sigmoid function, that ADAM worked best as stochastic gradient method, whereas the tanh activation function worked best as activation function (with 2 hidden layers), giving $60\%$ of the test MSE that OLS produces. However, as the network got deeper, we found that...XXX blablabla\\\\In the classification problem we find that the thick and shallow network architectures i.e. \emph{Shallow1} and \emph{Shallow2}, produce the best results over a range of epochs and learning rates, keeping everything else constant. This suggests that the particular problem of classifying an $8\times 8$ grid of pixels, does not benefit from the addition of more hidden layers with the number of epochs we're considering.\\We found that, within the range of epochs we looked at and the particular choice of architecture, LeakyRELU produced models with the highest accuracy of 98\%, with both tanh and RELU following closely behind with consistent accuracies of 97\%. Sigmoid, at least for this number of epochs produced considerably worse results.\\In Multinomial logistic regression, we looked at some of the wrongly classified digits and found at least some of them to be indistinguishable from another digit, suggesting that the limited pixel value of the dataset is reducing the feasible accuracy of our models. Looking at how we might interpret accuracy scores when tweaking learning rate and the number of epochs in our parameter space, we found (unsurprisingly) that allowing for more epochs makes lower learning rates perform better.\\As for whether logistic regression or neural networks are better for digit classification, we saw clearly better results when using neural networks, although the time required for convergence was consistently much higher for neural networks.
 \section{Appendix}
 \subsection{Proof that Softmax reduces to the Logistic function for m=2}\label{ProofSoftmaxToLogistic}
 
@@ -837,6 +849,7 @@ a = \begin{pmatrix}
 \end{pmatrix} 
 \end{equation}
 which is the same as the activation function for logistic regression.
+\subsection{Figures}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{Ridge_error_SGD.pdf}
@@ -859,7 +872,7 @@ which is the same as the activation function for logistic regression.
 \caption[4 hidden layers, 100 epochs]{Test MSE \underline{divided by 1000} as function of the learning rate $\eta$ and the regularization parameter $\lambda$ for our own Neural Network using ADAM. We used 2000 data points (randomly selected), a polynomial degree of 10, a batch size of 200, 100 epochs, two hidden layers with 100 neurons each and the activation function stated in the title between the layers. Values exceeding 100,000 are excluded from the plot. We used 5-fold Cross Validation to estimate the errors.} \label{fig:2layers}
 \end{figure}
 
-\subsection{Figures}
+
 \bibliographystyle{plain}
 \bibliography{references}
 \end{document}

@@ -153,16 +153,17 @@ if ACTIVATION_COMPARISON:
 
 if ARCHITECTURE_COMPARISON:
     #Initializing network
-    epochs=150 #Number of epochs
+    etas=[0.00001,0.0001,0.001,0.01]
+    epochs=[5,50,100,200,400,1000] #Number of epochs
     #Network architectures: Number of neurons in the hidden layers are given from left to right
     #every nested list specifies and additional architecture to be attempted in the loop below
-    n_hidden_neurons_list=[[100,100,100]]#,[50,50,20,20,20],[200],[100]]
+    n_hidden_neurons_list=[[100,100,100],[50,50,20,20,20],[200],[100]]
     #Creates a list with the number of hidden layers for each architecture
     n_hidden_layers=[len(n_hidden_neurons_list[i]) for i in range(len(n_hidden_neurons_list))]
     n_categories=10
     batch_size=100
     Lambda=0.0001 #L2 regularization parameter
-    eta=0.001 #Learning rate
+    #eta=0.001 #Learning rate
     activation_function_type_output="softmax"
     errortype = "categorical"
     solver="ADAM"
@@ -175,30 +176,62 @@ if ARCHITECTURE_COMPARISON:
     k = 4
 
     #initializing outputs
-    accuracy_test = np.zeros(len(n_hidden_neurons_list))
-    accuracy_train = np.zeros(len(n_hidden_neurons_list))
+    #accuracy_test = np.zeros(len(n_hidden_neurons_list))
+    #accuracy_train = np.zeros(len(n_hidden_neurons_list))
 
-    #For every network architecture
-    for i in range(len(n_hidden_neurons_list)):
-        #print(n_hidden_neurons_list[i])
+    accuracy_test = np.zeros((len(activation_function_type),len(epochs),len(etas)))
+    accuracy_train = np.zeros((len(activation_function_type),len(epochs),len(etas)))
 
-        #Setup network
-        nn=NeuralNetwork(X,Y,
-            n_hidden_layers=n_hidden_layers[i],n_hidden_neurons=n_hidden_neurons_list[i],
-            n_categories=n_categories,epochs=epochs,batch_size=batch_size,
-            activation_function_type_output=activation_function_type_output,activation_function_type=activation_function_type,
-            errortype=errortype,solver=solver) #Create Neural Network
+    iterator = 0
+    for architecture in n_hidden_neurons_list:# For every architecture in the list
+        for i in range(len(epochs)):
+            for j in range(len(etas)):
 
-        #Getting accuracies from cross validation
-        accuracy_test[i], accuracy_train[i] = Crossval_Neural_Network(k,nn,eta,Lambda,X,Y)
+                #Setup the network, the choice of X and Y doesn't matter as it's overwritten in
+                # the Crossval_Neural_Network program
+                nn=NeuralNetwork(X,Y,
+                    n_hidden_layers=n_hidden_layers[iterator],n_hidden_neurons=architecture,
+                    n_categories=n_categories,epochs=epochs[i],batch_size=batch_size,
+                    activation_function_type_output=activation_function_type_output,activation_function_type=activation_function_type,
+                    errortype=errortype,solver=solver) #Create Neural Network
 
+                #Getting accuracy scores from Cross validation
+                accuracy_test[iterator,i,j], accuracy_train[iterator,i,j] = Crossval_Neural_Network(k,nn,etas[j],Lambda,X,Y)
+
+        iterator += 1
+
+    plt.figure(figsize=(10,10))
+    ax1=plt.subplot(421)
+    ax2=plt.subplot(422)
+    ax3=plt.subplot(424)
+    ax4=plt.subplot(423)
+    ax1.set_title(r"Deep1")
+    ax2.set_title(r"Deep2")
+    ax3.set_title(r"Shallow2")
+    ax4.set_title(r"Shallow1")
+    ax1.ticklabel_format(useOffset=False)
+    ax2.ticklabel_format(useOffset=False)
+    ax3.ticklabel_format(useOffset=False)
+    ax4.ticklabel_format(useOffset=False)
+
+    sns.heatmap(accuracy_test[0,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax1, cmap="viridis")
+    sns.heatmap(accuracy_test[1,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax2, cmap="viridis")
+    sns.heatmap(accuracy_test[2,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax3, cmap="viridis")
+    sns.heatmap(accuracy_test[3,:,:], xticklabels=etas, yticklabels=epochs, annot=True, ax=ax4, cmap="viridis")
+
+    ax1.set_ylabel(r"#epochs");ax2.set_ylabel(r"#epochs");ax3.set_ylabel(r"#epochs");ax4.set_ylabel(r"#epochs")
+    ax1.set_xlabel(r"$\eta$"); ax2.set_xlabel(r"$\eta$"); ax3.set_xlabel(r"$\eta$");ax4.set_xlabel(r"$\eta$")
+    plt.tight_layout()
+    plt.savefig("../figures/Architecture_d.pdf")
+    plt.show()
+"""
     print("number of epochs = {}".format(epochs))
     #print(activation_function_type)
     print("test accuracy")
     print(accuracy_test)
     print("train accuracy")
     print(accuracy_train)
-
+"""
 if SCIKITLEARN:
 
     #Compare methods for the same k- value
