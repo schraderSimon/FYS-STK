@@ -13,10 +13,10 @@ sns.set()
 
 """ What part of the code to run: Only one should be set to True lest there be unforseen consequences! Descriptions below """
 
-BASIC = False#True
+BENCHMARK = True
 ACTIVATION_COMPARISON = False
-ARCHITECTURE_COMPARISON = True#False
-SCIKITLEARN = False#True
+ARCHITECTURE_COMPARISON = False
+SCIKITLEARN = False
 
 """ Data setup """
 #Collect the  MNIST dataset
@@ -32,8 +32,8 @@ X = X.reshape(n_inputs, -1)
 Y = OneHotMatrix(y,10)
 
 
-""" Basic demonstration of Classifying neural network """
-if BASIC:
+""" Basic Benchmark of Classifying neural network """
+if BENCHMARK:
 
     #Splitting into train and test data
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
@@ -43,18 +43,22 @@ if BASIC:
     X_train_scaled=scaler.transform(X_train)
     X_test_scaled=scaler.transform(X_test)
 
+
+    """ PARAMETERS START"""
     #neural network parameters
-    eta=1e-3
+    eta=0.01
     epochs=500
-    n_hidden_neurons=[100,100,50,50]
+    n_hidden_neurons=[200]
     n_hidden_layers=len(n_hidden_neurons)
     n_categories=10
-    batch_size=100
+    batch_size=10
     Lambda=0.0001
     activation_function_type_output="softmax"
     activation_function_type="LeakyRELU"
     errortype = "categorical"
     solver="ADAM"
+    """ PARAMETERS END"""
+
     #Setting up the network
     nn=NeuralNetwork(X_train_scaled,Y_train,
         n_hidden_layers=n_hidden_layers,n_hidden_neurons=n_hidden_neurons,
@@ -69,7 +73,8 @@ if BASIC:
     prediction = nn.predict(X_test_scaled)
 
     #Prints the accuracy on the test data ( No cross- validation )
-    print("MLF: %f"%accuracy_score(OneHotToDigit(Y_test,10),prediction))
+    print("eta={}, epochs={}, n_hidden_neurons={},n_hidden_layers={},n_categories={},batch_size={},Lambda={},activation_function_type_output={},activation_function_type={},errortype = {},solver={}".format(eta,epochs,n_hidden_neurons,n_hidden_layers,n_categories,batch_size,Lambda,activation_function_type_output,activation_function_type,errortype,solver))
+    print("NN Test Score is %f"%accuracy_score(OneHotToDigit(Y_test,10),prediction))
 
 """ Hidden Layer activation function comparison """
 if ACTIVATION_COMPARISON:
