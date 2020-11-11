@@ -158,5 +158,5 @@ if(Part3):
 
 """
 Example how to run:
-python3 a.py 2000 10 16 10 1000 0.1
+python3 a.py 200 5 16 10 100 0.1
 """
