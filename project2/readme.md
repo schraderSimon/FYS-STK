@@ -2,6 +2,8 @@
 - **code** contains our code used to create the data
 - **csvData** contains (without explicitely deleting anything) data used to create plots (and much more).
 - **selected_results** contains selected runs that can be benchmarked against our code.
+  - The three "OLSMSE*"-files were created by running a.py as "python a.py 200 5 5 16 10 100 0.1".
+  - The map "2b1_tanhADAM200010_epoch100" was created using b.py with the parameters that can be found in info.txt. Scipy was turned off, so these files are empty.
   - d_benchmark Contains two different outputs from classifying NN. To compare, run d.py with BENCHMARK = True and all others false. Relevant code is found near the top.
   - e_benchmark Contains two different outputs from own and SciKit- Learn Multinomial logistic regression. To compare, run e.py with BENCHMARK = True and all others false. Relevant code is found near the bottom.
 - **data** contains the data file(s) being analysed
