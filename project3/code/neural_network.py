@@ -32,18 +32,17 @@ with np.printoptions(precision=2,suppress=True):
 """
 type="sigmoid"
 
-def baseline_model(input,regulizer,learningrate,type):
+def neural_network(input,regulizer,learningrate,type):
     model=keras.models.Sequential()
     #model.add(norm)
-    model.add(layers.Dense(400,activation=type,kernel_regularizer=regulizer,input_dim=input.shape[1]))
-
-    #model.add(layers.Dense(400,kernel_regularizer=regulizer,kernel_initializer='normal',bias_initializer="random_normal",activation=type))
+    model.add(layers.Dense(100,activation=type,kernel_regularizer=regulizer,input_dim=input.shape[1]))
     model.add(layers.Dense(100,kernel_regularizer=regulizer,kernel_initializer='normal',bias_initializer="random_normal",activation=type))
 
     model.add(layers.Dense(1))
     optimizer=keras.optimizers.Adam(learning_rate=learningrate)
     model.compile(loss="mean_absolute_error",optimizer=optimizer)
     return model
+
 epochs=int(1e3)
 writefile=False
 if(writefile):
