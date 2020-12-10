@@ -4,6 +4,7 @@ import sys
 from sklearn.metrics import mean_absolute_error as MAE
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+np.set_printoptions(linewidth=200)
 def read_data(filename):
     """Reads the relevant data from a .mat-file"""
     data=sio.loadmat(filename)
