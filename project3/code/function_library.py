@@ -2,6 +2,7 @@ import scipy.io as sio
 import numpy as np
 import sys
 from sklearn.metrics import mean_absolute_error as MAE
+from sklearn.metrics import mean_squared_error as MSE
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 np.set_printoptions(linewidth=200)
@@ -187,3 +188,11 @@ def convert_dataset(X,R,Z,T,P,index=0): #Convert dataset to a matrix set that ca
     Z_train, Z_test= createTestTrain(Z,training_indeces,testing_indeces)
     T_train, T_test= createTestTrain(T,training_indeces,testing_indeces)
     return X_train, R_train, Z_train, T_train, X_test, R_test, Z_test, T_test
+def reshapey(matrix,amount_lambda):
+    matrix_sigmoid=matrix[:int(len(matrix)/2)]
+    matrix_elu=matrix[int(len(matrix)/2):]
+    matrix_sigmoid_l1=matrix_sigmoid[:int(len(matrix_sigmoid)/2)].reshape(-1,amount_lambda)
+    matrix_sigmoid_l2=matrix_sigmoid[int(len(matrix_sigmoid)/2):].reshape(-1,amount_lambda)
+    matrix_elu_l1=matrix_elu[:int(len(matrix_elu)/2)].reshape(-1,amount_lambda)
+    matrix_elu_l2=matrix_elu[int(len(matrix_elu)/2):].reshape(-1,amount_lambda)
+    return matrix_sigmoid_l1,matrix_sigmoid_l2,matrix_elu_l1,matrix_elu_l2

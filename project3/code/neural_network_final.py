@@ -1,13 +1,13 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.layers.experimental import preprocessing
 from function_library import *
+import numpy as np
+
 from keras.regularizers import l2, l1
 import sys
 tf.config.optimizer.set_jit(True)
-# Now design your model and train it
 
 np.random.seed(272) #L dies after 272 days. RIP L
 
@@ -35,7 +35,7 @@ amount_lambda=7
 #regulizers_l2=np.logspace(-9,-6,0)#for sigmoid_ -5,-1,5 (with two layers a 400, 100)
 #regulizers_l1=np.logspace(-9,-6,amount_lambda)
 learning_rates=np.logspace(-3,0,amount_eta)#for sigmoid_ -3,-2,3 (with 2 layers a 400, 100)
-regulizers_l2=np.logspace(-9,-3,0)#for sigmoid_ -5,-1,5 (with two layers a 400, 100)
+regulizers_l2=np.logspace(-9,-3,amount_lambda)#for sigmoid_ -5,-1,5 (with two layers a 400, 100)
 regulizers_l1=np.logspace(-9,-3,amount_lambda)
 
 nn_layers=[100,100]
@@ -48,7 +48,7 @@ try:
     os.mkdir(mapname)
 except:
     pass
-filename="../csvdata/rrrrrrresults_"
+filename="../csvdata/results_"
 filename=filename+input_type
 for layer in nn_layers:
     filename+="_%d"%layer

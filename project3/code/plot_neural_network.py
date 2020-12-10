@@ -4,24 +4,17 @@ from function_library import *
 import pandas as pd
 import matplotlib
 import seaborn as sns
+matplotlib.rcParams.update({"font.size":18})
 num_learningrate=4
 num_lambda=7
-def reshapey(matrix,amount_lambda):
-    matrix_sigmoid=matrix[:int(len(matrix)/2)]
-    matrix_elu=matrix[int(len(matrix)/2):]
-    matrix_sigmoid_l1=matrix_sigmoid[:int(len(matrix_sigmoid)/2)].reshape(-1,amount_lambda)
-    matrix_sigmoid_l2=matrix_sigmoid[int(len(matrix_sigmoid)/2):].reshape(-1,amount_lambda)
-    matrix_elu_l1=matrix_elu[:int(len(matrix_elu)/2)].reshape(-1,amount_lambda)
-    matrix_elu_l2=matrix_elu[int(len(matrix_elu)/2):].reshape(-1,amount_lambda)
-    return matrix_sigmoid_l1,matrix_sigmoid_l2,matrix_elu_l1,matrix_elu_l2
 epochs=100
 coulomb=np.loadtxt("../csvdata/results_coulomb_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
-noH=np.loadtxt("../csvdata/results_noH_100_100epochs_1000number_crossvals_1.csv",
+noH=np.loadtxt("../csvdata/results_noH_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
 not_coulomb=np.loadtxt("../csvdata/results_not_coulomb_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
-reduced=np.loadtxt("../csvdata/results_reduced_100_100epochs_1000number_crossvals_1.csv",
+reduced=np.loadtxt("../csvdata/results_reduced_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
 amount_eta=4
 amount_lambda=7
@@ -50,10 +43,10 @@ for i, type in enumerate(types):
     ax4=plt.subplot(224)
     ylabels = ['{:.1e}'.format(x) for x in regulizers_l2];
     xlabels= ['{:.1e}'.format(y) for y in learning_rates];
-    ax1.set_title(r"reduced coulomb, %s"%type)
-    ax2.set_title(r"coulomb, %s"%type)
-    ax3.set_title(r"no H, %s"%type)
-    ax4.set_title("Z/R, %s"%type)
+    ax1.set_title(r"MAE, reduced coulomb, %s"%type)
+    ax2.set_title(r"MAE, coulomb, %s"%type)
+    ax3.set_title(r"MAE, no H, %s"%type)
+    ax4.set_title("MAE, Z/R, %s"%type)
     g1=sns.heatmap(reduceds[i].T, xticklabels=xlabels, yticklabels=ylabels,annot=True, ax=ax1,fmt=".1f", cmap="viridis")#,cbar_kws={'label': r'Magnitude of $10^3$'})
     h1=sns.heatmap(coulombs[i].T, xticklabels=xlabels, yticklabels=ylabels,annot=True, ax=ax2,fmt=".1f", cmap="viridis")#,cbar_kws={'label': r'Magnitude of $10^3$'})
     i1=sns.heatmap(noHs[i].T, xticklabels=xlabels, yticklabels=ylabels,annot=True, ax=ax3,fmt=".1f", cmap="viridis")#,cbar_kws={'label': r'Magnitude of $10^3$'})

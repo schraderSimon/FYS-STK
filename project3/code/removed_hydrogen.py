@@ -11,7 +11,6 @@ filedata="../data/qm7.mat"
 filename="X_ridge"
 outfile="../csvdata/%s.csv"%filename
 X,R,Z,T,P=read_data(filedata)
-np.set_printoptions(linewidth=200)
 if filename=="X_ridge":
     X_removed=reduce_coulomb(X)
 elif filename=="Xremoved_ridge":
