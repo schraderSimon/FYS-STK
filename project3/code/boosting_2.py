@@ -11,8 +11,8 @@ number_crossvals=5
 filedata="../data/qm7.mat"
 
 X,R,Z,T,P=read_data(filedata)
-Ms=np.array(list(range(20,10001,20)),dtype=int)
-alphas=[0,1,10]
+Ms=np.array(list(range(20,6401,20)),dtype=int)
+alphas=[1,5,10]
 etas=[0.05,0.01]
 test_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
 train_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
@@ -41,7 +41,6 @@ for index in range(number_crossvals):
             print("%d/%d"%(len(etas)*i+k,len(etas)*len(alphas)))
             param = {'max_depth': 5, 'eta': eta, "objective" :'reg:squarederror'}
             param["random_state"]=272
-            param['n_jobs'] = 4
             param["booster"]="gbtree"
             param["colsample_bytree"]=0.3
             param["subsample"]=0.5
@@ -51,6 +50,7 @@ for index in range(number_crossvals):
                 bst=xgb.train(param,dtrain,20,xgb_model=bst)
                 train_pred=bst.predict(dtrain)
                 test_pred=bst.predict(dtest)
+                print(j/len(Ms))
                 test_err_MSE[j,len(etas)*i+k]+=MAE(test_pred,T_test)
                 train_err_MSE[j,len(etas)*i+k]+=MAE(T_train,train_pred)
 train_err_MSE/=number_crossvals;
