@@ -8,8 +8,10 @@ matplotlib.rcParams.update({"font.size":20})
 tree_depths=[2,3,4,5,6,7,8]
 plot_trees=tree_depths#[3,5,7,8]
 Ms=[100,200,400,800,1600,3200]
-test_data=np.loadtxt("../csvdata/randomforest_1testreduced.csv",skiprows=1,dtype="float",delimiter=",")
-train_data=np.loadtxt("../csvdata/randomforest_1trainreduced.csv",skiprows=1,dtype="float",delimiter=",")
+test_data=np.loadtxt("../csvdata/boosting_1testreduced.csv",
+                     skiprows=1,dtype="float",delimiter=",")
+train_data=np.loadtxt("../csvdata/boosting_1trainreduced.csv",
+                      skiprows=1,dtype="float",delimiter=",")
 plt.figure(figsize=(20,10))
 plt.subplot(121)
 plt.ylabel("MAE (kcal/mol)")

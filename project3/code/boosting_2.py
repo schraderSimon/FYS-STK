@@ -9,11 +9,11 @@ np.random.seed(272) #L dies after 272 days. RIP L
 number_crossvals=5
 
 filedata="../data/qm7.mat"
-
+printfile=False
 X,R,Z,T,P=read_data(filedata)
-Ms=np.array(list(range(20,6401,20)),dtype=int)
-alphas=[1,5,10]
-etas=[0.05,0.01]
+Ms=np.array(list(range(20,401,20)),dtype=int)
+alphas=[5]
+etas=[0.01]
 test_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
 train_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
 input_type="reduced"
@@ -50,7 +50,6 @@ for index in range(number_crossvals):
                 bst=xgb.train(param,dtrain,20,xgb_model=bst)
                 train_pred=bst.predict(dtrain)
                 test_pred=bst.predict(dtest)
-                print(j/len(Ms))
                 test_err_MSE[j,len(etas)*i+k]+=MAE(test_pred,T_test)
                 train_err_MSE[j,len(etas)*i+k]+=MAE(T_train,train_pred)
 train_err_MSE/=number_crossvals;
@@ -59,5 +58,9 @@ header=""
 for alpha in alphas:
     for eta in etas:
         header+="%dalpha %.2feta,"%(alpha,eta)
-np.savetxt("../csvdata/boosting_2test%s.csv"%input_type,test_err_MSE,header=header,delimiter=",")
-np.savetxt("../csvdata/boosting_2train%s.csv"%input_type,train_err_MSE,header=header,delimiter=",")
+if(len(alphas)*len(etas)==1):
+    test_err_MSE=test_err_MSE.ravel()
+    print("Minimum value at %d with error %f",%(np.argmin(test_err),np.min(test_err)))
+if(Printfile):
+    np.savetxt("../csvdata/boosting_2test%s.csv"%input_type,test_err_MSE,header=header,delimiter=",")
+    np.savetxt("../csvdata/boosting_2train%s.csv"%input_type,train_err_MSE,header=header,delimiter=",")
