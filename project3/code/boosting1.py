@@ -15,7 +15,7 @@ tree_depths=[2,3,4,5,6,7,8]
 Ms=[100,200,400,800,1600,3200]
 test_err_MSE=np.zeros((len(Ms),len(tree_depths)),dtype="float")
 train_err_MSE=np.zeros((len(Ms),len(tree_depths)),dtype="float")
-input_type="reduced"
+input_type="noH"
 for index in range(number_crossvals):
     print("Crossval %d"%index)
     X_train, R_train, Z_train, T_train, X_test, R_test, Z_test, T_test= convert_dataset(X,R,Z,T,P,index)

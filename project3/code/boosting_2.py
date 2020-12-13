@@ -9,14 +9,16 @@ np.random.seed(272) #L dies after 272 days. RIP L
 number_crossvals=5
 
 filedata="../data/qm7.mat"
-printfile=False
+printfile=True
 X,R,Z,T,P=read_data(filedata)
-Ms=np.array(list(range(20,401,20)),dtype=int)
-alphas=[5]
-etas=[0.01]
+#Ms=np.array(list(range(20,6401,20)),dtype=int)
+evals=100
+Ms=np.array(list(range(evals,1000,evals)),dtype=int)
+alphas=[1,5,10]
+etas=[0.05,0.01]
 test_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
 train_err_MSE=np.zeros((len(Ms),len(alphas)*len(etas)),dtype="float")
-input_type="reduced"
+input_type="noH"
 for index in range(number_crossvals):
     print("Crossval %d"%index)
     X_train, R_train, Z_train, T_train, X_test, R_test, Z_test, T_test= convert_dataset(X,R,Z,T,P,index)
@@ -41,17 +43,20 @@ for index in range(number_crossvals):
             print("%d/%d"%(len(etas)*i+k,len(etas)*len(alphas)))
             param = {'max_depth': 5, 'eta': eta, "objective" :'reg:squarederror'}
             param["random_state"]=272
+            param["tree_method"]="gpu_hist"
+            param["sampling_method"]="gradient_based"
             param["booster"]="gbtree"
             param["colsample_bytree"]=0.3
             param["subsample"]=0.5
             param["alpha"]=alpha
             bst=xgb.train(param,dtrain,0)# create the
             for j in range(len(Ms)):
-                bst=xgb.train(param,dtrain,20,xgb_model=bst)
+                bst=xgb.train(param,dtrain,evals,xgb_model=bst)
                 train_pred=bst.predict(dtrain)
                 test_pred=bst.predict(dtest)
                 test_err_MSE[j,len(etas)*i+k]+=MAE(test_pred,T_test)
                 train_err_MSE[j,len(etas)*i+k]+=MAE(T_train,train_pred)
+                print(j/len(Ms),test_err_MSE[j,len(etas)*i+k])
 train_err_MSE/=number_crossvals;
 test_err_MSE/=number_crossvals;
 header=""
@@ -60,7 +65,19 @@ for alpha in alphas:
         header+="%dalpha %.2feta,"%(alpha,eta)
 if(len(alphas)*len(etas)==1):
     test_err_MSE=test_err_MSE.ravel()
-    print("Minimum value at %d with error %f",%(np.argmin(test_err),np.min(test_err)))
-if(Printfile):
-    np.savetxt("../csvdata/boosting_2test%s.csv"%input_type,test_err_MSE,header=header,delimiter=",")
-    np.savetxt("../csvdata/boosting_2train%s.csv"%input_type,train_err_MSE,header=header,delimiter=",")
+    print("Minimum value at %d with error %f"%(Ms[np.argmin(test_err_MSE)],np.min(test_err_MSE)))
+if(printfile):
+    np.savetxt("../csvdata/boosting_2test%s_ex.csv"%input_type,test_err_MSE,header=header,delimiter=",")
+    np.savetxt("../csvdata/boosting_2train%s_ex.csv"%input_type,train_err_MSE,header=header,delimiter=",")
+"""
+Params for  boosting_2testreduced.csv:
+    20 - 6401, step length 20,
+    param = {'max_depth': 5, 'eta': eta, "objective" :'reg:squarederror'}
+    param["random_state"]=272
+    param["booster"]="gbtree"
+    param["colsample_bytree"]=0.3
+    param["subsample"]=0.5
+    param["alpha"]=alpha
+    alphas=[1,5,10]
+    etas=[0.05,0.01]
+"""
