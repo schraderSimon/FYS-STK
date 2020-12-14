@@ -12,6 +12,8 @@ tf.config.optimizer.set_jit(True)
 np.random.seed(272) #L dies after 272 days. RIP L
 
 def neural_network(input,regulizer,learningrate,type,nn_layers=[100,100]):
+    """Create a simple N-layer neural network with given regulizer, learning rate"""
+
     model=keras.models.Sequential()
     #model.add(norm)
     model.add(layers.Dense(nn_layers[0],activation=type,kernel_regularizer=regulizer,input_dim=input.shape[1]))
@@ -29,32 +31,33 @@ input_type=["coulomb","reduced","not_coulomb","noH"][int(sys.argv[1])]
 
 X,R,Z,T,P=read_data(filedata)
 
-amount_eta=4
-amount_lambda=7
-#learning_rates=np.logspace(-4,-2,amount_eta)#for sigmoid_ -3,-2,3 (with 2 layers a 400, 100)
-#regulizers_l2=np.logspace(-9,-6,0)#for sigmoid_ -5,-1,5 (with two layers a 400, 100)
-#regulizers_l1=np.logspace(-9,-6,amount_lambda)
-learning_rates=np.logspace(-3,0,amount_eta)#for sigmoid_ -3,-2,3 (with 2 layers a 400, 100)
-regulizers_l2=np.logspace(-9,-3,amount_lambda)#for sigmoid_ -5,-1,5 (with two layers a 400, 100)
+amount_eta=4 #number of learning rates to iterate over
+amount_lambda=7 #number of regulizers to iterate over
+
+learning_rates=np.logspace(-3,0,amount_eta)
+regulizers_l2=np.logspace(-9,-3,amount_lambda)
 regulizers_l1=np.logspace(-9,-3,amount_lambda)
 
-nn_layers=[100,100]
+nn_layers=[100,100] #two layer nn with 100 layers each
 
-epochs=100
-batch_size=25
-number_crossvals=1
+epochs=100 #number of epochs
+batch_size=25 #batch size for SGD
+number_crossvals=1 # The number of cross validations to perform. 5 to get "actual" results
+
 import os
 try:
     os.mkdir(mapname)
 except:
     pass
-filename="../csvdata/results_"
+
+"""Adaptive file name"""
+filename="../csvdata/nn_"
 filename=filename+input_type
 for layer in nn_layers:
     filename+="_%d"%layer
 filename+="epochs_%d"%epochs
 filename+="number_crossvals_%d"%number_crossvals
-filename+=".csv"
+filename+="ex.csv"
 outfile=open(filename,"w")
 outfile.write("Activation_function,regulizer,batch_size,lambda,eta,train_err,test_err\n")
 maxcounter=2*len(learning_rates)*(len(regulizers_l1)+len(regulizers_l2))
@@ -66,8 +69,8 @@ for index in range(number_crossvals):
     counter=0
     X_train, R_train, Z_train, T_train, X_test, R_test, Z_test, T_test= convert_dataset(X,R,Z,T,P,index)
     meanie=np.mean(T_train)
-    T_train=-T_train; T_train=T_train-meanie
-    T_test=-T_test; T_test=T_test-meanie
+    T_train=-T_train; T_train=T_train-meanie #Scale T (reduce mean and make positive)
+    T_test=-T_test; T_test=T_test-meanie #Scale T (reduce mean and make positive)
     if input_type=="not_coulomb": #The Z-R-approachs
         X_train=np.concatenate((R_train,Z_train),axis=1)
         X_test=np.concatenate((R_test,Z_test),axis=1)
@@ -95,13 +98,12 @@ for index in range(number_crossvals):
         for learningrate in learning_rates:
             for l1_reg in regulizers_l1:
                 model=neural_network(X_train_scaled,l1(l1_reg),learningrate,type)
-                model.fit(X_train_scaled, T_train,epochs=epochs,batch_size=batch_size)#,verbose=0)
+                model.fit(X_train_scaled, T_train,epochs=epochs,batch_size=batch_size),verbose=0) #no output
                 test_accuracy=model.evaluate(X_test_scaled,T_test,verbose=0)
                 train_acuracy=model.evaluate(X_train_scaled,T_train,verbose=0)
                 test_errors[counter]+=test_accuracy
                 train_errors[counter]+=train_acuracy
                 counter+=1
-                print("%d/%d"%(counter+index*maxcounter/5,maxcounter))
         for learningrate in learning_rates:
             for l2_reg in regulizers_l2:
                 model=neural_network(X_train_scaled,l2(l2_reg),learningrate,type)
@@ -111,7 +113,6 @@ for index in range(number_crossvals):
                 test_errors[counter]+=test_accuracy
                 train_errors[counter]+=train_acuracy
                 counter+=1
-                print("%d/%d"%(counter+index*maxcounter/5,maxcounter))
 counter=0
 train_errors/=number_crossvals
 test_errors/=number_crossvals
@@ -125,3 +126,7 @@ for type in ["sigmoid","elu"]:
             outfile.write("%s,%s,%d,%e,%e,%f,%f\n"%(type,"l2",batch_size,l2_reg,learningrate,train_errors[counter],test_errors[counter]))
             counter+=1
 outfile.close()
+"""
+run as python3 neural_network.py NUMBER
+where Number is an integer: 0 - coulomb, 1 - reduced coulomb, 2- R/Z, 3 - reduced no H
+"""

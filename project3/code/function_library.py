@@ -58,7 +58,7 @@ def RidgeRegression(X_training,y_training,Lambda, include_beta_variance=True):
 
 def create_PCA_matrices(X,Y,P,k=5):
     """
-    Creates a set of k train and test matrices that are scaled and have PCA performed.
+    Creates a set of k train and test matrices that are scaled and have PCA performed on them.
 
     Input:
     X (2D matrix): The design matrix
@@ -102,6 +102,20 @@ def create_PCA_matrices(X,Y,P,k=5):
 
 
 def PCA_ridge_MAE(PCA_matrices,P,Lambda,num_PC=10,k=5):
+    """
+    Performs Cross-validated Ridge Regression on the given set of PCA matrices
+    for a given number of Principal Components in the PCA-matrices
+
+    input:
+    PCA_matrices: 4 lists containing
+        X-train_matrices, X_test_matrices, Y-train, Y_test
+    k: The CrossVal index
+    num_PC: The number of PC's being used
+
+    Returns:
+    float: Test MAE
+    float: Train MAE
+    """
     MAE_crossval = np.zeros(k)
     MAE_crossval_train=np.zeros(k)
 
@@ -121,7 +135,7 @@ def PCA_ridge_MAE(PCA_matrices,P,Lambda,num_PC=10,k=5):
     MAE_train_estimate=np.mean(MAE_crossval_train)
 
     return MAE_estimate, MAE_train_estimate
-def create_hydrogenfree_coulomb_matrix(X):
+def create_hydrogenfree_coulomb_matrix(X,size=23):
     """Takes the coulomb matrix and creates hydrogen-free coulomb matrix.
 
     The function takes the R-matrix and the Z-matrix and
@@ -132,11 +146,11 @@ def create_hydrogenfree_coulomb_matrix(X):
     Returns:
     Coulomb matrix (2D, n_nonhydrongen_atoms*n_nonhydrongen_atoms)
     """
-    max_hydrogen,min_hydrogen=find_max_non_hydrogens(X)
+    max_hydrogen,min_hydrogen=find_max_non_hydrogens(X,size)
     X_new=np.zeros((len(X),max_hydrogen,max_hydrogen),dtype=float)
     for coul_number,coulomb_matrix in enumerate(X):
         remove_indexes=[] #The indexes of Hydrogen
-        for i in range(23):
+        for i in range(size):
             if abs(coulomb_matrix[i,i]-0.5)<1e-12: #If it's hydrogen
                 remove_indexes.append(i)
             elif abs(coulomb_matrix[i,i])<1e-12: #if it's empty
@@ -147,25 +161,26 @@ def create_hydrogenfree_coulomb_matrix(X):
         c_del=np.pad(c_del, ((0,adder),(0,adder)), mode='constant', constant_values=0)
         X_new[coul_number]=c_del
     return X_new
-def find_max_non_hydrogens(X):
-    """Finds the maximum and the minimum number of non-hydrogen"""
+def find_max_non_hydrogens(X,size=23):
+    """Finds the maximum and the minimum number of non-hydrogen atoms"""
     maxcounter=0
-    mincounter=23
+    mincounter=size
     for i,coulomb_matrix in enumerate(X):
         counter=0 #the number of hydrogens and empties
-        for j in range(23):
+        for j in range(size):
             if abs(coulomb_matrix[j,j]-0.5)<1e-12: #if it's hydrogen
                 counter+=1
             elif abs(coulomb_matrix[j,j])<1e-12: #if it's empty
                 counter+=1
-        non_hydrogens=23-counter
+        non_hydrogens=size-counter
         if(maxcounter<non_hydrogens):
             maxcounter=non_hydrogens
         if mincounter>non_hydrogens:
             mincounter=non_hydrogens
     return maxcounter, mincounter
 def reduce_coulomb(X):
-    """Takes a set of Coulomb Matrices X and returns the ordered upper triangular 2D version"""
+    """Takes a set of Coulomb Matrices X and returns the ordered upper triangular,
+    reshaped version"""
     tridiagonal_indices=np.tril_indices(len(X[0][0]))
     Xnew=np.zeros((len(X),int(len(X[0][0])*(len(X[0][0])+1)/2))) # 7165 * 23*24/2 (only lower triangular elements)
     for i,coloumb_matrix in enumerate(X):
@@ -189,6 +204,7 @@ def convert_dataset(X,R,Z,T,P,index=0): #Convert dataset to a matrix set that ca
     T_train, T_test= createTestTrain(T,training_indeces,testing_indeces)
     return X_train, R_train, Z_train, T_train, X_test, R_test, Z_test, T_test
 def reshapey(matrix,amount_lambda):
+    """Plotting help function"""
     matrix_sigmoid=matrix[:int(len(matrix)/2)]
     matrix_elu=matrix[int(len(matrix)/2):]
     matrix_sigmoid_l1=matrix_sigmoid[:int(len(matrix_sigmoid)/2)].reshape(-1,amount_lambda)

@@ -1,3 +1,4 @@
+"""This does more or less the same as plot_neural_network, but only plots for reduced and noH"""
 import numpy as np
 import matplotlib.pyplot as plt
 from function_library import *
@@ -42,3 +43,6 @@ ax1.set_xlabel(r"$\lambda$"); ax2.set_xlabel(r"$\lambda$")#; ax3.set_xlabel(r"$\
 plt.tight_layout()
 plt.savefig("../figures/100_epochs.pdf"%(epochs,type))
 plt.show()
+"""
+python3 plot_nn_only_2.py
+"""

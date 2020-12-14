@@ -8,6 +8,8 @@ matplotlib.rcParams.update({"font.size":18})
 num_learningrate=4
 num_lambda=7
 epochs=100
+
+"""Read data from a given set of files"""
 coulomb=np.loadtxt("../csvdata/results_coulomb_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
 noH=np.loadtxt("../csvdata/results_noH_100_100epochs_100number_crossvals_1.csv",
@@ -16,16 +18,20 @@ not_coulomb=np.loadtxt("../csvdata/results_not_coulomb_100_100epochs_100number_c
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
 reduced=np.loadtxt("../csvdata/results_reduced_100_100epochs_100number_crossvals_1.csv",
                             skiprows=1,dtype="float",delimiter=",",usecols=6)
+
+"""same parameters as in the files"""
 amount_eta=4
 amount_lambda=7
 learning_rates=np.logspace(-3,0,amount_eta)
 regulizers_l2=np.logspace(-9,-3,amount_lambda)
 regulizers_l1=np.logspace(-9,-3,amount_lambda)
+
 coulombs=reshapey(coulomb,amount_lambda)
 reduceds=reshapey(reduced,amount_lambda)
 noHs=reshapey(noH,amount_lambda)
 not_coulombs=reshapey(not_coulomb,amount_lambda)
 types=["sigmoid L1","sigmoid L2"," elu L1"," elu L2"]
+"""Print minimal values achieved"""
 for i, type in enumerate(types):
     print(type)
     print("Minimum coulomb: %f"%np.amin(coulombs[i]))
@@ -35,6 +41,7 @@ for i, type in enumerate(types):
 
 xlabels = ['{:.1e}'.format(x) for x in regulizers_l2];
 ylabels= ['{:.1e}'.format(y) for y in learning_rates];
+"""Plot different heat maps for all types"""
 for i, type in enumerate(types):
     plt.figure(figsize=(20,10))
     ax1=plt.subplot(221)
@@ -56,3 +63,6 @@ for i, type in enumerate(types):
     plt.tight_layout()
     plt.savefig("../figures/nn_%d_%s.pdf"%(epochs,type))
     plt.show()
+"""
+python3 plot_neural_network.py
+"""

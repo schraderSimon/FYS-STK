@@ -3,8 +3,8 @@ from function_library import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-X_ridge_data=pd.read_csv("../csvdata/X_ridge.csv")
-Xremoved_ridge_data=pd.read_csv("../csvdata/Xremoved_ridge.csv")
+X_ridge_data=pd.read_csv("../csvdata/ridgereduced.csv")
+Xremoved_ridge_data=pd.read_csv("../csvdata/ridgenoH.csv")
 X_test=X_ridge_data["test_errors"]
 X_train=X_ridge_data["train_errors"]
 X_PCA=X_ridge_data["PCA_values"]
@@ -26,3 +26,6 @@ ax1.legend()
 
 plt.savefig("../figures/Ridge_error.pdf")
 plt.show()
+"""
+python3 plot_PCA.py
+"""

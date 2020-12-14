@@ -8,18 +8,22 @@ X=reduce_coulomb(X)
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 scaler.fit(X)
-X=scaler.transform(X)
+X=scaler.transform(X) #With Hydrogen
 scaler = StandardScaler()
 scaler.fit(X_removed)
-X_removed=scaler.transform(X_removed)
+X_removed=scaler.transform(X_removed) #Hydrogen-free
+
+
 pca = PCA()
 pca.fit(X)
-X=pca.transform(X)
-cumulative_varianceX=np.cumsum(pca.explained_variance_ratio_)
+X=pca.transform(X) #Perform PCA on X
+cumulative_varianceX=np.cumsum(pca.explained_variance_ratio_)#explained variance (cumul.)
+
+
 pca = PCA()
 pca.fit(X_removed)
 X_removed=pca.transform(X_removed)
-cumulative_varianceXremoved=np.cumsum(pca.explained_variance_ratio_)
+cumulative_varianceXremoved=np.cumsum(pca.explained_variance_ratio_) #explained variance (cumul.)
 cumulative_varianceXremoved=np.pad(cumulative_varianceXremoved, ((1,0)), mode='constant', constant_values=0)
 cumulative_varianceX=np.pad(cumulative_varianceX, (1,0), mode='constant', constant_values=0)
 
@@ -34,3 +38,6 @@ plt.xlabel("Percentage of used Principal Components")
 plt.ylabel("Cumulative explained variance")
 plt.savefig("../figures/Cumulative_variance.pdf")
 plt.show()
+"""
+python3 plot_variance_ratio.py
+"""
