@@ -2,7 +2,10 @@
 - **code** contains our code used to create the data
 - **csvData** contains (without explicitely deleting anything) data used to create plots (and much more).
 - **selected_results** contains selected runs that can be benchmarked against our code.
-  - boosting_2testreduced_ex.csv and boosting_2trainreduced_ex.csv were created with boosting2.py the way the file looks like now.
+  - boosting_2testreduced_ex.csv and boosting_2trainreduced_ex.csv were created with boosting2.py the way the file looks like now. (crossval=1, M up to 1000).
+  - boosting_1testreduced_ex.csv and boosting_1trainreduced_ex.csv were created with boosting1.py the way the file looks like now. (crossval=1, M = 100, 200, 400).
+  - ridgereduced.csv was created using PCA.py 
+  - The files "nn_" were created using neural_network.py the way the file looks like now.
 - **data** contains the data file(s) being analysed
 - **figures** contains figures (and some more) that were used in the report.
 - **report** contains the report.
