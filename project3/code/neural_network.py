@@ -98,7 +98,7 @@ for index in range(number_crossvals):
         for learningrate in learning_rates:
             for l1_reg in regulizers_l1:
                 model=neural_network(X_train_scaled,l1(l1_reg),learningrate,type)
-                model.fit(X_train_scaled, T_train,epochs=epochs,batch_size=batch_size),verbose=0) #no output
+                model.fit(X_train_scaled, T_train,epochs=epochs,batch_size=batch_size,verbose=0) #no output
                 test_accuracy=model.evaluate(X_test_scaled,T_test,verbose=0)
                 train_acuracy=model.evaluate(X_train_scaled,T_train,verbose=0)
                 test_errors[counter]+=test_accuracy
