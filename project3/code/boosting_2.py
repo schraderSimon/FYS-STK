@@ -6,7 +6,7 @@ import xgboost as xgb
 np.random.seed(272) #L dies after 272 days. RIP L
 
 
-number_crossvals=1 # The number of cross validations to perform. 5 to get "actual" results.
+number_crossvals=1 #The number of cross validations to perform. 5 to get "actual" results, 1 for a simple train-test split
 
 
 filedata="../data/qm7.mat"
@@ -44,12 +44,12 @@ for index in range(number_crossvals):
         for k, eta in enumerate(etas):
             param = {'max_depth': 5, 'eta': eta, "objective" :'reg:squarederror'}
             param["random_state"]=272
-            param["tree_method"]="gpu_hist"
+            param["tree_method"]="gpu_hist" #histogram based method
             param["sampling_method"]="gradient_based"
             param["booster"]="gbtree"
             param["colsample_bytree"]=0.3
             param["subsample"]=0.5
-            param["alpha"]=alpha
+            param["alpha"]=alpha #L1 regularization
             bst=xgb.train(param,dtrain,0)# create the model (untrained)
             for j in range(len(Ms)):
                 bst=xgb.train(param,dtrain,evals,xgb_model=bst) #train model with evals steps

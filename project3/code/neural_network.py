@@ -14,11 +14,13 @@ np.random.seed(272) #L dies after 272 days. RIP L
 def neural_network(input,regulizer,learningrate,type,nn_layers=[100,100]):
     """Create a simple N-layer neural network with given regulizer, learning rate"""
 
-    model=keras.models.Sequential()
-    #model.add(norm)
+    model=keras.models.Sequential() #Sequential layer
+    #Add the first hidden layer, with known input shape
     model.add(layers.Dense(nn_layers[0],activation=type,kernel_regularizer=regulizer,input_dim=input.shape[1]))
     for i in range(1,len(nn_layers)):
-        model.add(layers.Dense(nn_layers[i],kernel_regularizer=regulizer,kernel_initializer='normal',bias_initializer="random_normal",activation=type))
+        #add the other layers
+        model.add(layers.Dense(nn_layers[i],kernel_regularizer=regulizer,
+                               kernel_initializer='normal',bias_initializer="random_normal",activation=type))
 
     model.add(layers.Dense(1))
     optimizer=keras.optimizers.Adam(learning_rate=learningrate)

@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeRegressor
 np.random.seed(272) #L dies after 272 days. RIP L
 
 
-number_crossvals=5 #The number of cross validations to perform. 5 to get "actual" results.
+number_crossvals=5 #The number of cross validations to perform. 5 to get "actual" results, 1 for a simple train-test split
 
 
 filedata="../data/qm7.mat"
@@ -45,7 +45,6 @@ for index in range(number_crossvals):
     for i,number_estimators in enumerate(n_estimators):
         """Make a Bagging Regressor with given number of estimators and tree depths """
         regressor=BaggingRegressor(DecisionTreeRegressor(max_depth=tree_depth),n_estimators=number_estimators)
-        #regressor=DecisionTreeRegressor(max_depth=5)
         regressor.fit(X_train_scaled,T_train)
         train_pred=regressor.predict(X_train_scaled)
         test_pred=regressor.predict(X_test_scaled)

@@ -6,7 +6,7 @@ import xgboost as xgb
 np.random.seed(272) #L dies after 272 days. RIP L
 
 
-number_crossvals=5 # The number of cross validations to perform. 5 to get "actual" results.
+number_crossvals=5 #The number of cross validations to perform. 5 to get "actual" results, 1 for a simple train-test split
 
 filedata="../data/qm7.mat"
 
@@ -43,7 +43,6 @@ for index in range(number_crossvals):
             regressor.fit(X_train_scaled,T_train)
             train_pred=regressor.predict(X_train_scaled)
             test_pred=regressor.predict(X_test_scaled)
-            #print("Tree depth: %d, M: %d, Error: %f "%(tree_depth,estimator,MAE(test_pred,T_test)))
             test_err_MSE[j,i]+=MAE(test_pred,T_test)
 
             train_err_MSE[j,i]+=MAE(T_train,train_pred)
